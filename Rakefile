@@ -73,15 +73,13 @@ desc "Make symlinks for any dotfiles that aren't already links."
 task :install => :erb do
   dotfiles.each do |file|
     target = File.join(home, ".#{File.basename file}")
-    if File.exists?(target)
-      if File.symlink? target
-        targettarget = File.readlink target
-        if targettarget != File.expand_path(file)
-          puts "#{target} already exists, and points to #{targettarget}!"
-        end
-      else
-        puts "#{target} already exists! Maybe you should rake grab it!"
+    if File.symlink? target
+      targettarget = File.readlink target
+      if targettarget != File.expand_path(file)
+	puts "#{target} already exists, and points to #{targettarget}!"
       end
+    elsif File.exists?(target)
+      puts "#{target} already exists! Maybe you should rake grab it!"
     else
       puts "#{target} -> #{file}"
       File.symlink file, target
