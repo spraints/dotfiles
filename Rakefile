@@ -82,7 +82,7 @@ task :install => :erb do
       puts "#{target} already exists! Maybe you should rake grab it!"
     else
       puts "#{target} -> #{file}"
-      File.symlink file, target
+      File.symlink File.expand_path(file), target
     end
   end
 end
