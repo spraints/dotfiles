@@ -1,0 +1,4 @@
+ssh/known_hosts
+ssh/id_*
+gitconfig
+private.yml

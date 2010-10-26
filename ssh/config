@@ -1,0 +1,12 @@
+ForwardAgent yes
+
+Host matts-mac-mini, optiplex
+ForwardX11 yes
+
+# To use this:
+#  ssh -L 2222:git:22 maburke@raiders.sep.com
+#  git fetch git@git.sep.com:maburke/blah.git
+Host git.sep.com
+        NoHostAuthenticationForLocalhost yes
+        HostName localhost
+        Port 2222
