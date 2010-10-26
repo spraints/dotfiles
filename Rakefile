@@ -43,28 +43,49 @@ end
 desc "Evaluate erbs with the configuration from private.yml"
 task(:erb => erb_outputs.collect{|f| "erb:#{f}"})
 
+def dotfile_erb(input, output)
+  $config ||= YAML.load_file('private.yml')
+  erb = ERB.new(File.read(input))
+  erb.filename = input
+  File.open(output, 'w') do |io|
+    io << erb.result(OpenStruct.new($config).instance_eval{binding})
+  end
+end
+
 namespace :erb do
   erb_outputs.each do |f|
-    f_erb = "#{f}.erb"
+    f_erb = f + '.erb'
+    f_bak = f + '.bak'
+
     desc "Generate #{f} from #{f_erb}"
     task f => f_erb do
       if !File.exists?(f) || File.mtime(f_erb) > File.mtime(f)
-        $config ||= YAML.load_file('private.yml')
-        erb = ERB.new(File.read(f_erb))
-        erb.filename = f_erb
-        f_bak = f + '.bak'
         if File.exists? f
           File.rename f, f_bak
         end
-        File.open(f, 'w') do |io|
-          io << erb.result(OpenStruct.new($config).instance_eval{binding})
-        end
+        dotfile_erb(f_erb, f)
         puts "erb #{f_erb} > #{f}"
         if File.exists? f_bak
           system 'diff', f_bak, f
           File.unlink f_bak
         end
       end
+    end
+  end
+end
+
+desc "See what's changed in ERB-generated files."
+task(:diff => erb_outputs.collect { |f| "diff:#{f}" })
+
+namespace :diff do
+  erb_outputs.each do |f|
+    f_erb = f + '.erb'
+    f_tmp = f + '.tmp'
+
+    task f do
+      dotfile_erb(f_erb, f_tmp)
+      puts "diff #{f_erb} .#{f}"
+      system 'diff', f_tmp, f
     end
   end
 end
