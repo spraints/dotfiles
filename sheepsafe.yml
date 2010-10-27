@@ -1,0 +1,27 @@
+--- &id001 
+socks_port: "9999"
+ssh_host: maburke@raiders.sep.com
+untrusted_location: Untrusted
+trusted_names: 
+- SEP
+- 0:1a:30:b9:58:80
+last_network: !ruby/object:Sheepsafe::Network 
+  config: !ruby/object:Sheepsafe::Config 
+    config: *id001
+  data: 
+    802.11 auth: open
+    op mode: station
+    agrCtlNoise: -96
+    agrExtRSSI: 0
+    link auth: wpa2-psk
+    lastAssocStatus: 0
+    maxRate: 54
+    lastTxRate: 48
+    channel: 1
+    MCS: -1
+    SSID: SEP
+    agrExtNoise: 0
+    agrCtlRSSI: -57
+    BSSID: 0:1a:30:b9:58:80
+    state: running
+trusted_location: Automatic
