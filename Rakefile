@@ -86,6 +86,7 @@ namespace :diff do
       dotfile_erb(f_erb, f_tmp)
       puts "diff #{f_erb} .#{f}"
       system 'diff', f_tmp, f
+      File.unlink f_tmp
     end
   end
 end
