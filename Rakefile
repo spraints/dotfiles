@@ -26,15 +26,17 @@ task :grab do
   ENV['DOTFILE'] or raise "DOTFILE argument is required (e.g. rake grab DOTFILE=.bashrc)"
   f = File.basename(ENV['DOTFILE'])
   f = '.' + f unless f =~ /^\./
-  home_dotfile = File.expand_path home, f
+  home_dotfile = File.expand_path f, home
   if File.symlink? home_dotfile
     puts "#{home_dotfile} is already a symlink."
   else
-    src_dotfile = File.expand_path src, f[1,f.size]
+    src_dotfile = File.expand_path f[1,f.size], src
     if File.exists? src_dotfile
       puts "#{src_dotfile} is in the way. Will not overwrite."
     else
-      File.move home_dotfile, src_dotfile
+      puts "mv #{home_dotfile} #{src_dotfile}"
+      File.rename home_dotfile, src_dotfile
+      puts "ln -s #{src_dotfile} #{home_dotfile}"
       File.symlink src_dotfile, home_dotfile
     end
   end
