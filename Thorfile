@@ -48,7 +48,9 @@ class Dotfiles < Thor
           if options[:test]
             File.unlink erb_output
           else
-            File.unlink dest_file
+            if File.exists? dest_file
+              File.unlink dest_file
+            end
             File.rename erb_output, dest_file
           end
         rescue => e
