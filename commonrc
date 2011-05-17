@@ -1,0 +1,8 @@
+# Load RVM
+[[ -s "$HOME/.rvm/scripts/rvm" ]] && source "$HOME/.rvm/scripts/rvm"
+
+export PATH=$PATH:/usr/local/bin:/usr/local/sbin:${HOME}/.cabal/bin:${HOME}/dev/private/localbin
+
+export JAVA_MEM=-Xmx2g
+
+export BCDATABASE_PATH=${HOME}/.nubic/db
