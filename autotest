@@ -1,1 +1,5 @@
-require 'autotest/growl'
+begin
+  require 'autotest/growl'
+rescue LoadError
+  puts "Unable to load autotest/growl"
+end
