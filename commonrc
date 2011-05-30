@@ -6,3 +6,5 @@ export PATH=/usr/local/bin:$PATH:/usr/local/sbin:${HOME}/.cabal/bin:${HOME}/dev/
 export JAVA_MEM=-Xmx2g
 
 export BCDATABASE_PATH=${HOME}/.nubic/db
+
+alias b='bundle exec'
