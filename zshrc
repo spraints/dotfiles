@@ -1,4 +1,4 @@
-. ./.commonrc
+. ~/.commonrc
 
 case "%TERM" in
   linux)

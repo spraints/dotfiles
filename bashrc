@@ -1,6 +1,6 @@
 # bashrc is executed by bash for non-login shells.
 
-. ./.commonrc
+. ~/.commonrc
 
 function parse_git_dirty {
   [[ $(git status 2> /dev/null | tail -n1) != "nothing to commit (working directory clean)" ]] && echo "*"
