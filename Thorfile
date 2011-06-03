@@ -165,7 +165,7 @@ class Dotfiles < Thor
   end
 
   def erb_files
-    Dir["*.erb"]
+    Dir["**/*.erb"]
   end
 
   def get_erb_filenames(file)
@@ -180,7 +180,22 @@ class Dotfiles < Thor
     erb = ERB.new(File.read(input))
     erb.filename = input
     File.open(output, 'w') do |io|
-      io << erb.result(OpenStruct.new($config).instance_eval{binding})
+      io << erb.result(ConfigHelper.new($config).instance_eval{binding})
+    end
+  end
+
+  class ConfigHelper
+    def initialize(config)
+      @config = config
+    end
+
+    def method_missing(method)
+      case value = @config[method.to_s]
+      when Hash
+        ConfigHelper.new(value)
+      else
+        value
+      end
     end
   end
 end
