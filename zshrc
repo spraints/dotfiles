@@ -3,7 +3,24 @@
 if [ -d ~/.oh-my-zsh ]
 then
   export ZSH=~/.oh-my-zsh
-  export ZSH_THEME=random
+  #export ZSH_THEME=random
+  # short list:
+  #export ZSH_THEME=afowler
+  export ZSH_THEME=arrow
+  #export ZSH_THEME=clean
+  #export ZSH_THEME=cloud
+  #export ZSH_THEME=daveverwer
+  #export ZSH_THEME=eastwood
+  #export ZSH_THEME=galois
+  #export ZSH_THEME=gentoo
+  #export ZSH_THEME=lambda
+  #export ZSH_THEME=lukerandall
+  #export ZSH_THEME=philips
+  #export ZSH_THEME=risto
+  #export ZSH_THEME=simple
+  #export ZSH_THEME=tonotdo
+  #export ZSH_THEME=wezm
+
   plugins=(git)
   source $ZSH/oh-my-zsh.sh
 else
