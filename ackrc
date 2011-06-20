@@ -1,1 +1,5 @@
 --pager=less -R
+--ignore-dir=.bundle
+--ignore-dir=vendor/gems
+--ignore-dir=vendor/cache
+--ignore-dir=vendor/bundle
