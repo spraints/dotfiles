@@ -1,3 +1,4 @@
+call pathogen#runtime_append_all_bundles()
 se sw=2
 "se sw=4
 se ai
