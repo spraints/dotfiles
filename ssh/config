@@ -1,7 +1,10 @@
 ForwardAgent yes
 
-Host matts-mac-mini, optiplex
+Host matts-mac-mini, optiplex, matts-mac-mini.local, matts-mac-book.local
 ForwardX11 yes
+
+ControlMaster auto
+ControlPath /tmp/ssh_mux_%h_%p_%r
 
 # To use this:
 #  ssh -L 2222:git:22 maburke@raiders.sep.com

@@ -3,3 +3,10 @@
 --ignore-dir=vendor/gems
 --ignore-dir=vendor/cache
 --ignore-dir=vendor/bundle
+--type-set=haml=.haml
+--type-set=coffee=.coffee
+--type-set=scss=.scss
+--type-set=sass=.sass
+--type-set=handlebars=.hbs,.hb
+--type-set=cucumber=.feature
+--type-set=jison=.jison

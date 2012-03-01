@@ -21,7 +21,7 @@ then
   #export ZSH_THEME=tonotdo
   #export ZSH_THEME=wezm
 
-  plugins=(git)
+  plugins=(git rvm brew heroku npm osx powder redis-cli)
   source $ZSH/oh-my-zsh.sh
 else
   parse_git_branch() {
