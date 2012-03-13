@@ -36,3 +36,5 @@ function jump {
 alias j="jump -a"
 
 ###end-jump-bash_profile
+
+alias gfa="git fetch --all"
