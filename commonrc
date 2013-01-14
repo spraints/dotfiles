@@ -1,6 +1,14 @@
+if [ -f /opt/github/env.sh ]
+then
+  source /opt/github/env.sh
+fi
+
 # Load RVM
-[[ -s "$HOME/.rvm/scripts/rvm" ]] && source "$HOME/.rvm/scripts/rvm" # Load RVM into a shell session *as a function*
-PATH=$PATH:$HOME/.rvm/bin # Add RVM to PATH for scripting
+if [ -s "$HOME/.rvm/scripts/rvm" ]
+then
+  source "$HOME/.rvm/scripts/rvm" # Load RVM into a shell session *as a function*
+  PATH=$PATH:$HOME/.rvm/bin # Add RVM to PATH for scripting
+fi
 
 [[ -s "$HOME/.nvm/nvm.sh" ]] && source "$HOME/.nvm/nvm.sh"
 
