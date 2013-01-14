@@ -1,2 +1,8 @@
-#!/usr/bin/env bash
-pmset -g batt | grep Internal | awk '{print $2, "("$3, $4")"}' | sed 's/;//'
+#!/usr/bin/env ruby
+battery = `pmset -g batt`.lines.grep(/Internal/).first.chomp
+name, bstat = battery.split(/\t/, 2)
+percent, state, timer = bstat.split(/; /)
+timer =~ /(\d+:\d{2})/ and timer = $1
+state = '\\/' if state == 'discharging'
+state = '/\\' if state == '??charging??'
+puts "#{percent} #{state} #{timer}"
