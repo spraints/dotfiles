@@ -1,0 +1,10 @@
+#!/usr/bin/env ruby
+
+ap = '/System/Library/PrivateFrameworks/Apple80211.framework/Versions/Current/Resources/airport'
+
+airport_status = `#{ap} -I`
+if airport_status =~ / SSID: (.*)/
+  puts $1
+else
+  puts 'unknown'
+end
