@@ -5,5 +5,5 @@ percent, state, timer = bstat.split(/; /)
 timer =~ /no estimate/ and timer = ''
 timer =~ /(\d+:\d{2})/ and timer = $1
 state = 8595.chr(Encoding::UTF_8) if state == 'discharging'
-state = 8593.chr(Encoding::UTF_8) if state == '??charging??'
+state = 8593.chr(Encoding::UTF_8) if state == 'charging'
 puts "#{percent} #{state} #{timer}"
