@@ -20,3 +20,19 @@ alias ga='git add'
 alias gap='git add -p'
 alias gai='git add -i'
 alias gp='git push'
+
+a() {
+  g=~/github/"$1"
+  d=~/dev/"$1"
+  if [ -d "$g" ]
+  then
+    atom "$g"
+  else
+    if [ -d "$d" ]
+    then
+      atom "$d"
+    else
+      atom "$1"
+    fi
+  fi
+}
