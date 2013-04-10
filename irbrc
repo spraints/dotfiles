@@ -1,2 +1,5 @@
-$: << '/opt/local/lib/ruby/gems/1.8/gems/looksee-0.2.1/lib'
-require 'looksee/shortcuts'
+class Object
+  def my_methods
+    (methods - Object.instance_methods).sort
+  end
+end
