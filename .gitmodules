@@ -28,3 +28,6 @@
 [submodule "vim/bundle/vim-golang"]
 	path = vim/bundle/vim-golang
 	url = https://github.com/jnwhiteh/vim-golang.git
+[submodule "atom/packages/csharp.tmbundle"]
+	path = atom/packages/csharp.tmbundle
+	url = https://github.com/wintermi/csharp-tmbundle
