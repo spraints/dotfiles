@@ -48,28 +48,26 @@ do
 done
 
 [ -n "$desthost" -a -n "$destport" -a -n "$proxy" -a -n "$ip" ] || usage
-tmpresolver=/tmp/resolver-$$
-resolver=/etc/resolver/proxy-$$
+hosts_patch=/tmp/hosts-patch-$$
 
 cleanup()
 {
   set +e
   ifconfig lo0 | grep -w $ip              && sudo ifconfig lo0 -alias $ip
-  test -f $tmpresolver                    && rm -f $tmpresolver
-  test -f $resolver                       && sudo rm -f $resolver
-  test -n "$masq" && ps -o args= -p $masq && sudo kill -INT $masq
+  test -f $hosts_patch                    && sudo patch --reverse /etc/hosts $hosts_patch
+  test -f $hosts_patch                    && rm -f $hosts_patch
 }
 
 trap cleanup EXIT
 
 set -x 
 
-cat > $tmpresolver <<RESOLVER
-nameserver $ip
-RESOLVER
+cat >$hosts_patch <<PATCH
+0a1
+> $ip $desthost
+PATCH
 
-sudo mv $tmpresolver $resolver
 sudo ifconfig lo0 alias $ip
+sudo patch /etc/hosts $hosts_patch
 
-sudo dnsmasq --listen-address=$ip --no-daemon --address=/$desthost/$ip -z
-ssh -L $ip:$destport:$desthost:$destport 
+ssh -L $ip:$destport:$desthost:$destport -N "$proxy"
