@@ -1,0 +1,75 @@
+#!/bin/bash -e
+#/ Usage: poke -d server.com:8080 -p ssh-to-this.com [-i 127.0.0.13]
+#/
+#/ Valid options:
+#/ -h, --help
+#/ -d, --dest host:port    (required) where you want to connect
+#/ -p, --proxy [user@]host (required) a host you can ssh to
+#/ -i, --ip ip             a local IP address to use
+
+if ! which -s dnsmasq
+then
+  echo dnsmasq must be installed first.
+  exit 1
+fi
+
+usage()
+{
+  cat "$0" | grep ^#/ | cut -c4-
+  exit 1
+}
+
+ip=127.0.0.13
+
+while [ $# -gt 0 ]
+do
+  case "$1" in
+    -d|--dest)
+      dest="$2"
+      desthost=`echo $dest | cut -d : -f 1`
+      destport=`echo $dest | cut -d : -f 2`
+      shift
+      shift
+      ;;
+    -p|--proxy)
+      proxy="$2"
+      shift
+      shift
+      ;;
+    -i|--ip)
+      ip="$2"
+      shift
+      shift
+      ;;
+    -h|--help|*)
+      usage
+      ;;
+  esac
+done
+
+[ -n "$desthost" -a -n "$destport" -a -n "$proxy" -a -n "$ip" ] || usage
+tmpresolver=/tmp/resolver-$$
+resolver=/etc/resolver/proxy-$$
+
+cleanup()
+{
+  set +e
+  ifconfig lo0 | grep -w $ip              && sudo ifconfig lo0 -alias $ip
+  test -f $tmpresolver                    && rm -f $tmpresolver
+  test -f $resolver                       && sudo rm -f $resolver
+  test -n "$masq" && ps -o args= -p $masq && sudo kill -INT $masq
+}
+
+trap cleanup EXIT
+
+set -x 
+
+cat > $tmpresolver <<RESOLVER
+nameserver $ip
+RESOLVER
+
+sudo mv $tmpresolver $resolver
+sudo ifconfig lo0 alias $ip
+
+sudo dnsmasq --listen-address=$ip --no-daemon --address=/$desthost/$ip -z
+ssh -L $ip:$destport:$desthost:$destport 
