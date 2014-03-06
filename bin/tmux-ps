@@ -1,0 +1,14 @@
+#!/bin/bash
+
+tmux list-windows -F '#{window_index} #{window_name}' | \
+  while read window_index window_name
+  do
+    echo ''
+    echo + $window_index:$window_name
+    tmux list-panes -t $window_index -F '#{pane_pid} #{pane_tty}' | \
+      while read pane_pid pane_tty
+      do
+        echo ++ $pane_tty
+        pstree $pane_pid | sed -e 's/^/  /'
+      done
+  done

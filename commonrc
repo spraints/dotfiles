@@ -52,4 +52,7 @@ alias j="jump -a"
 
 ###end-jump-bash_profile
 
-alias gfa="git fetch --all"
+alias gfa="git fetch --all --prune"
+
+alias fixshoved="~/.bin/poke -d shoved.githubapp.com:8080 -p aux1-ext.rs.github.com -i 127.0.0.23"
+alias tmux-ps="~/.bin/tmux-ps"
