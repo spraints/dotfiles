@@ -21,6 +21,42 @@ alias gap='git add -p'
 alias gai='git add -i'
 alias gp='git push'
 
+newbranch() {
+  usage="Usage: newbranch [--help] [-h] [--no-fetch] branch-name"
+  fetch=yes
+  while [ $# -gt 0 ]
+  do
+    case "$1" in
+      -h|--help)
+        echo $usage
+        return ;;
+      --no-fetch)
+        fetch=no
+        shift ;;
+      *)
+        if [ $# -eq 1 ]
+        then
+          branch_name="$1"
+          shift
+        else
+          echo $usage
+          return
+        fi ;;
+    esac
+  done
+  if [ -z "$branch_name" ]
+  then
+    echo $usage
+    return
+  fi
+  if [ "$fetch" == "yes" ]
+  then
+    echo "Fetching from origin..."
+    git fetch origin
+  fi
+  git checkout --no-track -b "$branch_name" origin/master
+}
+
 a() {
   g=~/github/"$1"
   d=~/dev/"$1"
