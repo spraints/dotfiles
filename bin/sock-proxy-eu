@@ -1,0 +1,55 @@
+#!/bin/bash
+
+region=eu-west-1
+
+# https://cloud-images.ubuntu.com/locator/ec2/
+ami=ami-0332fd74
+aki=aki-52a34525
+instance_type=m1.small
+key_pair=spraints-octo-2
+sec_group_id=sg-6e5b940b # launch-wizard-1 allows ssh
+
+
+start_proxy() {
+  echo Starting an EC2 instance...
+  instance_json=$(aws ec2 run-instances \
+    --region "$region" \
+    --image-id "$ami" \
+    --key-name "$key_pair" \
+    --security-group-ids "$sec_group_id" \
+    --instance-type "$instance_type")
+  instance_id=$(echo "$instance_json" | jq -r '.Instances[0].InstanceId')
+  echo "  --> " $instance_id
+
+  trap stop_proxy EXIT
+
+  while true
+  do
+    current_state_json=$(aws ec2 describe-instances --region "$region" --instance-ids "$instance_id")
+    current_state=$(echo "$current_state_json" | jq -r '.Reservations[].Instances[].State.Name')
+    if [ "$current_state" == "running" ]
+    then
+      public_name=$(echo "$current_state_json" | jq -r '.Reservations[].Instances[].PublicDnsName')
+      break
+    else
+      echo "Waiting for instance to start... (currently '$current_state')"
+      sleep 5
+    fi
+  done
+}
+
+run_proxy() {
+  echo Press ctrl-C to stop the proxy
+  ssh -o 'StrictHostKeyChecking no' -D 2001 -N ubuntu@"$public_name"
+}
+
+stop_proxy() {
+  echo Shutting down $instance_id
+#  aws ec2 terminate-instances --region "$region" --instance-ids "$instance_id" >/dev/null
+
+  aws ec2 describe-instances --region "$region" | jq '.Reservations[].Instances[] | {InstanceId, StateName: .State.Name}'
+}
+
+
+start_proxy
+run_proxy
