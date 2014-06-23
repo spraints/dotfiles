@@ -30,22 +30,29 @@ start_proxy() {
     if [ "$current_state" == "running" ]
     then
       public_name=$(echo "$current_state_json" | jq -r '.Reservations[].Instances[].PublicDnsName')
+      printf "\r$current_state                                                         \n"
       break
     else
-      echo "Waiting for instance to start... (currently '$current_state')"
+      printf "\rWaiting for instance to start... (currently '$current_state')         "
       sleep 5
     fi
   done
 }
 
 run_proxy() {
+  echo Connecting...
+  while ! ssh -o 'StrictHostKeyChecking no' ubuntu@"$public_name" echo connected
+  do
+    sleep 5
+  done
+
   echo Press ctrl-C to stop the proxy
   ssh -o 'StrictHostKeyChecking no' -D 2001 -N ubuntu@"$public_name"
 }
 
 stop_proxy() {
   echo Shutting down $instance_id
-#  aws ec2 terminate-instances --region "$region" --instance-ids "$instance_id" >/dev/null
+  aws ec2 terminate-instances --region "$region" --instance-ids "$instance_id" >/dev/null
 
   aws ec2 describe-instances --region "$region" | jq '.Reservations[].Instances[] | {InstanceId, StateName: .State.Name}'
 }
