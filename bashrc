@@ -24,8 +24,9 @@ alias gp='git push'
 newbranch() {
   (
   set -e
-  usage="Usage: newbranch [--help] [-h] [--no-fetch] branch-name"
+  usage="Usage: newbranch [--help] [-h] [--no-fetch] [--base start] branch-name"
   fetch=yes
+  base=origin/master
   while [ $# -gt 0 ]
   do
     case "$1" in
@@ -35,6 +36,9 @@ newbranch() {
       --no-fetch)
         fetch=no
         shift ;;
+      --base)
+        base="$2"
+        shift ; shift ;;
       *)
         if [ $# -eq 1 ]
         then
