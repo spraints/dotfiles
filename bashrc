@@ -56,13 +56,13 @@ newbranch() {
     echo "Fetching from origin..."
     git fetch origin
   fi
-  git checkout --no-track -b "$branch_name" origin/master
+  git checkout --no-track -b "$branch_name" "$base"
   )
 }
 
 a() {
-  g=~/github/"$1"
-  d=~/dev/"$1"
+  local g=~/github/"$1"
+  local d=~/dev/"$1"
   if [ -d "$g" ]
   then
     atom "$g"
