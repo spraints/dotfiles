@@ -22,6 +22,8 @@ alias gai='git add -i'
 alias gp='git push'
 
 newbranch() {
+  (
+  set -e
   usage="Usage: newbranch [--help] [-h] [--no-fetch] branch-name"
   fetch=yes
   while [ $# -gt 0 ]
@@ -55,6 +57,7 @@ newbranch() {
     git fetch origin
   fi
   git checkout --no-track -b "$branch_name" origin/master
+  )
 }
 
 a() {
