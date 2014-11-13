@@ -72,6 +72,13 @@ API_URL="https://api.github.com/repos/$REPO/statuses/$SHA"
 
 RESPONSE=$(curl -n $API_URL)
 
+MESSAGE=$(echo $RESPONSE | jq -r '.message')
+if [ "$MESSAGE" = "Not Found" ]
+then
+  echo No CI build found for $REPO @ $SHA
+  exit 0
+fi
+
 STATE=$(echo $RESPONSE | jq -r '.[0].state')
 TARGET=$(echo $RESPONSE | jq -r '.[0].target_url')
 
