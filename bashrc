@@ -11,16 +11,6 @@ function parse_git_branch {
 }
 export PS1='[$$] \[\e[33;1m\]\t \[\e[0m\](\[\e[35;1m\]\j\[\e[0m\])$(parse_git_branch) >>> '
 
-alias glg="git log --pretty=format:'%Cred%h %Cblue%t%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr, %an)%Creset' --date=relative --graph"
-
-alias gst='git status'
-alias gc='git commit -v'
-alias gco='git checkout'
-alias ga='git add'
-alias gap='git add -p'
-alias gai='git add -i'
-alias gp='git push'
-
 newbranch() {
   (
   set -e

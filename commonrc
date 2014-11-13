@@ -33,6 +33,14 @@ then
   export EC2_CERT="$(/bin/ls $HOME/.ec2/cert-*.pem)"
 fi
 
+alias glg="git log --pretty=format:'%Cred%h %Cblue%t%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr, %an)%Creset' --date=relative --graph"
+alias gst='git status'
+alias gc='git commit -v'
+alias gco='git checkout'
+alias ga='git add'
+alias gap='git add -p'
+alias gai='git add -i'
+alias gp='git push'
 alias gfa="git fetch --all --prune"
 
 alias fixshoved="~/.bin/poke -d shoved.githubapp.com:8080 -p aux1-ext.rs.github.com -i 127.0.0.23"
