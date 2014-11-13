@@ -3,14 +3,9 @@ then
   source /opt/github/env.sh
 fi
 
-# Load RVM
-if [ -s "$HOME/.rvm/scripts/rvm" ]
-then
-  source "$HOME/.rvm/scripts/rvm" # Load RVM into a shell session *as a function*
-  PATH=$PATH:$HOME/.rvm/bin # Add RVM to PATH for scripting
-fi
-
 [[ -s "$HOME/.nvm/nvm.sh" ]] && source "$HOME/.nvm/nvm.sh"
+
+[[ -s "$HOME/dev/na/na.sh" ]] && source "$HOME/dev/na/na.sh"
 
 export PATH=/usr/local/bin:$PATH:/usr/local/sbin:${HOME}/.cabal/bin:${HOME}/dev/private/localbin
 
@@ -38,21 +33,24 @@ then
   export EC2_CERT="$(/bin/ls $HOME/.ec2/cert-*.pem)"
 fi
 
-###begin-jump-bash_profile
-#
-# Installation:
-# jump >> ~/.bash_profile && source ~/.bash_profile
-#
-
-function jump {
-  local newDir=$(JUMPPROFILE=1 command jump "$@");
-  cd "$newDir";
-}
-alias j="jump -a"
-
-###end-jump-bash_profile
-
 alias gfa="git fetch --all --prune"
 
 alias fixshoved="~/.bin/poke -d shoved.githubapp.com:8080 -p aux1-ext.rs.github.com -i 127.0.0.23"
 alias tmux-ps="~/.bin/tmux-ps"
+
+function md {
+  if [ -n "$1" ]
+  then
+    mkdir -p "$1" && \
+    cd "$1" && \
+    pwd
+  fi
+}
+
+# Make git-svn work
+export PERL5LIB=/opt/boxen/homebrew/Cellar/subversion17/1.7.13/Library/Perl/5.16
+
+# Make `python -e "import mercurial"` work
+export PYTHONPATH=/opt/boxen/homebrew/Cellar/mercurial/2.8.2/lib/python2.7/site-packages
+
+# vim: ft=sh
