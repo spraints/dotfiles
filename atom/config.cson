@@ -1,7 +1,18 @@
 'editor':
-  'fontSize': 16
+  'fontSize': 14
 'core':
   'themes': [
     'atom-dark-ui'
     'atom-dark-syntax'
+  ]
+  'ignoredNames': [
+    '.git'
+    '.svn'
+    '.DS_Store'
+  ]
+'spell-check':
+  'grammars': [
+    'text.plain'
+    'source.gfm'
+    'text.git-commit'
   ]
