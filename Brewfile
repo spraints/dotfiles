@@ -42,7 +42,7 @@ cask install google-chrome
 cask install handbrake
 cask install heroku-toolbelt
 cask install iterm2
-cask install keepassx
+cask install dwihn0r-keepassx
 cask install linein
 cask install macvim
 cask install nvalt
