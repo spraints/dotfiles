@@ -33,6 +33,7 @@ install youtube-dl
 
 #cask install adium
 #cask install alfred
+cask install bonjour-browser
 cask install crashplan
 cask install dropbox
 cask install firefox
