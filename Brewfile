@@ -9,39 +9,51 @@
 install caskroom/cask/brew-cask
 
 # useful stuff for my programming hobby
+install ack
 install graphviz
 install imagemagick
 install jq
 install pstree
+install rbenv
 install reattach-to-user-namespace
+install ruby-build
 install tcptrace
 install tmux
 install watch
 install wget
 
+# GitHub apps
+cask install atom
+#cask install github-chat
+#cask install github-team
+
 # other apps that I use
 install ledger
 install youtube-dl
 
-install adium
-#install alfred
-install crashplan
-install dropbox
-install firefox
-install google-chrome
-install handbrake
-install heroku-toolbelt
-install iterm2
-install macvim
-install nvalt
-install rdio
-install skitch
-install spotify
-install vagrant
-install virtualbox
-install viscosity
-install xquartz
-install vlc
+#cask install adium
+#cask install alfred
+cask install crashplan
+cask install dropbox
+cask install firefox
+cask install gnucash
+cask install google-chrome
+cask install handbrake
+cask install heroku-toolbelt
+cask install iterm2
+cask install keepassx
+cask install linein
+cask install macvim
+cask install nvalt
+cask install rdio
+cask install screenhero
+cask install skitch
+cask install spotify
+cask install vagrant
+cask install virtualbox
+cask install viscosity
+#cask install xquartz
+cask install vlc
 
 # fun mistyped commands
 install gti
