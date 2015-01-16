@@ -9,6 +9,8 @@ fi
 
 export PATH=/usr/local/bin:$PATH:/usr/local/sbin:${HOME}/.cabal/bin:${HOME}/dev/private/localbin
 
+export RUBY_BUILD_DEFINITIONS=${HOME}/dev/puppet-ruby/files/definitions
+
 export JAVA_MEM=-Xmx2g
 
 export BCDATABASE_PATH=${HOME}/.nubic/db
