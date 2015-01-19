@@ -191,10 +191,16 @@ class Dotfiles < Thor
       @config = config
     end
 
-    def method_missing(method)
+    def method_missing(method, &block)
       case value = @config[method.to_s]
       when Hash
         ConfigHelper.new(value)
+      when nil
+        if @config.respond_to?(method)
+          @config.send(method, &block)
+        else
+          nil
+        end
       else
         value
       end
