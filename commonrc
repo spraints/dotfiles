@@ -3,6 +3,8 @@ then
   source /opt/github/env.sh
 fi
 
+eval "$(rbenv init -)"
+
 [[ -s "$HOME/.nvm/nvm.sh" ]] && source "$HOME/.nvm/nvm.sh"
 
 [[ -s "$HOME/dev/na/na.sh" ]] && source "$HOME/dev/na/na.sh"
