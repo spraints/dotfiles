@@ -9,6 +9,7 @@ Host minibuntu.local, minibuntu
 
 Host <%= ssh.bastion %>
   ForwardAgent yes
+  User <%= ssh.githubuser %>
 <% ssh.githubhosts.each do |short, full| %>
 Host <%= short %>
   HostName <%= full %>
