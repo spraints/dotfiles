@@ -46,6 +46,7 @@ cask install dwihn0r-keepassx
 cask install linein
 cask install macvim
 cask install nvalt
+cask install p4merge
 cask install rdio
 cask install screenhero
 cask install skitch
