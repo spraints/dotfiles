@@ -13,6 +13,7 @@ install ack
 install graphviz
 install imagemagick
 install jq
+install moreutils # particularly for the `ts` command
 install pstree
 install rbenv
 install reattach-to-user-namespace
@@ -31,7 +32,7 @@ cask install atom
 install ledger
 install youtube-dl
 
-#cask install adium
+cask install adium
 #cask install alfred
 cask install bonjour-browser
 cask install crashplan
