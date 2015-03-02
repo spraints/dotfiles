@@ -51,6 +51,7 @@ cask install p4merge
 cask install rdio
 cask install screenhero
 cask install skitch
+cask install skype
 cask install spotify
 cask install vagrant
 cask install virtualbox
