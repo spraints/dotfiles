@@ -7,6 +7,9 @@ Host minibuntu.local, minibuntu
   HostName minibuntu.local
   User matt
 
+Host <%= ssh.githubhostwildcard %>
+  User <%= ssh.githubuser %>
+
 Host <%= ssh.bastion %>
   ForwardAgent yes
   User <%= ssh.githubuser %>
