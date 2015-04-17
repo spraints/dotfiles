@@ -3,11 +3,15 @@ then
   source /opt/github/env.sh
 fi
 
+eval "$(rbenv init -)"
+
 [[ -s "$HOME/.nvm/nvm.sh" ]] && source "$HOME/.nvm/nvm.sh"
 
 [[ -s "$HOME/dev/na/na.sh" ]] && source "$HOME/dev/na/na.sh"
 
 export PATH=/usr/local/bin:$PATH:/usr/local/sbin:${HOME}/.cabal/bin:${HOME}/dev/private/localbin
+
+export RUBY_BUILD_DEFINITIONS=${HOME}/dev/puppet-ruby/files/definitions
 
 export JAVA_MEM=-Xmx2g
 
@@ -58,7 +62,6 @@ function md {
 # Make git-svn work
 export PERL5LIB=/opt/boxen/homebrew/Cellar/subversion17/1.7.13/Library/Perl/5.16
 
-# Make `python -e "import mercurial"` work
-export PYTHONPATH=/opt/boxen/homebrew/Cellar/mercurial/2.8.2/lib/python2.7/site-packages
+test -f ~/Dropbox/self/t.csv && export T_DATA_FILE=~/Dropbox/self/t.csv
 
 # vim: ft=sh

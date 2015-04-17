@@ -1,0 +1,21 @@
+ConnectTimeout 16
+
+Host 68k.org
+  User spraints
+
+Host minibuntu.local, minibuntu
+  HostName minibuntu.local
+  User matt
+
+Host <%= ssh.githubhostwildcard %>
+  User <%= ssh.githubuser %>
+
+Host <%= ssh.bastion %>
+  ForwardAgent yes
+  User <%= ssh.githubuser %>
+<% ssh.githubhosts.each do |short, full| %>
+Host <%= short %>
+  HostName <%= full %>
+  ForwardAgent yes
+  User <%= ssh.githubuser %>
+<% end %>

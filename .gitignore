@@ -1,3 +1,20 @@
+# SSH keys
 ssh/id_*
-gitconfig
+
+# Secret data
 private.yml
+
+# Files that are generated from erbs
+/atom/config.cson
+/gitconfig
+/netrc
+/ssh/config
+
+# Other
+/atom/storage
+/atom/.apm
+/atom/.node-gyp
+/atom/compile-cache
+
+/config
+!/config/git

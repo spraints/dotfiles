@@ -142,8 +142,10 @@ class Dotfiles < Thor
   def dotfiles
     dotfiles = Dir["*"]
     dotfiles.reject! { |f| f == 'Thorfile' }
-    dotfiles.reject! { |f| f == 'private.yml' }
+    dotfiles.reject! { |f| f =~ /^Gemfile/ }
     dotfiles.reject! { |f| f =~ /^README/i }
+    dotfiles.reject! { |f| f == 'Brewfile' }
+    dotfiles.reject! { |f| f == 'private.yml' }
     dotfiles.reject! { |f| f =~ /\.erb$/ }
     dotfiles.reject! { |f| f =~ /\.tmp$/ }
     dotfiles
@@ -189,10 +191,16 @@ class Dotfiles < Thor
       @config = config
     end
 
-    def method_missing(method)
+    def method_missing(method, &block)
       case value = @config[method.to_s]
       when Hash
         ConfigHelper.new(value)
+      when nil
+        if @config.respond_to?(method)
+          @config.send(method, &block)
+        else
+          nil
+        end
       else
         value
       end
