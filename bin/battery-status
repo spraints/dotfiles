@@ -4,6 +4,14 @@ name, bstat = battery.split(/\t/, 2)
 percent, state, timer = bstat.split(/; /)
 timer =~ /no estimate/ and timer = ''
 timer =~ /(\d+:\d{2})/ and timer = $1
-state = 8595.chr(Encoding::UTF_8) if state == 'discharging'
-state = 8593.chr(Encoding::UTF_8) if state == 'charging'
-puts "#{percent} #{state} #{timer}"
+icon =
+  case state
+  when "discharging"
+    8595.chr(Encoding::UTF_8)
+  when "charging"
+    8593.chr(Encoding::UTF_8)
+  when "charged"
+    timer = ""
+    9889.chr(Encoding::UTF_8)
+  end
+puts "#{percent} #{icon || state} #{timer}"

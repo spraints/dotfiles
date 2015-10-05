@@ -1,0 +1,43 @@
+#!/bin/bash
+#/ Usage: hyper-slow COMMAND
+
+set -e
+
+tmpdir=${HOME}/.hyper-slow/$(echo "$@" | md5)
+lockfile=${tmpdir}/lock
+cur_output=${tmpdir}/out.txt
+
+main() {
+  if needs_refresh; then
+    refresh "$@" &
+  fi
+  test -f ${cur_output} && cat ${cur_output}
+}
+
+needs_refresh() {
+  if [ -f "${cur_output}" ]; then
+    local age=$((`date +%s` - `stat -f %m ${cur_output}`))
+    if [ "${age}" -lt 60 ]; then
+      return 1
+    fi
+  fi
+  return 0
+}
+
+refresh() {
+  local new_output=${tmpdir}/$$.txt
+  mkdir -p ${tmpdir}
+  if lckdo -q ${lockfile} "$@" >${new_output}; then
+    mv ${new_output} ${cur_output}
+    echo "$@" > ${tmpdir}/cmd.txt
+  else
+    test -f ${new_output} && rm ${new_output}
+  fi
+}
+
+if [ $# -gt 0 ]; then
+  main "$@"
+else
+  cat "$0" | grep ^#/ | cut -c4-
+  exit 1
+fi
