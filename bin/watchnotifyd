@@ -1,0 +1,53 @@
+#!/usr/bin/env ruby
+
+INTERVAL = 10.0
+
+def main(r)
+  last = nil
+  while $running
+    last = check_notifyd last
+    IO.select([r], nil, nil, INTERVAL)
+  end
+end
+
+def check_notifyd(last)
+  if info = notifyd_ps
+    print "."
+    if last
+      new_time = info[:time] - last[:time]
+#      p(new_time / INTERVAL)
+      if new_time / INTERVAL > 0.10
+        puts "KILL notifyd!", " -- old #{last[:line]}", " -- new #{info[:line]}"
+        if system "kill", "-9", info[:pid]
+          return nil
+        end
+      end
+    end
+  end
+  info
+end
+
+def notifyd_ps
+  last = nil
+  `ps axo pid,time,args | grep '/usr/sbin/notify[d]'`.lines.each do |line|
+    pid,time,args = line.strip.split(/\s+/, 3)
+    last = {:pid => pid, :time => parse_time(time), :args => args, :line => line}
+    return last if args == "/usr/sbin/notifyd"
+  end
+  last
+end
+
+def parse_time(time)
+  case time
+  when /^(\d):(\d\d\.\d\d)$/, /^(\d\d):(\d\d)$/
+    $1.to_f * 60 + $2.to_f
+  else
+    raise "Don't know how to parse #{time.inspect}"
+  end
+end
+
+$running = true
+r,w = IO.pipe
+[ :INT, :QUIT, :TERM ].each { |sig| trap(sig) { $running = false ; w.write(".") } }
+
+main(r)
