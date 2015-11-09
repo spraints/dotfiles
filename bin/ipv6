@@ -8,10 +8,10 @@ set -e
 while [ $# -gt 0 ]; do
   case "$1" in
     --disable)
-      # ?
+      action=-setv6off
       shift ;;
     --enable)
-      # ?
+      action=-setv6automatic
       shift ;;
     *)
       cat "$0" | grep ^#/ | cut -c4-
@@ -23,6 +23,7 @@ networksetup -listallnetworkservices | while read svc; do
   case "${svc}" in
     Wi-Fi|*Ethernet)
       echo "=== ${svc} ==="
+      test -n "${action}" && sudo networksetup ${action} "${svc}"
       networksetup -getinfo "${svc}"
       ;;
   esac
