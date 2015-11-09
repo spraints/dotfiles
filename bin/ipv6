@@ -1,0 +1,29 @@
+#!/bin/sh
+#/ Usage: ipv6
+#/ Usage: ipv6 --disable
+#/ Usage: ipv6 --enable
+
+set -e
+
+while [ $# -gt 0 ]; do
+  case "$1" in
+    --disable)
+      # ?
+      shift ;;
+    --enable)
+      # ?
+      shift ;;
+    *)
+      cat "$0" | grep ^#/ | cut -c4-
+      exit ;;
+  esac
+done
+
+networksetup -listallnetworkservices | while read svc; do
+  case "${svc}" in
+    Wi-Fi|*Ethernet)
+      echo "=== ${svc} ==="
+      networksetup -getinfo "${svc}"
+      ;;
+  esac
+done
