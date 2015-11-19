@@ -52,6 +52,7 @@ class Dotfiles < Thor
               File.unlink dest_file
             end
             File.rename erb_output, dest_file
+            File.chmod 0600, dest_file
           end
         rescue => e
           say shell.set_color("erb: #{file}: #{e}", :red, true)
