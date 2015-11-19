@@ -9,7 +9,31 @@ function parse_git_branch {
   #git branch --no-color 2> /dev/null | sed -e '/^[^*]/d' -e "s/* \(.*\)/ [\1$(parse_git_dirty)]/"
   git branch --no-color 2> /dev/null | sed -e '/^[^*]/d' -e "s/* \(.*\)/ [\1]/"
 }
-export PS1='[$$] \[\e[33;1m\]\t \[\e[0m\](\[\e[35;1m\]\j\[\e[0m\])$(parse_git_branch) >>> '
+function audible_ps1 {
+  if [ $# -gt 0 ]; then
+    local words=
+    while [ $# -gt 0 ]; do
+      case "$1" in
+        --help|-h)
+          echo "Usage: audible_ps1 --off"
+          echo "Usage: audible_ps1 WORDS"
+          return ;;
+        --off)
+          unset AUDIBLE_PS1
+          return ;;
+        *)
+          words="${words} $1"
+          shift ;;
+      esac
+    done
+    export AUDIBLE_PS1="${words}"
+  else
+    if [ -n "${AUDIBLE_PS1}" ]; then
+      say "${AUDIBLE_PS1}"
+    fi
+  fi
+}
+export PS1='[$$] \[\e[33;1m\]\t \[\e[0m\](\[\e[35;1m\]\j\[\e[0m\])$(parse_git_branch)$(audible_ps1) >>> '
 
 newbranch() {
   (
