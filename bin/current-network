@@ -2,6 +2,7 @@
 
 def main
   info = get_airport_info
+  $stderr.puts info.inspect
   puts "#{info["SSID"]} (#{info["agrCtlRSSI"]}/#{info["agrCtlNoise"]})"
 end
 
