@@ -1,10 +1,21 @@
 #!/usr/bin/env ruby
 
-ap = '/System/Library/PrivateFrameworks/Apple80211.framework/Versions/Current/Resources/airport'
-
-airport_status = `#{ap} -I`
-if airport_status =~ / SSID: (.*)/
-  puts $1
-else
-  puts 'unknown'
+def main
+  info = get_airport_info
+  puts "#{info["SSID"]} (#{info["agrCtlRSSI"]}/#{info["agrCtlNoise"]})"
 end
+
+def get_airport_info
+  ap = '/System/Library/PrivateFrameworks/Apple80211.framework/Versions/Current/Resources/airport'
+  info = {}
+  IO.popen([ap, "-I"], "r") do |airport|
+    until airport.eof?
+      if airport.readline =~ /^\s*([^:]+): (.*)/
+        info[$1] = $2
+      end
+    end
+  end
+  info
+end
+
+main
