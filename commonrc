@@ -64,4 +64,12 @@ export PERL5LIB=/opt/boxen/homebrew/Cellar/subversion17/1.7.13/Library/Perl/5.16
 
 test -f ~/Dropbox/self/t.csv && export T_DATA_FILE=~/Dropbox/self/t.csv
 
+# https://github.com/pstadler/keybase-gpg-github#optional-dont-ask-for-password-every-time
+if test -f ~/.gnupg/.gpg-agent-info -a -n "$(pgrep gpg-agent)"; then
+  source ~/.gnupg/.gpg-agent-info
+  export GPG_AGENT_INFO
+else
+  eval $(gpg-agent --daemon --write-env-file ~/.gnupg/.gpg-agent-info)
+fi
+
 # vim: ft=sh
