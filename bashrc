@@ -5,9 +5,11 @@
 function parse_git_dirty {
   [[ $(git status 2> /dev/null | tail -n1) != "nothing to commit (working directory clean)" ]] && echo "*"
 }
+function current-branch {
+  git branch --no-color 2> /dev/null | sed -e '/^[^*]/d' -e 's/^* //'
+}
 function parse_git_branch {
-  #git branch --no-color 2> /dev/null | sed -e '/^[^*]/d' -e "s/* \(.*\)/ [\1$(parse_git_dirty)]/"
-  git branch --no-color 2> /dev/null | sed -e '/^[^*]/d' -e "s/* \(.*\)/ [\1]/"
+  printf " [%s]" "$(current-branch)"
 }
 function audible_ps1 {
   if [ $# -gt 0 ]; then
