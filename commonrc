@@ -3,7 +3,11 @@ then
   source /opt/github/env.sh
 fi
 
-eval "$(rbenv init -)"
+which rbenv >/dev/null 2>/dev/null &&
+  eval "$(rbenv init -)"
+
+which nodenv >/dev/null 2>/dev/null &&
+  eval "$(nodenv init -)"
 
 [[ -s "$HOME/.nvm/nvm.sh" ]] && source "$HOME/.nvm/nvm.sh"
 
