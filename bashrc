@@ -42,7 +42,7 @@ newbranch() {
   set -e
   usage="Usage: newbranch [--help] [-h] [--no-fetch] [--base start] branch-name"
   fetch=yes
-  base=origin/master
+  base=
   while [ $# -gt 0 ]
   do
     case "$1" in
@@ -75,6 +75,16 @@ newbranch() {
   then
     echo "Fetching from origin..."
     git fetch origin
+  fi
+  if [ -z "$base" ]
+  then
+    for r in origin/HEAD origin/master; do
+      if git rev-parse "$r" >&/dev/null; then
+        base=$(git rev-parse "$r")
+        break
+      fi
+    done
+    base=$(git ls-remote origin HEAD | head -n 1 | cut -c1-40)
   fi
   git checkout --no-track -b "$branch_name" "$base"
   )
