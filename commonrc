@@ -23,7 +23,7 @@ export BCDATABASE_PATH=${HOME}/.nubic/db
 
 export USE_CAPYBARA_WEBKIT=true
 alias b='bundle exec'
-alias slurp='git stash && git pull && git stash pop'
+alias slurp='gstash && git pull && gstash pop'
 
 #export EDITOR=/usr/local/bin/mvim
 export EDITOR=/usr/bin/vim
@@ -41,7 +41,7 @@ then
   export EC2_CERT="$(/bin/ls $HOME/.ec2/cert-*.pem)"
 fi
 
-alias glg="git log --pretty=format:'%Cred%h %Cblue%t%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr, %an)%Creset' --date=relative --graph"
+alias glg="git log --pretty=format:'%Cred%h %Cblue%t%Creset -%C(yellow)%d%Creset %s %Cgreen(%cd, %an)%Creset' --date=relative --graph"
 alias gst='git status'
 alias gc='git commit -v'
 alias gco='git checkout'
@@ -50,9 +50,19 @@ alias gap='git add -p'
 alias gai='git add -i'
 alias gp='git push'
 alias gfa="git fetch --all --prune"
+alias gstash="git -c commit.gpgsign=false stash"
 
 alias fixshoved="~/.bin/poke -d shoved.githubapp.com:8080 -p aux1-ext.rs.github.com -i 127.0.0.23"
 alias tmux-ps="~/.bin/tmux-ps"
+
+alias turbo="ssh router script/turbo-me"
+alias unturbo="ssh router script/unturbo-me"
+
+# gh
+alias zt="bin/testrb_or_zt"
+alias zc="bin/zeus console"
+alias zr="bin/zeus runner"
+alias zrake="bin/zeus rake"
 
 function md {
   if [ -n "$1" ]
@@ -66,7 +76,21 @@ function md {
 # Make git-svn work
 export PERL5LIB=/opt/boxen/homebrew/Cellar/subversion17/1.7.13/Library/Perl/5.16
 
+# Make `python -e "import mercurial"` work
+#export PYTHONPATH=/opt/boxen/homebrew/Cellar/mercurial/2.8.2/lib/python2.7/site-packages
+
 test -f ~/Dropbox/self/t.csv && export T_DATA_FILE=~/Dropbox/self/t.csv
+
+# from https://code.visualstudio.com/docs/setup and http://stackoverflow.com/questions/29971053/how-to-open-visual-studio-code-from-the-command-line-on-osx
+code () {
+    if [[ $# = 0 ]]
+    then
+        open -a "Visual Studio Code"
+    else
+        [[ $1 = /* ]] && F="$1" || F="$PWD/${1#./}"
+        open -a "Visual Studio Code" --args "$F"
+    fi
+}
 
 # https://github.com/pstadler/keybase-gpg-github#optional-dont-ask-for-password-every-time
 if test -f ~/.gnupg/.gpg-agent-info -a -n "$(pgrep gpg-agent)"; then

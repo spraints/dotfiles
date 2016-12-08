@@ -11,3 +11,5 @@ filetype plugin indent on
 au BufNewFile,BufRead [tT]horfile,*.thor	setf ruby
 au BufNewFile,BufRead *.rabl                    setf ruby
 au BufNewFile,BufRead *.hb                      setf mustache
+
+se modeline modelines=2
