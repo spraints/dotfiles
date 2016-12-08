@@ -1,9 +1,17 @@
 #!/usr/bin/env ruby
 
+require "json"
+
 def main
   info = get_airport_info
-  $stderr.puts info.inspect
-  puts "#{info["SSID"]} (#{info["agrCtlRSSI"]}/#{info["agrCtlNoise"]})"
+  JSON.dump info, $stderr
+  if ssid = info["SSID"]
+    puts "#{ssid} (#{info["agrCtlRSSI"]}/#{info["agrCtlNoise"]})"
+  elsif airport = info["AirPort"]
+    puts "Airport #{airport}"
+  else
+    puts "unknown"
+  end
 end
 
 def get_airport_info
