@@ -90,6 +90,21 @@ newbranch() {
   )
 }
 
+viconflicts() {
+  local conflicts="$(git status --porcelain | grep ^UU | awk '{print $2}')"
+  test -n "$conflicts" && vi $conflicts
+}
+
+shuf_args() {
+  for arg in "$@"; do
+    echo $(rand2) "$arg"
+  done | sort | cut -c 5- | tr "\n" " "
+}
+
+rand2() {
+  dd if=/dev/random of=/dev/stdout bs=2 count=1 2>/dev/null | od -t x2  | head -1 | awk '{print $2}'
+}
+
 a() {
   local g=~/github/"$1"
   local d=~/dev/"$1"
@@ -105,3 +120,30 @@ a() {
     fi
   fi
 }
+
+# Run a console
+sc() {
+  if [ -e bin/console ]; then
+    bin/console "$@"
+  elif [ -e script/console ]; then
+    script/console "$@"
+  elif [ -e bin/rails ]; then
+    bin/rails console "$@"
+  else
+    echo "Sorry, I don't know how to run a console here. :("
+  fi
+}
+
+# Fail-fast test
+fft() {
+  if [ -e "script/fail-fast-test" ]; then
+    script/fail-fast-test "$@"
+  elif [ -e bin/rspec && -d spec ]; then
+    bin/rspec --fail-fast "$@"
+  else
+    echo "Sorry, I don't know how to run a console here. :("
+  fi
+}
+
+PERL_MB_OPT="--install_base \"/Users/spraints/perl5\""; export PERL_MB_OPT;
+PERL_MM_OPT="INSTALL_BASE=/Users/spraints/perl5"; export PERL_MM_OPT;
