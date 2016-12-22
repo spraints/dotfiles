@@ -6,63 +6,63 @@
 #    brew bundle
 
 # Install cask, so I can install GUI apps, too.
-install caskroom/cask/brew-cask
+tap "caskroom/cask"
 
 # useful stuff for my programming hobby
-install ack
-install graphviz
-install imagemagick
-install jq
-install moreutils # particularly for the `ts` command
-install pstree
-install rbenv
-install reattach-to-user-namespace
-install ruby-build
-install tcptrace
-install tmux
-install watch
-install wget
+brew "ack"
+brew "graphviz"
+brew "imagemagick"
+brew "jq"
+brew "moreutils" # particularly for the `ts` command
+brew "pstree"
+brew "rbenv"
+brew "reattach-to-user-namespace"
+brew "ruby-build"
+brew "tcptrace"
+brew "tmux"
+brew "watch"
+brew "wget"
 
 # GitHub apps
-cask install atom
-#cask install github-chat
-#cask install github-team
+cask "atom"
+#cask "github-chat"
+#cask "github-team"
 
 # other apps that I use
-install ledger
-install youtube-dl
+brew "ledger"
+brew "youtube-dl"
 
-cask install adium
-#cask install alfred
-cask install bonjour-browser
-cask install crashplan
-cask install dropbox
-cask install firefox
-cask install gnucash
-cask install google-chrome
-cask install handbrake
-cask install heroku-toolbelt
-cask install iterm2
-cask install dwihn0r-keepassx
-cask install linein
-cask install macvim
-cask install nvalt
-cask install p4merge
-cask install rdio
-cask install screenhero
-cask install skitch
-cask install skype
-cask install spotify
-cask install vagrant
-cask install virtualbox
-cask install viscosity
-#cask install xquartz
-cask install vlc
+#cask "adium"
+#cask "alfred"
+cask "bonjour-browser"
+cask "crashplan"
+cask "dropbox"
+cask "firefox"
+cask "gnucash"
+cask "google-chrome"
+cask "handbrake"
+cask "heroku-toolbelt"
+cask "iterm2"
+cask "dwihn0r-keepassx"
+cask "linein"
+cask "macvim"
+cask "nvalt"
+cask "p4merge"
+#cask "rdio"
+cask "screenhero"
+cask "skitch"
+#cask "skype"
+cask "spotify"
+cask "vagrant"
+cask "virtualbox"
+cask "viscosity"
+#cask "xquartz"
+cask "vlc"
 
 # fun mistyped commands
-install gti
-install sl
+brew "gti"
+brew "sl"
 
 # these should go in projects' Brewfiles
-#install mercurial
-#install subversion
+#brew "mercurial"
+#brew "subversion"
