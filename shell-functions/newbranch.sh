@@ -45,6 +45,9 @@ newbranch() {
         break
       fi
     done
+  fi
+  if [ -z "$base" ]
+  then
     base=$(git ls-remote origin HEAD | head -n 1 | cut -c1-40)
   fi
   git checkout --no-track -b "$branch_name" "$base"
