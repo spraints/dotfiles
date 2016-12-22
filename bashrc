@@ -9,7 +9,8 @@ function current-branch {
   git branch --no-color 2> /dev/null | sed -e '/^[^*]/d' -e 's/^* //'
 }
 function parse_git_branch {
-  printf " [%s]" "$(current-branch)"
+  local branch="$(current-branch)"
+  test -n "$branch" && printf " [%s]" "$(current-branch)"
 }
 function audible_ps1 {
   if [ $# -gt 0 ]; then
