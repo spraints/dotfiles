@@ -1,4 +1,8 @@
 ConnectTimeout 16
+<% if ssh.usekeychain %>
+UseKeychain yes
+<% end %>
+# AddKeysToAgent yes # <-- not sure about this
 
 Host 68k.org
   User spraints
