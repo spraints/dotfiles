@@ -31,3 +31,9 @@
 [submodule "atom/packages/csharp.tmbundle"]
 	path = atom/packages/csharp.tmbundle
 	url = https://github.com/wintermi/csharp-tmbundle
+[submodule "rbenv/plugins/ruby-build"]
+	path = rbenv/plugins/ruby-build
+	url = https://github.com/rbenv/ruby-build
+[submodule "rbenv/plugins/rbenv-default-gems"]
+	path = rbenv/plugins/rbenv-default-gems
+	url = https://github.com/rbenv/rbenv-default-gems
