@@ -1,5 +1,9 @@
 # bashrc is executed by bash for non-login shells.
 
+# When installing on a new system, if .bashrc already exists and you want
+# to keep it, `mv ~/.bashrc ~/.bashrc-defaults`.
+test -f ~/.bashrc-defaults && . ~/.bashrc-defaults
+
 . ~/.commonrc
 
 for fun in ~/.shell-functions/*; do
