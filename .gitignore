@@ -9,6 +9,7 @@ private.yml
 /gitconfig
 /netrc
 /ssh/config
+/tmux.conf
 
 # Other
 /atom/storage
@@ -18,3 +19,8 @@ private.yml
 
 /config
 !/config/git
+
+/gnupg/.gpg-agent-info
+
+/rbenv/shims
+/rbenv/versions
