@@ -38,7 +38,8 @@ class Dotfiles < Thor
     files.each do |file|
       dest_file, erb_file, erb_output = get_erb_filenames(file)
       next unless File.exists? erb_file
-      if options[:force] || !File.exists?(dest_file) || File.mtime(erb_file) > File.mtime(dest_file)
+      depends_on = ["Thorfile", "private.yml", file]
+      if options[:force] || !File.exists?(dest_file) || outdated?(dest_file, :depends_on => depends_on)
         say "erb #{erb_file} > #{dest_file}"
         begin
           dotfile_erb(erb_file, erb_output)
@@ -58,7 +59,7 @@ class Dotfiles < Thor
           say shell.set_color("erb: #{file}: #{e}", :red, true)
         end
       else
-        say shell.set_color("erb: #{erb_file} is older than #{dest_file}, so I assume it's up-to-date.", :yellow)
+        say shell.set_color("erb: #{dest_file} is newer than #{depends_on.join(" and ")}, so I assume it's up-to-date.", :yellow)
       end
     end
   end
@@ -168,7 +169,7 @@ class Dotfiles < Thor
   end
 
   def erb_files
-    Dir["**/*.erb"]
+    `git ls-files | grep .erb$`.lines.map(&:chomp)
   end
 
   def get_erb_filenames(file)
@@ -185,6 +186,12 @@ class Dotfiles < Thor
     File.open(output, 'w') do |io|
       io << erb.result(ConfigHelper.new($config).instance_eval{binding})
     end
+  end
+
+  def outdated?(file, options)
+    depends_on = options.fetch(:depends_on)
+    mtime = File.mtime(file)
+    depends_on.any? { |dep| File.exist?(dep) && File.mtime(dep) > mtime }
   end
 
   class ConfigHelper
