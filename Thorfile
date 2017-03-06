@@ -180,7 +180,13 @@ class Dotfiles < Thor
   end
 
   def dotfile_erb(input, output)
-    $config ||= YAML.load_file('private.yml') rescue {}
+    $config ||=
+      begin
+        YAML.load_file("private.yml")
+      rescue => e
+        $stderr.puts "private.yml: #{e.class}: #{e}"
+        {}
+      end
     erb = ERB.new(File.read(input))
     erb.filename = input
     File.open(output, 'w') do |io|
