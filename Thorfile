@@ -199,6 +199,10 @@ class Dotfiles < Thor
       @config = config
     end
 
+    def os
+      @os ||= OS.new
+    end
+
     def method_missing(method, &block)
       case value = @config[method.to_s]
       when Hash
@@ -211,6 +215,16 @@ class Dotfiles < Thor
         end
       else
         value
+      end
+    end
+
+    class OS
+      def to_s
+        `uname -s`.strip
+      end
+
+      def mac?
+        `uname -s`.strip == "Darwin"
       end
     end
   end

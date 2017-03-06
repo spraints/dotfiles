@@ -9,6 +9,7 @@ private.yml
 /gitconfig
 /netrc
 /ssh/config
+/tmux.conf
 
 # Other
 /atom/storage
