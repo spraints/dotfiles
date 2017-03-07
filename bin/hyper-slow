@@ -3,6 +3,12 @@
 
 set -e
 
+if ! which md5 2>/dev/null; then
+  md5() {
+    md5sum - | awk '{print $1}'
+  }
+fi
+
 tmpdir=${HOME}/.hyper-slow/$(echo "$@" | md5)
 lockfile=${tmpdir}/lock
 cur_output=${tmpdir}/out.txt
@@ -16,7 +22,12 @@ main() {
 
 needs_refresh() {
   if [ -f "${cur_output}" ]; then
-    local age=$((`date +%s` - `stat -f %m ${cur_output}`))
+    local age
+    if [ `uname -s` = "Linux" ]; then
+      age=$((`date +%s` - `stat --format %Y ${cur_output}`))
+    else
+      age=$((`date +%s` - `stat -f %m ${cur_output}`))
+    fi
     if [ "${age}" -lt 60 ]; then
       return 1
     fi

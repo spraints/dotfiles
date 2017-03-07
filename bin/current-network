@@ -15,9 +15,12 @@ def main
 end
 
 def get_airport_info
-  ap = '/System/Library/PrivateFrameworks/Apple80211.framework/Versions/Current/Resources/airport'
+  command = []
+  command << "proxy-to-my-mac" if `uname -s`.strip == "Linux"
+  command << '/System/Library/PrivateFrameworks/Apple80211.framework/Versions/Current/Resources/airport'
+  command << "-I"
   info = {}
-  IO.popen([ap, "-I"], "r") do |airport|
+  IO.popen(command, "r") do |airport|
     until airport.eof?
       if airport.readline =~ /^\s*([^:]+): (.*)/
         info[$1] = $2
