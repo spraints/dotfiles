@@ -19,6 +19,7 @@ private.yml
 
 /config
 !/config/git
+!/config/google/client_secrets.json.erb
 
 /gnupg/.gpg-agent-info
 
