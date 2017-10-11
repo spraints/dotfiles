@@ -103,7 +103,7 @@ USAGE
 }
 
 # Internal. Exports env vars so that go is configured correctly.
-_go_version_env() {
+_g_go_version_env() {
   local go_version="$1"
   local go_path="$2"
   if [ -n "$go_version" ]; then
@@ -119,7 +119,7 @@ _go_version_env() {
 }
 
 # Internal.
-_protoc_version_env() {
+_g_protoc_version_env() {
   local protoc_version="$1"
   if [ -n "$protoc_version" ]; then
     if protoc version 2>/dev/null | grep -q "protoc $protoc_version" >/dev/null; then
@@ -275,8 +275,8 @@ _g_enter() {
   if [ "$cd_to_project" = "true" ]; then
     cd "$projectroot/workdir" || return 1
   fi
-  _go_version_env "$go_version" "$projectroot/gopath"
-  _protoc_version_env "$protoc_version"
+  _g_go_version_env "$go_version" "$projectroot/gopath"
+  _g_protoc_version_env "$protoc_version"
   go version || return 1
   test -z "$protoc_version" || protoc --version || return 1
   echo GOPATH="$GOPATH"
