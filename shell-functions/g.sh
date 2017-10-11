@@ -282,3 +282,7 @@ _g_enter() {
   echo GOPATH="$GOPATH"
   echo pwd="$(pwd)"
 }
+
+_g_reload() {
+  . "$BASH_SOURCE"
+}
