@@ -44,11 +44,15 @@ where PROJECT is github.com/OWNER/REPO,
 USAGE
 )"
   local go_version
+  local protoc_version
   local url
   while [ $# -gt 0 ]; do
     case "$1" in
       --go)
         go_version="$2"
+        shift; shift ;;
+      --protoc)
+        protoc_version="$2"
         shift; shift ;;
       *)
         url="$(_g_normalize_url "$1")"
@@ -68,6 +72,9 @@ USAGE
   if [ -n "$go_version" ]; then
     _g_install_go "$go_version" || return 1
   fi
+  if [ -n "$protoc_version" ]; then
+    _g_install_protoc "$protoc_version" || return 1
+  fi
   local local_name="$(basename "$url")"
   test -z "${HOME}" && local HOME=.
   local projectroot="${HOME}/go-dev/${local_name}"
@@ -84,12 +91,15 @@ USAGE
   echo "Writing config..."
   (
     echo "go_version=$go_version"
+    if [ -n "$protoc_version" ]; then
+      echo "protoc_version=$protoc_version"
+    fi
   ) > "$config"
   echo "Linking the project's workdir..."
   rm -f "$worklink"
   ln -s "$workdir" "$worklink"
   echo "Setting environment and cd'ing to workdir"
-  _g_enter "$go_version" "$projectroot" true
+  _g_enter "$projectroot" true "$go_version" "$protoc_version"
 }
 
 # Internal. Exports env vars so that go is configured correctly.
@@ -97,7 +107,7 @@ _go_version_env() {
   local go_version="$1"
   local go_path="$2"
   if [ -n "$go_version" ]; then
-    if go version | grep -q "go$go_version" >/dev/null; then
+    if go version 2>/dev/null | grep -q "go$go_version" >/dev/null; then
       : # ok!
     else
       export GOROOT="$HOME/.goversions/${go_version}/go"
@@ -105,6 +115,19 @@ _go_version_env() {
     fi
   fi
   export GOPATH="$go_path"
+  export PATH="$GOPATH/bin:$PATH"
+}
+
+# Internal.
+_protoc_version_env() {
+  local protoc_version="$1"
+  if [ -n "$protoc_version" ]; then
+    if protoc version 2>/dev/null | grep -q "protoc $protoc_version" >/dev/null; then
+      : # ok!
+    else
+      export PATH="$HOME/.goversions/protoc-${protoc_version}/bin:$PATH"
+    fi
+  fi
 }
 
 # Internal.
@@ -122,7 +145,7 @@ _g_normalize_url() {
 # Internal.
 _g_install_go() {
   local go_version="$1"
-  if go version | grep -q "go$1" 2>/dev/null; then
+  if go version 2>/dev/null | grep -q "go$go_version" 2>/dev/null; then
     return 0
   fi
   local os
@@ -153,6 +176,11 @@ _g_install_go() {
   local pkg="go${go_version}.${os}.tar.gz"
   local url="https://storage.googleapis.com/golang/${pkg}"
   local archive="$HOME/.goversions/${pkg}"
+  local install_dir="$HOME/.goversions/${go_version}"
+  local installed_go="$install_dir/go/bin/go"
+  if [ -f "$installed_go" ] && $installed_go version | grep "go$go_version" 2>/dev/null; then
+    return 0
+  fi
   mkdir -p ~/.goversions || return 1
   if ! _g_check_sha256_sum "$archive" "$pkg_sha"; then
     echo Downloading "$url" ...
@@ -163,10 +191,44 @@ _g_install_go() {
       return 1
     fi
   fi
-  local install_dir="$HOME/.goversions/${go_version}"
   mkdir -p "$install_dir"
   tar xfz "$archive" -C "$install_dir" || return 1
   echo Installed "$($install_dir/go/bin/go version)"
+}
+
+_g_install_protoc() {
+  local protoc_version="$1"
+  local version_string="protoc ${protoc_version}"
+  if protoc version 2>/dev/null | grep -q "$version_string"; then
+    return 0
+  fi
+  local os
+  if [ "$(uname -s)" = "Darwin" ]; then
+    os=osx
+  else
+    os=linux
+  fi
+  local pkg="protoc-${protoc_version}-${os}-x86_64.zip"
+  local url="https://github.com/google/protobuf/releases/download/v${protoc_version}/${pkg}"
+  local archive="$HOME/.goversions/${pkg}"
+  local tmparchive="${archive}.tmp"
+  local install_dir="$HOME/.goversions/protoc-${protoc_version}"
+  local installed_protoc="${install_dir}/bin/protoc"
+  if [ -f "$installed_protoc" ] && $installed_protoc --version | grep -q "$version_string"; then
+    return 0
+  fi
+  if [ ! -f "$archive" ]; then
+    echo Downloading "$url" ...
+    mkdir -p ~/.goversions || return 1
+    rm -f "$tmparchive"
+    curl -L -o "$tmparchive" "$url"
+    if ! unzip -l "$tmparchive" >/dev/null; then
+      return 1
+    fi
+    mv "$tmparchive" "$archive"
+  fi
+  unzip -d "$install_dir" -q "$archive"
+  echo Installed protoc version "$protoc_version"
 }
 
 # Internal
@@ -194,24 +256,29 @@ _g_start() {
   fi
   local config="$projectroot/config"
   local go_version
+  local protoc_version
   if [ ! -f "$config" ]; then
     echo "$1 doesn't look like a project that I can set up ($projectroot)"
     return 1
   else
     eval "$(grep ^go_version= "$config")"
+    eval "$(grep ^protoc_version= "$config")"
   fi
-  _g_enter "$go_version" "$projectroot" "$cd_to_project"
+  _g_enter "$projectroot" "$cd_to_project" "$go_version" "$protoc_version"
 }
 
 _g_enter() {
-  local go_version="$1"
-  local projectroot="$(cd "$2"; pwd -P)"
-  local cd_to_project="$3"
+  local projectroot="$(cd "$1"; pwd -P)"
+  local cd_to_project="$2"
+  local go_version="$3"
+  local protoc_version="$4"
   if [ "$cd_to_project" = "true" ]; then
     cd "$projectroot/workdir" || return 1
   fi
   _go_version_env "$go_version" "$projectroot/gopath"
+  _protoc_version_env "$protoc_version"
   go version || return 1
+  test -z "$protoc_version" || protoc --version || return 1
   echo GOPATH="$GOPATH"
   echo pwd="$(pwd)"
 }
