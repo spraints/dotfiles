@@ -12,6 +12,8 @@ Examples:
     - set up PATH for go
  (in project dir) $ g start
     - set up PATH for go
+ (anywhere) $ g install GO_VERSION
+    - make GO_VERSION available
 USAGE
 )"
   for arg; do
@@ -28,6 +30,9 @@ USAGE
     start)
       shift
       _g_start "$@" ;;
+    install)
+      shift
+      _g_install_go "$@" ;;
     *)
       echo unknown command "$1"
       echo "$usage"
@@ -153,6 +158,8 @@ _g_install_go() {
   if [ "$(uname -s)" = "Darwin" ]; then
     os=darwin-amd64
     case "${go_version}" in
+      1.9.2)
+        pkg_sha=73fd5840d55f5566d8db6c0ffdd187577e8ebe650c783f68bd27cbf95bde6743 ;;
       1.9.1)
         pkg_sha=59bc6deee2969dddc4490b684b15f63058177f5c7e27134c060288b7d76faab0 ;;
       1.8.1)
@@ -164,6 +171,8 @@ _g_install_go() {
   else
     os=linux-amd64
     case "${go_version}" in
+      1.9.2)
+        pkg_sha=de874549d9a8d8d8062be05808509c09a88a248e77ec14eb77453530829ac02b ;;
       1.9.1)
         pkg_sha=07d81c6b6b4c2dcf1b5ef7c27aaebd3691cdb40548500941f92b221147c5d9c7 ;;
       1.8.1)
