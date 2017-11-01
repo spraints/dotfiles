@@ -12,8 +12,8 @@ Examples:
     - set up PATH for go
  (in project dir) $ g start
     - set up PATH for go
- (anywhere) $ g install GO_VERSION
-    - make GO_VERSION available
+ (anywhere) $ g install PROG VERSION
+    - make PROG (go, protoc, dep) available
 USAGE
 )"
   for arg; do
@@ -32,7 +32,7 @@ USAGE
       _g_start "$@" ;;
     install)
       shift
-      _g_install_go "$@" ;;
+      _g_install "$@" ;;
     *)
       echo unknown command "$1"
       echo "$usage"
@@ -59,6 +59,9 @@ USAGE
       --protoc)
         protoc_version="$2"
         shift; shift ;;
+      --dep)
+        dep_version="$2"
+        shift; shift ;;
       *)
         url="$(_g_normalize_url "$1")"
         shift;;
@@ -80,6 +83,9 @@ USAGE
   if [ -n "$protoc_version" ]; then
     _g_install_protoc "$protoc_version" || return 1
   fi
+  if [ -n "$dep_version" ]; then
+    _g_install_dep "$dep_version" || return 1
+  fi
   local local_name="$(basename "$url")"
   test -z "${HOME}" && local HOME=.
   local projectroot="${HOME}/go-dev/${local_name}"
@@ -96,6 +102,9 @@ USAGE
   echo "Writing config..."
   (
     echo "go_version=$go_version"
+    if [ -n "$dep_version" ]; then
+      echo "dep_version=$dep_version"
+    fi
     if [ -n "$protoc_version" ]; then
       echo "protoc_version=$protoc_version"
     fi
@@ -104,7 +113,7 @@ USAGE
   rm -f "$worklink"
   ln -s "$workdir" "$worklink"
   echo "Setting environment and cd'ing to workdir"
-  _g_enter "$projectroot" true "$go_version" "$protoc_version"
+  _g_enter "$projectroot" true "$go_version" "$protoc_version" "$dep_version"
 }
 
 # Internal. Exports env vars so that go is configured correctly.
@@ -136,8 +145,22 @@ _g_protoc_version_env() {
 }
 
 # Internal.
+_g_dep_version_env() {
+  local dep_version="$1"
+  if [ -n "$dep_version" ]; then
+    if dep version 2>/dev/null | grep -q "v$dep_version" >/dev/null; then
+      : # ok!
+    else
+      export PATH="$HOME/.depversions/${dep_version}:$PATH"
+    fi
+  fi
+}
+
+# Internal.
 _g_normalize_url() {
   case "$1" in
+    gist.github.com/*)
+      echo "$1" ;;
     */*/*)
       echo "$1" ;;
     */*)
@@ -184,25 +207,84 @@ _g_install_go() {
   fi
   local pkg="go${go_version}.${os}.tar.gz"
   local url="https://storage.googleapis.com/golang/${pkg}"
-  local archive="$HOME/.goversions/${pkg}"
-  local install_dir="$HOME/.goversions/${go_version}"
+  local parent="$HOME/.goversions"
+  local archive="$parent/${pkg}"
+  local install_dir="$parent/${go_version}"
   local installed_go="$install_dir/go/bin/go"
   if [ -f "$installed_go" ] && $installed_go version | grep "go$go_version" 2>/dev/null; then
     return 0
   fi
-  mkdir -p ~/.goversions || return 1
+
+  mkdir -p "$parent" || return 1
+  _g_get_archive_with_sha256sum "$url" "$archive" "$pkg_sha" || return 1
+
+  mkdir -p "$install_dir" || return 1
+  tar xfz "$archive" -C "$install_dir" || return 1
+  echo Installed "$($install_dir/go/bin/go version)"
+}
+
+_g_install_dep() {
+  local dep_version="$1"
+  if dep version 2>/dev/null | grep -q "v$dep_version" 2>/dev/null; then
+    return 0
+  fi
+  local url
+  local pkg_sha
+  if [ "$(uname -s)" = "Darwin" ]; then
+    case "${dep_version}" in
+      0.3.2)
+        url=https://github.com/golang/dep/releases/download/v0.3.2/dep-darwin-amd64
+        pkg_sha=39410a604a6cdb16206dec4cf3eb6e30cd653321c68c7325a939321ad0cdc91a
+        ;;
+      *)
+        echo Unsupported dep version "$dep_version"
+        return 1 ;;
+    esac
+  else
+    case "${dep_version}" in
+      0.3.2)
+        url=https://github.com/golang/dep/releases/download/v0.3.2/dep-linux-amd64
+        pkg_sha=322152b8b50b26e5e3a7f6ebaeb75d9c11a747e64bbfd0d8bb1f4d89a031c2b5
+        ;;
+      *)
+        echo Unsupported dep version "$dep_version"
+        return 1 ;;
+    esac
+  fi
+  local base="$HOME/.depversions"
+  local archive="$base/dep-${dep_version}.tmp"
+  local install_dir="$base/${dep_version}"
+  local installed_dep="$base/${dep_version}/dep"
+  if [ -x "$installed_dep" ]; then
+    return 0
+  fi
+  mkdir -p "$base" || return 1
+  _g_get_archive_with_sha256sum "$url" "$archive" "$pkg_sha" || return 1
+  mkdir -p "$install_dir"
+  mv "$archive" "$installed_dep" || return 1
+  chmod +x "$installed_dep"
+  echo Installed dep
+  "$installed_dep" version
+  return 0
+}
+
+_g_get_archive_with_sha256sum() {
+  local url="$1"
+  local archive="$2"
+  local pkg_sha="$3"
+
   if ! _g_check_sha256_sum "$archive" "$pkg_sha"; then
     echo Downloading "$url" ...
     rm -f "$archive"
-    curl -o "$archive" "$url"
+    curl -L -o "$archive" "$url"
     if ! _g_check_sha256_sum "$archive" "$pkg_sha"; then
-      echo Downloaded archive has unexected sha256 checksum
+      echo 'Unexpected checksum!'
+      echo archive="$archive"
+      echo expected="$pkg_sha"
+      echo actual="$(_g_sha256sum "$archive")"
       return 1
     fi
   fi
-  mkdir -p "$install_dir"
-  tar xfz "$archive" -C "$install_dir" || return 1
-  echo Installed "$($install_dir/go/bin/go version)"
 }
 
 _g_install_protoc() {
@@ -244,8 +326,12 @@ _g_install_protoc() {
 _g_check_sha256_sum() {
   local file="$1"
   local expected="$2"
-  local actual="$(shasum -a 256 "$file" | awk '{print $1}')"
+  local actual="$(_g_sha256sum "$file")"
   test "$expected" = "$actual"
+}
+
+_g_sha256sum() {
+  shasum -a 256 "$1" | awk '{print $1}'
 }
 
 # Internal
@@ -272,8 +358,9 @@ _g_start() {
   else
     eval "$(grep ^go_version= "$config")"
     eval "$(grep ^protoc_version= "$config")"
+    eval "$(grep ^dep_version= "$config")"
   fi
-  _g_enter "$projectroot" "$cd_to_project" "$go_version" "$protoc_version"
+  _g_enter "$projectroot" "$cd_to_project" "$go_version" "$protoc_version" "$dep_version"
 }
 
 _g_enter() {
@@ -281,17 +368,39 @@ _g_enter() {
   local cd_to_project="$2"
   local go_version="$3"
   local protoc_version="$4"
+  local dep_version="$5"
   if [ "$cd_to_project" = "true" ]; then
     cd "$projectroot/workdir" || return 1
   fi
   _g_go_version_env "$go_version" "$projectroot/gopath"
   _g_protoc_version_env "$protoc_version"
+  _g_dep_version_env "$dep_version"
   go version || return 1
   test -z "$protoc_version" || protoc --version || return 1
+  test -z "$dep_version" || dep version | grep "^ version" | sed -e "s/^/dep/"
   echo GOPATH="$GOPATH"
   echo pwd="$(pwd)"
 }
 
 _g_reload() {
   . "$BASH_SOURCE"
+}
+
+_g_install() {
+  local prog="$1"
+  local version="$2"
+  case "$prog" in
+    go)
+      _g_install_go "$version" ;;
+    protoc)
+      _g_install_protoc "$version" ;;
+    dep)
+      _g_install_dep "$version" ;;
+    -*|"")
+      echo Usage: g install PROG VERSION
+      return 1 ;;
+    *)
+      echo "$prog": unknown program, can not install
+      return 1 ;;
+  esac
 }
