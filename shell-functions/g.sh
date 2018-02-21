@@ -236,6 +236,10 @@ _g_install_dep() {
         url=https://github.com/golang/dep/releases/download/v0.3.2/dep-darwin-amd64
         pkg_sha=39410a604a6cdb16206dec4cf3eb6e30cd653321c68c7325a939321ad0cdc91a
         ;;
+      0.4.1)
+        url=https://github.com/golang/dep/releases/download/v0.4.1/dep-darwin-amd64
+        pkg_sha=f170008e2bf8b196779c361a4eaece1b03450d23bbf32d1a0beaa9b00b6a5ab4
+        ;;
       *)
         echo Unsupported dep version "$dep_version"
         return 1 ;;
@@ -245,6 +249,10 @@ _g_install_dep() {
       0.3.2)
         url=https://github.com/golang/dep/releases/download/v0.3.2/dep-linux-amd64
         pkg_sha=322152b8b50b26e5e3a7f6ebaeb75d9c11a747e64bbfd0d8bb1f4d89a031c2b5
+        ;;
+      0.4.1)
+        url=https://github.com/golang/dep/releases/download/v0.4.1/dep-linux-amd64
+        pkg_sha=31144e465e52ffbc0035248a10ddea61a09bf28b00784fd3fdd9882c8cbb2315
         ;;
       *)
         echo Unsupported dep version "$dep_version"
