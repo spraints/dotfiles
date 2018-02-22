@@ -180,7 +180,10 @@ _g_install_go() {
   local pkg_sha
   if [ "$(uname -s)" = "Darwin" ]; then
     os=darwin-amd64
+    # sha256 sum for go$version.darwin-amd64.tar.gz
     case "${go_version}" in
+      1.10)
+        pkg_sha=511a4799e8d64cda3352bb7fe72e359689ea6ef0455329cda6b6e1f3137326c1 ;;
       1.9.2)
         pkg_sha=73fd5840d55f5566d8db6c0ffdd187577e8ebe650c783f68bd27cbf95bde6743 ;;
       1.9.1)
@@ -193,7 +196,10 @@ _g_install_go() {
     esac
   else
     os=linux-amd64
+    # sha256sum for go$version.linux-amd64.tar.gz
     case "${go_version}" in
+      1.10)
+        pkg_sha=b5a64335f1490277b585832d1f6c7f8c6c11206cba5cd3f771dcb87b98ad1a33 ;;
       1.9.2)
         pkg_sha=de874549d9a8d8d8062be05808509c09a88a248e77ec14eb77453530829ac02b ;;
       1.9.1)
