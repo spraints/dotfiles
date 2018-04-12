@@ -1,5 +1,16 @@
 #!/bin/bash
 
+case "$(uname -s)" in
+  Linux)
+    _pstree() {
+      pstree -p "$@"
+    };;
+  *)
+    _pstree() {
+      pstree "$@"
+    };;
+esac
+
 tmux list-windows -F '#{window_index} #{window_name}' | \
   while read window_index window_name
   do
@@ -9,6 +20,6 @@ tmux list-windows -F '#{window_index} #{window_name}' | \
       while read pane_pid pane_tty
       do
         echo ++ $pane_tty
-        pstree $pane_pid | sed -e 's/^/  /'
+        _pstree $pane_pid | sed -e 's/^/  /'
       done
   done

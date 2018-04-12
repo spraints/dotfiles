@@ -48,8 +48,9 @@ where PROJECT is github.com/OWNER/REPO,
   OWNER/REPO, or REPO.
 USAGE
 )"
-  local go_version
-  local protoc_version
+  local go_version=1.10
+  local protoc_version=3.3.0
+  local dep_version=0.4.1
   local url
   while [ $# -gt 0 ]; do
     case "$1" in

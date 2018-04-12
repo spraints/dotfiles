@@ -8,8 +8,10 @@ se nu
 se nowrap
 se expandtab
 filetype plugin indent on
+"au is short for autocmd
 au BufNewFile,BufRead [tT]horfile,*.thor	setf ruby
 au BufNewFile,BufRead *.rabl                    setf ruby
 au BufNewFile,BufRead *.hb                      setf mustache
+au BufWritePre        *.go                      Fmt
 
 se modeline modelines=2

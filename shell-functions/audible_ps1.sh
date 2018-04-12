@@ -3,12 +3,12 @@ function audible_ps1 {
     local words=
     while [ $# -gt 0 ]; do
       case "$1" in
-        --help|-h)
-          echo "Usage: audible_ps1 --off"
-          echo "Usage: audible_ps1 WORDS"
-          return ;;
         --off)
           unset AUDIBLE_PS1
+          return ;;
+        -*)
+          echo "Usage: audible_ps1 --off"
+          echo "Usage: audible_ps1 WORDS"
           return ;;
         *)
           words="${words} $1"
