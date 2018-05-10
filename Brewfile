@@ -67,3 +67,7 @@ brew "sl"
 # these should go in projects' Brewfiles
 #brew "mercurial"
 #brew "subversion"
+
+#wip - trying to get gpg commit signing set up again :(
+#brew "gnupg"
+#brew "pinentry-mac"
