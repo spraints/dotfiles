@@ -66,6 +66,9 @@ alias zc="bin/zeus console"
 alias zr="bin/zeus runner"
 alias zrake="bin/zeus rake"
 
+# important thing
+alias dominion="open https://dominion.games"
+
 function md {
   if [ -n "$1" ]
   then
