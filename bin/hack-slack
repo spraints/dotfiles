@@ -1,0 +1,44 @@
+#!/bin/bash
+
+main() {
+  case "$(uname -s)" in
+    Darwin)
+      append_js /Applications/Slack.app/Contents/Resources/app.asar.unpacked/src/static/ssb-interop.js
+      exit $?
+      ;;
+    *)
+      echo This OS is not supported.
+      exit 1
+      ;;
+  esac
+}
+
+append_js() {
+  local slack_js="$1"
+  if [ ! -f "$slack_js" ]; then
+    echo "error: $slack_js does not exist"
+    return 1
+  fi
+  if [ ! -w "$slack_js" ]; then
+    echo "error: $slack_js is not writable. Try running: sudo $0 $*"
+    return 1
+  fi
+  if cat "$slack_js" | grep -q openark/custom-slack-css; then
+    echo "$slack_js: up to date"
+    return 0
+  fi
+  echo "$slack_js: adding custom JS"
+  # Snippet is from https://github.com/openark/custom-slack-css
+  cat <<JS >>"$slack_js"
+document.addEventListener('DOMContentLoaded', function() {
+ \$.ajax({
+   url: 'https://raw.githubusercontent.com/openark/custom-slack-css/master/custom.css',
+   success: function(css) {
+     \$("<style></style>").appendTo('head').html(css);
+   }
+ });
+});
+JS
+}
+
+main
