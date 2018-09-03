@@ -3,7 +3,7 @@
  {
    "default":
    {
-     "httpProxy": "http://127.0.0.1:3128"
+     "httpProxy": "http://spraints-squid:3128"
    }
  }
 }
