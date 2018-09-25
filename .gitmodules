@@ -40,3 +40,6 @@
 [submodule "vim/bundle/vim-move"]
 	path = vim/bundle/vim-move
 	url = https://github.com/matze/vim-move
+[submodule "vim/bundle/typescript-vim"]
+	path = vim/bundle/typescript-vim
+	url = https://github.com/leafgarland/typescript-vim
