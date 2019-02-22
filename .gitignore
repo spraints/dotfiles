@@ -1,27 +1,27 @@
 # SSH keys
-ssh/id_*
+/dotfiles/ssh/id_*
 
 # Secret data
 private.yml
 
 # Files that are generated from erbs
-/atom/config.cson
-/gitconfig
-/netrc
-/ssh/config
-/tmux.conf
+/dotfiles/atom/config.cson
+/dotfiles/gitconfig
+/dotfiles/netrc
+/dotfiles/ssh/config
+/dotfiles/tmux.conf
 
 # Other
-/atom/storage
-/atom/.apm
-/atom/.node-gyp
-/atom/compile-cache
+/dotfiles/atom/storage
+/dotfiles/atom/.apm
+/dotfiles/atom/.node-gyp
+/dotfiles/atom/compile-cache
 
-/config
-!/config/git
-!/config/google/client_secrets.json.erb
+/dotfiles/config
+!/dotfiles/config/git
+!/dotfiles/config/google/client_secrets.json.erb
 
-/gnupg/.gpg-agent-info
+/dotfiles/gnupg/.gpg-agent-info
 
-/rbenv/shims
-/rbenv/versions
+/dotfiles/rbenv/shims
+/dotfiles/rbenv/versions
