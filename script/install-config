@@ -1,0 +1,19 @@
+#!/bin/bash
+
+set -e
+set -o nounset
+
+if [ $# -eq 0 ]; then
+  echo "Usage: $0 [--all | config/DIR...]"
+  exit 1
+fi
+
+if [ "$1" = "--all" ]; then
+  set -- config/*
+fi
+
+for config; do
+  echo ---------------
+  echo $config
+  $config/install || true
+done
