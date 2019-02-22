@@ -3,7 +3,12 @@ then
   source /opt/github/env.sh
 fi
 
-export PATH=/usr/local/bin:$PATH:/usr/local/sbin:${HOME}/.cabal/bin:${HOME}/dev/private/localbin:${HOME}/.local/bin
+export PATH=/usr/local/bin:$PATH
+export PATH=$PATH:/usr/local/sbin
+export PATH=$PATH:${HOME}/.cabal/bin
+export PATH=$PATH:${HOME}/dev/private/localbin
+export PATH=$PATH:${HOME}/.local/bin
+export PATH=$PATH:${HOME}/go/bin
 
 which rbenv >/dev/null 2>/dev/null &&
   eval "$(rbenv init -)"
