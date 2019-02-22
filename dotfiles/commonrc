@@ -8,6 +8,7 @@ export PATH=$PATH:/usr/local/sbin
 export PATH=$PATH:${HOME}/.cabal/bin
 export PATH=$PATH:${HOME}/dev/private/localbin
 export PATH=$PATH:${HOME}/.local/bin
+export PATH=$PATH:/usr/local/go/bin
 export PATH=$PATH:${HOME}/go/bin
 
 which rbenv >/dev/null 2>/dev/null &&
