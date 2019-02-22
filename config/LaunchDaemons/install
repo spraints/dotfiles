@@ -1,0 +1,18 @@
+#!/bin/bash
+
+set -e
+set -o nounset
+
+if [ "$(uname -s)" != "Darwin" ]; then
+  echo macOS only, skipping on $(uname -s)
+  exit
+fi
+
+for f in *.plist; do
+  (
+    set -o nounuset
+    set -ex
+    sudo cp $f /Library/LaunchDaemons/
+    sudo launchctl load /Library/LaunchDaemons/$f
+  )
+done
