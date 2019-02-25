@@ -15,3 +15,5 @@ au BufNewFile,BufRead *.hb                      setf mustache
 au BufWritePre        *.go                      Fmt
 
 se modeline modelines=2
+
+let g:ackprg="ag --nocolor --nogroup --column"
