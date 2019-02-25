@@ -183,6 +183,8 @@ _g_install_go() {
     os=darwin-amd64
     # sha256 sum for go$version.darwin-amd64.tar.gz
     case "${go_version}" in
+      1.11)
+        pkg_sha=0676e0e2be8568dd48bf00d5ab17481e46efa0235f22713de360a3f09dbace61 ;;
       1.10)
         pkg_sha=511a4799e8d64cda3352bb7fe72e359689ea6ef0455329cda6b6e1f3137326c1 ;;
       1.9.2)
@@ -199,6 +201,8 @@ _g_install_go() {
     os=linux-amd64
     # sha256sum for go$version.linux-amd64.tar.gz
     case "${go_version}" in
+      1.11)
+        pkg_sha=b3fcf280ff86558e0559e185b601c9eade0fd24c900b4c63cd14d1d38613e499 ;;
       1.10)
         pkg_sha=b5a64335f1490277b585832d1f6c7f8c6c11206cba5cd3f771dcb87b98ad1a33 ;;
       1.9.2)
