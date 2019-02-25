@@ -25,3 +25,5 @@ private.yml
 
 /dotfiles/rbenv/shims
 /dotfiles/rbenv/versions
+
+/dotfiles/vim/.netrwhist
