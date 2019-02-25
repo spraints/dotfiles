@@ -41,10 +41,13 @@ _devsvc_gh_es_stop() {
 }
 
 _devsvc_launch_mysql_start() {
-  : # no-op, launch will start this as needed.
+  : # launch will start others as needed.
 }
 
 _devsvc_launch_mysql_stop() {
+  echo Stopping launch test mysql
+  docker stop launch-test-mysql57
+
   echo Stopping docker-compose services for github/launch...
   cd ~/go-dev/launch/gopath/src/github.com/github/launch
   script/docker-compose stop
