@@ -1,42 +1,39 @@
-[submodule "vim/mustache"]
-	path = vim/mustache
-	url = git://github.com/juvenn/mustache.vim.git
-[submodule "vim/bundle/vim-coffee-script"]
+[submodule "dotfiles/vim/bundle/vim-coffee-script"]
 	path = dotfiles/vim/bundle/vim-coffee-script
 	url = git://github.com/kchmck/vim-coffee-script.git
-[submodule "vim/bundle/vim-rails"]
+[submodule "dotfiles/vim/bundle/vim-rails"]
 	path = dotfiles/vim/bundle/vim-rails
 	url = git://github.com/tpope/vim-rails.git
-[submodule "vim/bundle/ack"]
+[submodule "dotfiles/vim/bundle/ack"]
 	path = dotfiles/vim/bundle/ack
 	url = git://github.com/mileszs/ack.vim.git
-[submodule "vim/bundle/vimtodo"]
+[submodule "dotfiles/vim/bundle/vimtodo"]
 	path = dotfiles/vim/bundle/vimtodo
 	url = git://github.com/mivok/vimtodo.git
-[submodule "vim/bundle/matchit"]
+[submodule "dotfiles/vim/bundle/matchit"]
 	path = dotfiles/vim/bundle/matchit
 	url = git://github.com/vim-scripts/matchit.zip.git
-[submodule "vim/bundle/vim-puppet"]
+[submodule "dotfiles/vim/bundle/vim-puppet"]
 	path = dotfiles/vim/bundle/vim-puppet
 	url = git://github.com/rodjek/vim-puppet.git
-[submodule "vim/bundle/vim-golang"]
+[submodule "dotfiles/vim/bundle/vim-golang"]
 	path = dotfiles/vim/bundle/vim-golang
 	url = https://github.com/jnwhiteh/vim-golang.git
-[submodule "atom/packages/csharp.tmbundle"]
+[submodule "dotfiles/atom/packages/csharp.tmbundle"]
 	path = dotfiles/atom/packages/csharp.tmbundle
 	url = https://github.com/wintermi/csharp-tmbundle
-[submodule "rbenv/plugins/ruby-build"]
+[submodule "dotfiles/rbenv/plugins/ruby-build"]
 	path = dotfiles/rbenv/plugins/ruby-build
 	url = https://github.com/rbenv/ruby-build
-[submodule "rbenv/plugins/rbenv-default-gems"]
+[submodule "dotfiles/rbenv/plugins/rbenv-default-gems"]
 	path = dotfiles/rbenv/plugins/rbenv-default-gems
 	url = https://github.com/rbenv/rbenv-default-gems
-[submodule "vim/bundle/elm-vim"]
+[submodule "dotfiles/vim/bundle/elm-vim"]
 	path = dotfiles/vim/bundle/elm-vim
 	url = https://github.com/ElmCast/elm-vim
-[submodule "vim/bundle/vim-move"]
+[submodule "dotfiles/vim/bundle/vim-move"]
 	path = dotfiles/vim/bundle/vim-move
 	url = https://github.com/matze/vim-move
-[submodule "vim/bundle/typescript-vim"]
+[submodule "dotfiles/vim/bundle/typescript-vim"]
 	path = dotfiles/vim/bundle/typescript-vim
 	url = https://github.com/leafgarland/typescript-vim
