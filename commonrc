@@ -3,7 +3,7 @@ then
   source /opt/github/env.sh
 fi
 
-export PATH=/usr/local/bin:$PATH:/usr/local/sbin:${HOME}/.cabal/bin:${HOME}/dev/private/localbin:${HOME}/.local/bin
+export PATH=${HOME}/.local/bin:/usr/local/bin:$PATH:/usr/local/sbin:${HOME}/.cabal/bin:${HOME}/dev/private/localbin:spraints/bin
 
 which rbenv >/dev/null 2>/dev/null &&
   eval "$(rbenv init -)"
@@ -67,7 +67,11 @@ alias zr="bin/zeus runner"
 alias zrake="bin/zeus rake"
 
 # important thing
-alias dominion="open https://dominion.games"
+if [ "$(uname -s)" = "Linux" ]; then
+  alias dominion="ssh laptop open https://dominion.games"
+else
+  alias dominion="open https://dominion.games"
+fi
 
 function md {
   if [ -n "$1" ]
