@@ -5,13 +5,6 @@
 	diff = auto
 	status = auto
 	branch = auto
-[merge]
-	tool = p4merge
-[mergetool "p4merge"]
-	cmd = p4merge "$BASE" "$LOCAL" "$REMOTE" "$MERGED"
-	trustExitCode = false
-	keepBackup = false
-	keepTemporaries = false
 [github]
 	user = spraints
 [alias]

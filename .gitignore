@@ -6,7 +6,6 @@ private.yml
 
 # Files that are generated from erbs
 /dotfiles/atom/config.cson
-/dotfiles/gitconfig
 /dotfiles/netrc
 /dotfiles/ssh/config
 /dotfiles/tmux.conf
