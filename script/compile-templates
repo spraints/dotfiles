@@ -1,0 +1,6 @@
+#!/bin/bash
+
+# See https://stackoverflow.com/questions/2914220/bash-templating-how-to-build-configuration-files-from-templates-with-bash ?
+
+echo TODO
+exit 1

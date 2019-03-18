@@ -1,6 +1,7 @@
 #!/bin/bash
 
 fix-ssh-agent() {
+(
   cmd=_fsa___link
   quick=false
   for arg; do
@@ -23,6 +24,7 @@ USAGE
   done
 
   $cmd
+)
 }
 
 _fsa___link() {

@@ -1,0 +1,40 @@
+#!/bin/bash
+
+set -e
+set -o nounset
+
+fullpath() {
+  printf "%s/%s" "$(cd $(dirname $1); pwd -P)" "$(basename $1)"
+}
+
+if [ $# -eq 0 ]; then
+  set -- dotfiles/*
+fi
+
+for dotfile; do
+  base=$(basename $dotfile)
+  dest=${HOME}/.${base}
+  src=$(fullpath $dotfile)
+
+  printf "%-20s " $base
+
+  if [ -L $dest ] && [ ! -e $dest ]; then
+    rm -f $dest
+  fi
+
+  if [ -L $dest ]; then
+    echo already linked to $(readlink $dest)
+    continue
+  fi
+
+  if [ -e $dest ]; then
+    if [ -e ${dest}.orig ]; then
+      echo already exists, can not move
+      continue
+    fi
+    mv ${dest} ${dest}.orig
+  fi
+
+  ln -s $src $dest
+  echo created symlink
+done
