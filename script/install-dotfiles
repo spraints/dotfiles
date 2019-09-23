@@ -8,7 +8,7 @@ fullpath() {
 }
 
 if [ $# -eq 0 ]; then
-  set -- dotfiles/*
+  set -- $(ls -d dotfiles/* | grep -v /ssh$)
 fi
 
 for dotfile; do
