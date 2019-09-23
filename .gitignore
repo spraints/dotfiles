@@ -8,7 +8,6 @@ private.yml
 /dotfiles/atom/config.cson
 /dotfiles/netrc
 /dotfiles/ssh/config
-/dotfiles/tmux.conf
 
 # Other
 /dotfiles/atom/storage
