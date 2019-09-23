@@ -18,6 +18,11 @@ for dotfile; do
 
   printf "%-20s " $base
 
+  if [ "dotfiles" != "$(dirname $dotfile)" ]; then
+    echo skipped, not a subdir of dotfiles/
+    continue
+  fi
+
   if [ -L $dest ] && [ ! -e $dest ]; then
     rm -f $dest
   fi
