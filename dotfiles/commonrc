@@ -24,6 +24,9 @@ which nodenv >/dev/null 2>/dev/null &&
 
 [[ -s "$HOME/dev/na/na.sh" ]] && source "$HOME/dev/na/na.sh"
 
+# Let me configure stuff on just one machine.
+[[ -s "$HOME/.localrc" ]] && source "$HOME/.localrc"
+
 export RUBY_BUILD_DEFINITIONS=${HOME}/dev/puppet-ruby/files/definitions
 
 export JAVA_MEM=-Xmx2g
