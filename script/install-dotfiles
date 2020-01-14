@@ -42,4 +42,19 @@ for dotfile; do
 
   ln -s $src $dest
   echo created symlink
+
+  case "$base" in
+    gnupg)
+      chmod 700 "$src"
+      echo "  fixed permissions"
+
+      for pinentry in /usr/local/bin/pinentry-mac /usr/bin/pinentry-curses; do
+        if [ -x "$pinentry" ]; then
+          echo "  configuring $pinentry"
+          sed -e "s@PINENTRY@$pinentry@" "$src/gpg-agent.conf.tmpl" > "$src/gpg-agent.conf"
+          break
+        fi
+      done
+      ;;
+  esac
 done
