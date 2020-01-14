@@ -1,6 +1,7 @@
 [user]
 	name = Matt Burke
 	email = spraints@gmail.com
+	signingkey = 02AC7D124E4960B7
 [color]
 	diff = auto
 	status = auto
@@ -21,3 +22,5 @@
 	helper = osxkeychain
 [url "git@github.com:"]
 	insteadOf = https://github.com/
+[commit]
+	gpgsign = true

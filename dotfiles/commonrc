@@ -111,18 +111,6 @@ code () {
     fi
 }
 
-## 2017-09-25 - not gonna shave this yak right now
-##    * I don't have the passphrase for my secret key :/
-##    * --write-env-file doesn't do anything, so i'm not sure if gpg-agent is working
-##    * my linux vm has a different gpg-agent version :/
-## # https://github.com/pstadler/keybase-gpg-github#optional-dont-ask-for-password-every-time
-## if which gpg-agent >&/dev/null; then
-##   if test -f ~/.gnupg/.gpg-agent-info -a -n "$(pgrep gpg-agent)"; then
-##     source ~/.gnupg/.gpg-agent-info
-##     export GPG_AGENT_INFO
-##   else
-##     eval $(gpg-agent --daemon --write-env-file ~/.gnupg/.gpg-agent-info)
-##   fi
-## fi
+export GPG_TTY=$(tty)
 
 # vim: ft=sh
