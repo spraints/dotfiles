@@ -2,23 +2,23 @@
 
 fix-ssh-agent() {
   cmd=_fsa___link
-  quick=false
+  _fsa_quick=false
   for arg; do
     case "$arg" in
       --clear|--clean)
         cmd=_fsa___rmlinks ;;
       --quick)
         if _fsa___quick_check_ssh_auth_sock; then
-          exit 0
+          return 0
         fi
-        quick=true ;;
+        _fsa_quick=true ;;
       *)
         cat <<USAGE
 Usage: fix-ssh-agent [--clean] [--quick]
   --clean        Remove ssh-agent symlinks
   --quick        Don't output anything, only check that key exists
 USAGE
-        exit 1 ;;
+        return 1 ;;
     esac
   done
 
@@ -26,26 +26,36 @@ USAGE
 }
 
 _fsa___link() {
-  ssh-add -l >&/dev/null && _fsa___ok your ssh agent looks ok
-  test -n "$SSH_AUTH_SOCK" || _fsa___die error: SSH_AUTH_SOCK is not set.
+  if ssh-add -l >&/dev/null; then
+    _fsa___msg your ssh agent looks ok
+    return 0
+  fi
+  if ! test -n "$SSH_AUTH_SOCK"; then
+    _fsa___err SSH_AUTH_SOCK is not set.
+    return 1
+  fi
   _fsa___peel_ssh_auth_sock
-  test -e "$SSH_AUTH_SOCK" && _fsa___die error: $SSH_AUTH_SOCK already exists, but it does not appear to be working correctly.
+  if test -e "$SSH_AUTH_SOCK"; then
+    _fsa___err $SSH_AUTH_SOCK already exists, but it does not appear to be working correctly.
+    return 1
+  fi
 
   sockets=$(_fsa___lssock | wc -l)
   case "$sockets" in
     0)
-      _fsa___die error: no sockets were found in '/tmp/ssh*' ;;
+      _fsa___err no sockets were found in '/tmp/ssh*'
+      return 1 ;;
     1)
       : ;;
     *)
-      _fsa___die error: need one, but found $sockets sockets in '/tmp/ssh*' ;;
+      _fsa___err need one, but found $sockets sockets in '/tmp/ssh*'
+      return 1 ;;
   esac
 
   socket=$(_fsa___lssock)
   sockdir=$(dirname $SSH_AUTH_SOCK)
-  set -x
-  mkdir -p $sockdir || exit 1
-  ln -s $socket $SSH_AUTH_SOCK || exit 1
+  mkdir -p $sockdir || return 1
+  ln -s $socket $SSH_AUTH_SOCK || return 1
   ssh-add -l
 }
 
@@ -66,14 +76,12 @@ _fsa___lssock() {
   find /tmp/ssh-* -type s -name 'agent.*' | head -n 1
 }
 
-_fsa___ok() {
-  $quick || echo "$@"
-  exit 0
+_fsa___msg() {
+  $_fsa_quick || echo "$@"
 }
 
-_fsa___die() {
-  $quick || echo "$@"
-  exit 1
+_fsa___err() {
+  _fsa___msg error: "$@"
 }
 
 _fsa___peel_ssh_auth_sock() {
