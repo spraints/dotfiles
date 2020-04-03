@@ -1,0 +1,19 @@
+#!/bin/bash
+
+set -e
+set -o nounset
+
+root="$(cd "$(dirname $0)"; pwd -P)"
+
+linkup() {
+  local f="$1"
+  local src="${root}/${f}"
+  local dst="${HOME}/.ssh/${f}"
+  if [ ! -e "$dst" ]; then
+    (set -x; ln -s "$src" "$dst")
+  else
+    echo $dst already exists
+  fi
+}
+
+linkup authorized_keys
