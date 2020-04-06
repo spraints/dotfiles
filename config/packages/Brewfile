@@ -1,12 +1,9 @@
 # Matt's set of basic packages.
 
-# To start, you need to do this:
-#    brew tap homebrew/boneyard
 # Then, you can cd here and do this:
 #    brew bundle
 
-# Install cask, so I can install GUI apps, too.
-tap "caskroom/cask"
+tap "heroku/brew"
 
 # useful stuff for my programming hobby
 brew "graphviz"
@@ -14,6 +11,7 @@ brew "heroku"
 brew "imagemagick"
 brew "jq"
 brew "moreutils" # particularly for the `ts` command
+brew "mtr"
 brew "pstree"
 brew "rbenv"
 brew "reattach-to-user-namespace"
@@ -27,8 +25,6 @@ brew "watch"
 brew "ledger"
 brew "youtube-dl"
 
-cask "bonjour-browser"
-cask "dropbox"
 cask "firefox"
 cask "gnucash"
 cask "google-chrome"

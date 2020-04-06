@@ -3,11 +3,13 @@
 set -e
 set -o nounset
 
+packages_root=$(dirname $0)
+
 if [ "$(uname -s)" != "Darwin" ]; then
   echo macOS only, skipping on $(uname -s)
   exit
 fi
 
 set -x
-brew tap homebrew/boneyard
+cd $packages_root
 brew bundle
