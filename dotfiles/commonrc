@@ -3,7 +3,14 @@ then
   source /opt/github/env.sh
 fi
 
-export PATH=${HOME}/.local/bin:/usr/local/bin:$PATH:/usr/local/sbin:${HOME}/.cabal/bin:${HOME}/dev/private/localbin:spraints/bin
+export PATH=$PATH:${HOME}/.local/bin
+export PATH=/usr/local/bin:$PATH
+export PATH=$PATH:/usr/local/sbin
+export PATH=$PATH:${HOME}/.cabal/bin
+export PATH=$PATH:${HOME}/dev/private/localbin
+export PATH=$PATH:/usr/local/go/bin
+export PATH=$PATH:${HOME}/go/bin
+export PATH=$PATH:spraints/bin
 
 which rbenv >/dev/null 2>/dev/null &&
   eval "$(rbenv init -)"
@@ -16,6 +23,9 @@ which nodenv >/dev/null 2>/dev/null &&
 [[ -s "$HOME/.nvm/nvm.sh" ]] && source "$HOME/.nvm/nvm.sh"
 
 [[ -s "$HOME/dev/na/na.sh" ]] && source "$HOME/dev/na/na.sh"
+
+# Let me configure stuff on just one machine.
+[[ -s "$HOME/.localrc" ]] && source "$HOME/.localrc"
 
 export RUBY_BUILD_DEFINITIONS=${HOME}/dev/puppet-ruby/files/definitions
 

@@ -1,0 +1,22 @@
+ConnectTimeout 16
+
+# From vagrant guest to the host.
+Host laptop
+  User spraints
+  HostName 10.0.2.2
+
+Host tiny
+  HostName tiny.pickardayune.com
+  User spraints
+
+Host gh
+  HostName bastion.githubapp.com
+  User spraints
+
+Host appadmin
+  HostName meow.pickardayune.com
+  User appadmin
+
+Host apps
+  HostName meow.pickardayune.com
+  User spraints

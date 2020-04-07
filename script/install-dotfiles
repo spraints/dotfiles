@@ -1,0 +1,63 @@
+#!/bin/bash
+
+set -e
+set -o nounset
+
+fullpath() {
+  printf "%s/%s" "$(cd $(dirname $1); pwd -P)" "$(basename $1)"
+}
+
+if [ $# -eq 0 ]; then
+  set -- $(ls -d dotfiles/* | grep -v /ssh$)
+fi
+
+printf "Updating submodules...\n"
+git submodule update --init --recursive
+
+for dotfile; do
+  base=$(basename $dotfile)
+  dest=${HOME}/.${base}
+  src=$(fullpath $dotfile)
+
+  printf "%-20s " $base
+
+  if [ "dotfiles" != "$(dirname $dotfile)" ]; then
+    echo skipped, not a subdir of dotfiles/
+    continue
+  fi
+
+  if [ -L $dest ] && [ ! -e $dest ]; then
+    rm -f $dest
+  fi
+
+  if [ -L $dest ]; then
+    echo already linked to $(readlink $dest)
+    continue
+  fi
+
+  if [ -e $dest ]; then
+    if [ -e ${dest}.orig ]; then
+      echo already exists, can not move
+      continue
+    fi
+    mv ${dest} ${dest}.orig
+  fi
+
+  ln -s $src $dest
+  echo created symlink
+
+  case "$base" in
+    gnupg)
+      chmod 700 "$src"
+      echo "  fixed permissions"
+
+      for pinentry in /usr/local/bin/pinentry-mac /usr/bin/pinentry-curses; do
+        if [ -x "$pinentry" ]; then
+          echo "  configuring $pinentry"
+          sed -e "s@PINENTRY@$pinentry@" "$src/gpg-agent.conf.tmpl" > "$src/gpg-agent.conf"
+          break
+        fi
+      done
+      ;;
+  esac
+done
