@@ -1,16 +1,29 @@
+AddKeysToAgent ask
 ConnectTimeout 16
+
+Include config.private
 
 # From vagrant guest to the host.
 Host laptop
   User spraints
   HostName 10.0.2.2
 
+# From host to vagrant guest.
+Host vagrant
+  User vagrant
+  HostName 127.0.0.1
+  Port 2221
+  AddKeysToAgent no
+  IdentityFile ~/dev/machines/.vagrant/machines/default/virtualbox/private_key
+  ForwardAgent yes
+  StrictHostKeyChecking no
+  UserKnownHostsFile /dev/null
+  Compression yes
+  DSAAuthentication yes
+  ConnectTimeout 2
+
 Host tiny
   HostName tiny.pickardayune.com
-  User spraints
-
-Host gh
-  HostName bastion.githubapp.com
   User spraints
 
 Host appadmin
