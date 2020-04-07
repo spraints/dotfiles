@@ -1,5 +1,6 @@
-# SSH keys
+# SSH stuff
 /dotfiles/ssh/id_*
+/config/ssh/config.local
 
 # Secret data
 private.yml

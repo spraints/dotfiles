@@ -18,3 +18,5 @@ linkup() {
 
 linkup authorized_keys
 linkup config
+touch ${root}/config.local
+linkup config.local

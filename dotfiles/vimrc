@@ -12,7 +12,7 @@ filetype plugin indent on
 au BufNewFile,BufRead [tT]horfile,*.thor	setf ruby
 au BufNewFile,BufRead *.rabl                    setf ruby
 au BufNewFile,BufRead *.hb                      setf mustache
-au BufWritePre        *.go                      Fmt
+"au BufWritePre        *.go                      Fmt
 
 se modeline modelines=2
 

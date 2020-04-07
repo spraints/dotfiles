@@ -1,0 +1,23 @@
+#!/bin/bash
+
+set -e
+set -o nounset
+
+ROOT="$(cd "$(dirname "$0")/../.."; pwd -P)"
+
+use() {
+  echo "Use gpg-agent.conf.$1"
+  rm -f ${ROOT}/dotfiles/gnupg/gpg-agent.conf
+  ln -s \
+    ${ROOT}/dotfiles/gnupg/gpg-agent.conf.$1 \
+    ${ROOT}/dotfiles/gnupg/gpg-agent.conf
+}
+
+case "$(uname -s)" in
+  Linux)
+    use linux ;;
+  Darwin)
+    use mac ;;
+  *)
+    echo "Can't set up gpg for $(uname -s)" ;;
+esac

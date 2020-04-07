@@ -1,0 +1,4 @@
+vidiff() {
+  local files="$(git diff --name-only $(git merge-base HEAD origin/master))"
+  test -n "$files" && vi $files
+}

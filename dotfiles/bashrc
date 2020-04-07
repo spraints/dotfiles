@@ -12,12 +12,6 @@ done
 
 export PS1='[$$] '$(hostname | cut -d . -f 1)' \[\e[33;1m\]\t \[\e[0m\](\[\e[35;1m\]\j\[\e[0m\])$(parse_git_branch)$(audible_ps1)$(prozac) >>> '
 
-
-viconflicts() {
-  local conflicts="$(git status --porcelain | grep ^UU | awk '{print $2}')"
-  test -n "$conflicts" && vi $conflicts
-}
-
 shuf_args() {
   for arg in "$@"; do
     echo $(rand2) "$arg"
