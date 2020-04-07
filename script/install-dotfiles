@@ -11,6 +11,9 @@ if [ $# -eq 0 ]; then
   set -- $(ls -d dotfiles/* | grep -v /ssh$)
 fi
 
+printf "Updating submodules...\n"
+git submodule update --init --recursive
+
 for dotfile; do
   base=$(basename $dotfile)
   dest=${HOME}/.${base}
