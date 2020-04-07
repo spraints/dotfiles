@@ -15,5 +15,9 @@ fi
 for config; do
   echo ---------------
   echo $config
-  $config/install || true
+  if [ -x $config/install ]; then
+    $config/install || true
+  else
+    echo "(no installer)"
+  fi
 done
