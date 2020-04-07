@@ -1,7 +1,7 @@
 AddKeysToAgent ask
 ConnectTimeout 16
 
-Include config.private
+Include config.local
 
 # From vagrant guest to the host.
 Host laptop
