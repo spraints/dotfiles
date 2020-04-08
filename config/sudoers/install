@@ -1,0 +1,8 @@
+#!/bin/bash
+
+if [ "$(uname -s)" = "Darwin" ]; then
+  echo "Allowing $USER to run mtr."
+  root="$(cd "$(dirname $0)"; pwd -P)"
+  sudo env EDITOR=${root}/edit-sudoers AUTH_USER=$USER \
+    visudo -f /etc/sudoers.d/spraints-dotfiles
+fi
