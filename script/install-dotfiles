@@ -51,13 +51,13 @@ for dotfile; do
       chmod 700 "$src"
       echo "  fixed permissions"
 
-      for pinentry in /usr/local/bin/pinentry-mac /usr/bin/pinentry-curses; do
-        if [ -x "$pinentry" ]; then
-          echo "  configuring $pinentry"
-          sed -e "s@PINENTRY@$pinentry@" "$src/gpg-agent.conf.tmpl" > "$src/gpg-agent.conf"
-          break
-        fi
-      done
+      rm -f "$src/gpg-agent.conf"
+      case "$(uname -S)" in
+        Linux)
+          ln -s gpg-agent.conf.linux "$src/gpg-agent.conf" ;;
+        Darwin)
+          ln -s gpg-agent.conf.mac "$src/gpg-agent.conf" ;;
+      esac
       ;;
   esac
 done
