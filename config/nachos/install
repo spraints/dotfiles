@@ -1,0 +1,96 @@
+#!/bin/bash
+
+set -e
+set -o nounset
+
+root="$(cd "$(dirname "$0")"; pwd -P)"
+cd "${root}"
+
+main() {
+  sudo apt-get update
+  sudo apt-get install -y apt-transport-https
+
+  sudo cp -v *.list /etc/apt/sources.list.d
+  sudo apt-get update
+  sudo apt-get install -y $DEBS $GH_DEBS
+
+  install_go
+
+  sudo timedatectl set-timezone America/Indiana/Indianapolis
+}
+
+install_go() {
+  GO_VERSION=1.14.3
+  GO_URL="https://dl.google.com/go/go1.14.3.linux-amd64.tar.gz"
+  GO_SHA="1c39eac4ae95781b066c144c58e45d6859652247f7515f0d2cba7be7d57d2226"
+
+  if [ -f "/usr/local/go/bin/go" ]; then
+    echo Go is already installed.
+    /usr/local/go/bin/go version
+    return 0
+  fi
+
+  cd /tmp
+  curl -L -o go.tar.gz "$GO_URL"
+  if echo "${GO_SHA}  go.tar.gz" | sha256sum -c; then
+    tar xfz go.tar.gz -C /usr/local/go
+  fi
+}
+
+DEBS="
+  clang-format-7
+  curl
+  docker-ce
+  git
+  jq
+  ruby
+  silversearcher-ag
+  strace
+  tcpdump
+  tmux
+  unzip
+  zip
+"
+
+GH_DEBS="
+  build-essential
+  zlib1g-dev
+  libyaml-dev
+  libssl-dev
+  libgdbm-dev
+  libreadline-dev
+  libncurses5-dev
+  libffi-dev
+  bison
+
+  cmake
+  pkg-config
+  erlang-base
+  google-perftools
+  libgeoip-dev 
+  libgoogle-perftools-dev 
+  libhiredis-dev 
+  libicu-dev 
+  libjansson-dev 
+  libjemalloc-dev 
+  libmemcached-dev 
+  libmysqlclient-dev 
+  libreadline-dev 
+  libtag1-dev 
+  libxml2-dev 
+  libxslt1-dev 
+  libsasl2-dev 
+  libsodium-dev 
+  libsqlite3-dev 
+  nodejs
+
+  autoconf
+  time
+  libcurl4-openssl-dev
+  libexpat1-dev
+  gettext
+
+  nginx
+"
+
+main
