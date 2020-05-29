@@ -7,6 +7,9 @@ root="$(cd "$(dirname "$0")"; pwd -P)"
 cd "${root}"
 
 main() {
+  set_up_data_partition
+  set_up_docker_dir
+
   sudo apt-get update
   sudo apt-get install -y apt-transport-https
 
@@ -17,7 +20,52 @@ main() {
 
   install_go
 
+  sudo usermod -a -G docker $USER
+
   sudo timedatectl set-timezone America/Indiana/Indianapolis
+}
+
+set_up_data_partition() {
+  local DIR=/data
+  local DISK=/dev/sda
+  local PART=${DISK}2
+
+  if [ -d $DIR ]; then
+    echo "$DIR already exists, cowardly refusing to set it up again."
+    return
+  fi
+  if lsblk $PART 2>/dev/null; then
+    echo "$PART already exists, cowardly refusing to set it up again."
+    return
+  fi
+  printf '%s\n' \
+    'n' \
+    'p' \
+    '2' \
+    '' \
+    '' \
+    'w' \
+    | sudo fdisk $DISK || true # it always exits non-0
+  sudo partprobe
+  sudo mkfs.ext4 $PART
+  local UUID="$(lsblk -n -o UUID $PART)"
+  while [ -z "$UUID" ]; do
+    sleep 1
+    UUID="$(lsblk -n -o UUID $PART)"
+  done
+  sudo bash -c "echo 'UUID=$UUID    $DIR    ext4  defaults  0  2' >> /etc/fstab"
+  sudo mkdir -p $DIR
+  sudo mount $DIR
+}
+
+set_up_docker_dir() {
+  if [ -e /var/lib/docker ]; then
+    echo "/var/lib/docker exists, cowardly refusing to set it up again."
+    return
+  fi
+  sudo mkdir -p /data/docker
+  sudo chmod 711 /data/docker
+  sudo ln -s /data/docker /var/lib/docker
 }
 
 install_go() {
@@ -34,8 +82,9 @@ install_go() {
   cd /tmp
   curl -L -o go.tar.gz "$GO_URL"
   if echo "${GO_SHA}  go.tar.gz" | sha256sum -c; then
-    tar xfz go.tar.gz -C /usr/local
+    sudo tar xfz go.tar.gz -C /usr/local
   fi
+  rm -f go.tar.gz
 }
 
 DEBS="
@@ -44,6 +93,7 @@ DEBS="
   docker-ce
   git
   jq
+  man
   ruby
   silversearcher-ag
   strace
