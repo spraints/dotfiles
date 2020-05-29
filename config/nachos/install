@@ -22,7 +22,17 @@ main() {
 
   sudo usermod -a -G docker $USER
 
+  clone_docker_services
+
   sudo timedatectl set-timezone America/Indiana/Indianapolis
+}
+
+clone_docker_services() {
+  if [ ! -d ~/github/mhagger-docker-test-env/.git ]; then
+    grep -q ghe.io ~/.ssh/known_hosts || echo 'ghe.io,54.83.16.211 ecdsa-sha2-nistp256 AAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbmlzdHAyNTYAAABBBHv7ZAHYhwNmhQTjcQpbeF21MB+5UE9Zqa1aBcmLL5bOFNuxoKFR94PngnZzCBiN1qyHmu2vc9n5Zhx2MnGyjfQ=' >> ~/.ssh/known_hosts
+
+    git clone git@ghe.io:spraints/docker-services.git ~/github/mhagger-docker-test-env
+  fi
 }
 
 set_up_data_partition() {
