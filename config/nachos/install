@@ -10,6 +10,7 @@ main() {
   sudo apt-get update
   sudo apt-get install -y apt-transport-https
 
+  for f in *.key; do sudo apt-key add $f; done
   sudo cp -v *.list /etc/apt/sources.list.d
   sudo apt-get update
   sudo apt-get install -y $DEBS $GH_DEBS
@@ -33,7 +34,7 @@ install_go() {
   cd /tmp
   curl -L -o go.tar.gz "$GO_URL"
   if echo "${GO_SHA}  go.tar.gz" | sha256sum -c; then
-    tar xfz go.tar.gz -C /usr/local/go
+    tar xfz go.tar.gz -C /usr/local
   fi
 }
 
