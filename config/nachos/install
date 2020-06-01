@@ -19,6 +19,7 @@ main() {
 
   install_go
   install_docker_compose
+  install_ngrok
 
   sudo usermod -a -G docker $USER
 
@@ -93,9 +94,19 @@ set_up_docker_dir() {
   sudo ln -s /data/docker /var/lib/docker
 }
 
-install_docker_compose() {
-  docker-compose version 2>&/dev/null && return
+install_ngrok() {
+  ngrok version 2>/dev/null && return
 
+  echo Installing ngrok
+  curl -L -o /tmp/ngrok.zip https://bin.equinox.io/c/4VmDzA7iaHb/ngrok-stable-linux-amd64.zip
+  (cd /usr/local/bin && sudo unzip /tmp/ngrok.zip)
+  rm /tmp/ngrok.zip
+}
+
+install_docker_compose() {
+  docker-compose version 2>/dev/null && return
+
+  echo Installing docker-compose
   DC_URL="https://github.com/docker/compose/releases/download/1.25.5/docker-compose-$(uname -s)-$(uname -m)"
   sudo curl -L -o /usr/local/bin/docker-compose "$DC_URL"
   sudo chmod +x /usr/local/bin/docker-compose
@@ -113,6 +124,7 @@ install_go() {
     return 0
   fi
 
+  echo Installing go
   cd /tmp
   curl -L -o go.tar.gz "$GO_URL"
   if echo "${GO_SHA}  go.tar.gz" | sha256sum -c; then
