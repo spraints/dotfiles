@@ -127,6 +127,7 @@ DEBS="
   docker-ce
   git
   jq
+  lsof
   man
   ruby
   silversearcher-ag
@@ -167,6 +168,7 @@ GH_DEBS="
   libsasl2-dev 
   libsodium-dev 
   libsqlite3-dev 
+  mysql-client
   nodejs
 
   autoconf
