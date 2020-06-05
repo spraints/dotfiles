@@ -52,7 +52,7 @@ for dotfile; do
       echo "  fixed permissions"
 
       rm -f "$src/gpg-agent.conf"
-      case "$(uname -S)" in
+      case "$(uname -s)" in
         Linux)
           ln -s gpg-agent.conf.linux "$src/gpg-agent.conf" ;;
         Darwin)
