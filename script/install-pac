@@ -1,0 +1,20 @@
+#!/bin/bash
+#/ Usage: script/install-pac config/pac/FILE.pac
+
+set -e
+set -o nounset
+
+if [ $# -ne 1 ] || [ ! -f "$1" ]; then
+  cat "$0" | grep ^#/ | cut -c4-
+  exit 1
+fi
+
+PAC="$1"
+PAC_URL="file://$(cd "$(dirname "$PAC")"; pwd -P)/$(basename "$PAC")"
+#PAC_URL=http://files.pickardayune.com/isos/nachos.pac
+
+set -x
+networksetup -setautoproxyurl "Wi-Fi" "$PAC_URL"
+networksetup -setautoproxystate "Wi-Fi" on
+networksetup -setautoproxyurl "Display Ethernet" "$PAC_URL"
+networksetup -setautoproxystate "Display Ethernet" on
