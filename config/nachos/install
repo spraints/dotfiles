@@ -21,6 +21,7 @@ main() {
   install_docker_compose
   install_mkcert
   install_ngrok
+  install_overmind
 
   sudo usermod -a -G docker $USER
 
@@ -93,6 +94,18 @@ set_up_docker_dir() {
   sudo mkdir -p /data/docker
   sudo chmod 711 /data/docker
   sudo ln -s /data/docker /var/lib/docker
+}
+
+install_overmind() {
+  overmind -version 2>/dev/null && return
+
+  curl -L -o /tmp/overmind.gz https://github.com/DarthSim/overmind/releases/download/v2.1.1/overmind-v2.1.1-linux-amd64.gz
+  rm -f /tmp/overmind
+  gunzip /tmp/overmind.gz
+  chmod +x /tmp/overmind
+  /tmp/overmind -version
+  sudo cp /tmp/overmind /usr/local/bin/overmind
+  rm -f /tmp/overmind
 }
 
 install_ngrok() {
