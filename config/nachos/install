@@ -118,7 +118,7 @@ install_ngrok() {
 }
 
 install_mkcert() {
-  /usr/local/bin/mkcert -version && return
+  mkcert -version 2>/dev/null && return
 
   curl -L -o /tmp/mkcert https://github.com/FiloSottile/mkcert/releases/download/v1.4.1/mkcert-v1.4.1-linux-amd64
   chmod +x /tmp/mkcert
