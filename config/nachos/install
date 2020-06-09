@@ -19,6 +19,7 @@ main() {
 
   install_go
   install_docker_compose
+  install_mkcert
   install_ngrok
 
   sudo usermod -a -G docker $USER
@@ -103,6 +104,16 @@ install_ngrok() {
   rm /tmp/ngrok.zip
 }
 
+install_mkcert() {
+  /usr/local/bin/mkcert -version && return
+
+  curl -L -o /tmp/mkcert https://github.com/FiloSottile/mkcert/releases/download/v1.4.1/mkcert-v1.4.1-linux-amd64
+  chmod +x /tmp/mkcert
+  /tmp/mkcert -version
+  sudo cp /tmp/mkcert /usr/local/bin/mkcert
+  rm /tmp/mkcert
+}
+
 install_docker_compose() {
   docker-compose version 2>/dev/null && return
 
@@ -139,6 +150,7 @@ DEBS="
   docker-ce
   git
   jq
+  libnss3-tools
   lsof
   man
   ruby
