@@ -1,0 +1,4 @@
+test-dev-vpn() {
+  echo This should be a 302...
+  (set -x; curl -i https://octofactory.githubapp.com)
+}
