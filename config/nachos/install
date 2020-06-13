@@ -8,6 +8,7 @@ cd "${root}"
 
 main() {
   set_up_data_partition
+  set_up_dev_partition
   set_up_docker_dir
 
   install_packages apt-transport-https
@@ -54,9 +55,19 @@ clone_docker_services() {
 }
 
 set_up_data_partition() {
-  local DIR=/data
-  local DISK=/dev/sda
-  local PART=${DISK}2
+  set_up_partition /data /dev/sda 2
+}
+
+set_up_dev_partition() {
+  set_up_partition /opt/src /dev/sdc 1
+  sudo chown spraints /opt/src
+}
+
+set_up_partition() {
+  local DIR="$1"
+  local DISK="$2"
+  local PARTNUM="$3"
+  local PART="${DISK}${PARTNUM}"
 
   if [ -d $DIR ]; then
     echo "$DIR already exists, cowardly refusing to set it up again."
@@ -69,7 +80,7 @@ set_up_data_partition() {
   printf '%s\n' \
     'n' \
     'p' \
-    '2' \
+    "${PARTNUM}" \
     '' \
     '' \
     'w' \
