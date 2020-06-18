@@ -1,0 +1,8 @@
+#!/bin/bash
+
+set -e
+
+script/install-dotfiles
+script/install-config config/nachos
+#script/install-config config/gnupg
+script/install-config config/ssh

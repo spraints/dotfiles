@@ -1,0 +1,9 @@
+stop-all-lxc() {
+  (
+    set -xe
+    cd ~/enterprise2
+    for n in $(sudo lxc-ls); do
+      GHE_LXC_NAME=$n ./chroot-stop.sh
+    done
+  )
+}
