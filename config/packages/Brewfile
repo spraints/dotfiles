@@ -35,6 +35,7 @@ cask "keybase"
 cask "spotify"
 cask "virtualbox"
 cask "viscosity"
+cask "visual-studio-code"
 
 # fun mistyped commands
 brew "gti"

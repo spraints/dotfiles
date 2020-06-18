@@ -1,4 +1,3 @@
-AddKeysToAgent ask
 ConnectTimeout 16
 
 Include config.local
