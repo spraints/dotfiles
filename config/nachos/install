@@ -23,6 +23,7 @@ main() {
   install_mkcert
   install_ngrok
   install_overmind
+  install_git
 
   sudo usermod -a -G docker $USER
 
@@ -105,6 +106,10 @@ set_up_docker_dir() {
   sudo mkdir -p /data/docker
   sudo chmod 711 /data/docker
   sudo ln -s /data/docker /var/lib/docker
+}
+
+install_git() {
+  bash install-git.sh || true
 }
 
 install_overmind() {
