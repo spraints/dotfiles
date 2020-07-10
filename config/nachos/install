@@ -76,18 +76,18 @@ set_up_partition() {
   fi
   if lsblk $PART 2>/dev/null; then
     echo "$PART already exists, cowardly refusing to set it up again."
-    return
+  else
+    printf '%s\n' \
+      'n' \
+      'p' \
+      "${PARTNUM}" \
+      '' \
+      '' \
+      'w' \
+      | sudo fdisk $DISK || true # it always exits non-0
+    sudo partprobe
+    sudo mkfs.ext4 $PART
   fi
-  printf '%s\n' \
-    'n' \
-    'p' \
-    "${PARTNUM}" \
-    '' \
-    '' \
-    'w' \
-    | sudo fdisk $DISK || true # it always exits non-0
-  sudo partprobe
-  sudo mkfs.ext4 $PART
   local UUID="$(lsblk -n -o UUID $PART)"
   while [ -z "$UUID" ]; do
     sleep 1
