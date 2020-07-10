@@ -3,7 +3,7 @@
 
 set -e
 
-if ! which md5 2>/dev/null; then
+if ! which md5 >&/dev/null; then
   md5() {
     md5sum - | awk '{print $1}'
   }

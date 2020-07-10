@@ -32,3 +32,7 @@ Host appadmin
 Host apps
   HostName meow.pickardayune.com
   User spraints
+
+Host nachos
+  HostName nachos.cloud.pickardayune.com
+  User spraints
