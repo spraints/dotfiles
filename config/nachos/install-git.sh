@@ -33,4 +33,4 @@ sudo make prefix=/usr/local install
 cd $HOME
 rm -rf $WORKDIR
 
-sudo apt-get remove git
+sudo apt-get remove -y git
