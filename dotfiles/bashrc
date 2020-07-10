@@ -10,7 +10,8 @@ for fun in ~/.shell-functions/*; do
   . $fun
 done
 
-export PS1='[$$] '$(hostname | cut -d . -f 1)' \[\e[33;1m\]\t \[\e[0m\](\[\e[35;1m\]\j\[\e[0m\])$(parse_git_branch)$(audible_ps1)$(prozac) >>> '
+PS1='[$$] '$(hostname | cut -d . -f 1)' \[\e[33;1m\]\t \[\e[0m\](\[\e[35;1m\]\j\[\e[0m\])$(parse_git_branch)$(audible_ps1) >>> '
+PROMPT_COMMAND='prozac'
 
 shuf_args() {
   for arg in "$@"; do
