@@ -1,0 +1,215 @@
+#!/usr/bin/env ruby
+#/ Usage: ci-status [--skip-green] [branch]
+#/ Shows pretty ci status for the current repo and current branch (or the named branch).
+
+require "json"
+require "net/http"
+require "timeout"
+
+def main(branch:, nwo:, token:, skip_green: false)
+  raw_ci_status = run!({"GITHUB_TOKEN" => token}, "ci-status-raw", nwo, branch)
+  begin
+    ci_status = JSON.parse(raw_ci_status)
+    if errors = ci_status["errors"]
+      p errors
+      exit 1
+    end
+    data = ci_status["data"]
+    raise "expected 'data' in #{ci_status.inspect}" unless data.is_a?(Hash)
+    repo = data["repository"]
+    commit = repo["object"]
+    if commit.nil?
+      puts "No CI results"
+      return
+    end
+    to_show = []
+    to_show += prepare_statuses(commit["status"]) if commit["status"]
+    to_show += prepare_checks(commit["checkSuites"]) if commit["checkSuites"]
+    to_show.reject! { |status| status[:state] == :success } if skip_green
+    show_statuses(to_show)
+  rescue JSON::ParserError => e
+    $stderr.puts "#{e.class.name}: #{e}", raw_ci_status
+    exit 1
+  end
+end
+
+def usage
+  system "cat #{$0} | grep ^#/ | cut -c4-"
+  exit 1
+end
+
+STATUS_STATES = {"SUCCESS" => :success, "FAILURE" => :failure, "ERROR" => :failure}.freeze
+
+def prepare_statuses(statuses)
+  statuses["contexts"].map { |context| {
+    name: context["context"],
+    description: context["description"],
+    state: STATUS_STATES.fetch(context["state"], :pending),
+    state_string: context["state"],
+    url: context["targetUrl"],
+  } }
+end
+
+def prepare_checks(checks)
+  checks["nodes"].flat_map do |suite|
+    #app_name = suite["app"] ? suite["app"]["name"] : "(an app)"
+    #puts "#{app_name}:"
+
+    suite["checkRuns"]["nodes"].map { |run|
+      if run["status"] != "COMPLETED"
+        state_string = run["status"]
+        state = :pending
+      else
+        state_string = run["conclusion"]
+        if run["conclusion"] == "SUCCESS"
+          state = :success
+        elsif run["conclusion"] == "NEUTRAL"
+          state = :pending
+        else
+          state = :failure
+        end
+      end
+
+      {
+        name: run["name"],
+        description: run["summary"] || run["conclusion"] || run["status"],
+        state: state,
+        state_string: state_string,
+        url: "#{run["detailsUrl"]} - #{run["permalink"]}",
+      }
+    }
+  end
+end
+
+STATUS_SORT_ORDER = {
+  :failure => 1,
+  :pending => 2,
+  :success => 3,
+}
+
+def show_statuses(status_data)
+  status_data.sort_by { |status| [STATUS_SORT_ORDER.fetch(status[:state], 99), status[:name]] }.each do |status|
+    show_status(status)
+  end
+end
+
+def show_status(name:, description:, state:, state_string:, url:)
+  opts =
+    case state
+    when :success
+      {color: 32, icon: "✔︎", hide_url: true}
+    when :failure
+      {color: 31, icon: "✖︎"}
+    when :pending
+      {color: 33, icon: "●", label: "#{state_string} - "}
+    else
+      raise "unrecognized state #{state.inspect}"
+    end
+
+  printf "\033[%dm%s\033[0m %s%s - %s\n",
+    opts[:color], opts[:icon],
+    opts[:label], name, description
+  unless opts[:hide_url]
+    puts "  #{url}"
+  end
+end
+
+CI_STATUS_GQL_QUERY = <<-GQL
+query ($owner: String!, $repo: String!, $ref: String!) {
+  repository(owner: $owner, name: $repo) {
+    object(expression: $ref) {
+      ... on Commit {
+        status {
+          contexts {
+            context
+            state
+            description
+            targetUrl
+            createdAt
+          }
+        }
+        checkSuites(first: 100) {
+          nodes {
+            app { name }
+            checkRuns(first: 100) {
+              nodes {
+                conclusion
+                detailsUrl
+                name
+                permalink
+                status
+                summary
+                title
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+GQL
+
+def run!(env, _, nwo, branch)
+  token = env.fetch("GITHUB_TOKEN")
+  owner, repo = nwo.split("/", 2)
+  req_data = {
+    "query" => CI_STATUS_GQL_QUERY,
+    "variables" => {
+      "owner" => owner,
+      "repo" => repo,
+      "ref" => branch,
+    },
+  }
+
+  req = Net::HTTP::Post.new("https://api.github.com/graphql")
+  req.basic_auth token, "x-oauth-basic"
+  req["Accept"] = "application/vnd.github.antiope-preview+json"
+  req.body = JSON.dump(req_data)
+
+  Timeout.timeout(30.0) do
+    Net::HTTP.start("api.github.com", 443, use_ssl: true) do |http|
+      http.request(req).body
+    end
+  end
+end
+
+opts = {}
+
+while ARGV.first.to_s =~ /^-/
+  case ARGV.shift
+  when "--skip-green"
+    opts[:skip_green] = true
+  else
+    usage
+  end
+end
+
+usage if ARGV.size > 1
+
+opts[:branch] = ARGV.first || `git branch --no-color 2> /dev/null | sed -e '/^[^*]/d' -e 's/^* //'`.strip
+case opts[:branch]
+when %r{\Ahttps://github.com/([^/]+/[^/]+)/commit/([a-f0-9]+)\z}
+  opts[:nwo] = $1
+  opts[:branch] = $2
+end
+
+if ! opts[:nwo]
+  remote_url = `git config remote.origin.url`.strip
+  opts[:nwo] =
+    case remote_url
+    when %r{\Agit@.*?:(.*?)(\.git)?\z}
+      $1
+    when %r{\Ahttps?://[^/]+/(.*?)(\.git)?\z}
+      $1
+    else
+      raise "Could not figure out nwo from remote url #{remote_url.inspect}"
+    end
+end
+
+token_file = File.read(File.join(ENV["HOME"], ".github-token"))
+if token_file =~ /(^| )GITHUB_TOKEN=(\w+)/
+  opts[:token] = $2
+end
+
+main(opts)
