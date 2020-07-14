@@ -3,6 +3,8 @@
 #/ Shows pretty ci status for the current repo and current branch (or the named branch).
 
 require "json"
+require "net/http"
+require "timeout"
 
 def main(branch:, nwo:, token:, skip_green: false)
   raw_ci_status = run!({"GITHUB_TOKEN" => token}, "ci-status-raw", nwo, branch)
@@ -16,6 +18,10 @@ def main(branch:, nwo:, token:, skip_green: false)
     raise "expected 'data' in #{ci_status.inspect}" unless data.is_a?(Hash)
     repo = data["repository"]
     commit = repo["object"]
+    if commit.nil?
+      puts "No CI results"
+      return
+    end
     to_show = []
     to_show += prepare_statuses(commit["status"]) if commit["status"]
     to_show += prepare_checks(commit["checkSuites"]) if commit["checkSuites"]
@@ -108,32 +114,64 @@ def show_status(name:, description:, state:, state_string:, url:)
   end
 end
 
-def run!(*spawn_args)
-  deadline = Time.now.to_f + 30.0
+CI_STATUS_GQL_QUERY = <<-GQL
+query ($owner: String!, $repo: String!, $ref: String!) {
+  repository(owner: $owner, name: $repo) {
+    object(expression: $ref) {
+      ... on Commit {
+        status {
+          contexts {
+            context
+            state
+            description
+            targetUrl
+            createdAt
+          }
+        }
+        checkSuites(first: 100) {
+          nodes {
+            app { name }
+            checkRuns(first: 100) {
+              nodes {
+                conclusion
+                detailsUrl
+                name
+                permalink
+                status
+                summary
+                title
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+GQL
 
-  opts = spawn_args.last.is_a?(Hash) ? spawn_args.pop : {}
-  stdout, opts[:out] = IO.pipe
-  spawn_args << opts
-  pid = spawn(*spawn_args)
-  opts[:out].close
+def run!(env, _, nwo, branch)
+  token = env.fetch("GITHUB_TOKEN")
+  owner, repo = nwo.split("/", 2)
+  req_data = {
+    "query" => CI_STATUS_GQL_QUERY,
+    "variables" => {
+      "owner" => owner,
+      "repo" => repo,
+      "ref" => branch,
+    },
+  }
 
-  outdata = ""
-  status = nil
-  while status.nil?
-    timeout = deadline - Time.now.to_f
-    raise "Timed out" unless timeout > 0
-    if IO.select([stdout])
-      outdata = outdata + stdout.read_nonblock(1000000) unless stdout.eof?
+  req = Net::HTTP::Post.new("https://api.github.com/graphql")
+  req.basic_auth token, "x-oauth-basic"
+  req["Accept"] = "application/vnd.github.antiope-preview+json"
+  req.body = JSON.dump(req_data)
+
+  Timeout.timeout(30.0) do
+    Net::HTTP.start("api.github.com", 443, use_ssl: true) do |http|
+      http.request(req).body
     end
-    _, status = Process.waitpid2(pid, Process::WNOHANG)
   end
-  if status.success?
-    outdata = outdata + stdout.read unless stdout.eof?
-    stdout.close
-    return outdata
-  end
-  stdout.close
-  raise status.inspect
 end
 
 opts = {}
