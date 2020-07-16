@@ -2,8 +2,12 @@
 
 fix-ssh-agent() {
   test "$1" = "--quick" && return # I used to have this in PS1, but it doesn't work from there.
-  if [ "$1" = "--prompt-command" ] && [ -n "$SSH_AUTH_SOCK" ] && [ -S "$SSH_AUTH_SOCK" ]; then
-    return
+  if [ "$1" = "--prompt-command" ]; then
+    # If SSH_AUTH_SOCK isn't set, skip.
+    # If it's set and exists, skip.
+    if [ -z "$SSH_AUTH_SOCK" ] || [ -e "$SSH_AUTH_SOCK" ]; then
+      return
+    fi
   fi
 
   if _fsa___ok; then
