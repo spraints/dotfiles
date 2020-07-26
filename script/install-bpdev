@@ -3,7 +3,6 @@
 set -e
 
 script/install-dotfiles
-script/install-config config/nachos
-script/install-config config/devtools
+SKIP_GIT=y script/install-config config/devtools
 #script/install-config config/gnupg
 script/install-config config/ssh
