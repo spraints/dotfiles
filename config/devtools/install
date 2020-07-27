@@ -7,14 +7,16 @@ root="$(cd "$(dirname "$0")"; pwd -P)"
 cd "${root}"
 
 main() {
-  install_packages $DEBS $GH_DEBS
+  install_packages $DEBS $GH_DEBS $COND_DEBS
 
   install_go
   install_docker_compose
   install_mkcert
   install_ngrok
   install_overmind
-  test -n "${SKIP_GIT:-}" || install_git
+  if [ -z "${SKIP_GIT:-}" ]; then
+    install_git
+  fi
 
   sudo usermod -a -G docker $USER
 
@@ -27,7 +29,7 @@ install_packages() {
   local pkg=
   local noop=true
   for p; do
-    if ! dpkg -l "$p" >&/dev/null; then
+    if ! dpkg -l "$p" 2>/dev/null | grep -q ^ii; then
       pkg="$pkg $p"
       noop=false
     fi
@@ -115,11 +117,10 @@ DEBS="
   clang-format-7
   curl
   docker-ce
-  git
   jq
   libnss3-tools
   lsof
-  man
+  man-db
   ruby
   silversearcher-ag
   strace
@@ -167,8 +168,14 @@ GH_DEBS="
   libcurl4-openssl-dev
   libexpat1-dev
   gettext
-
-  nginx
 "
+
+COND_DEBS=
+if [ ! -x /usr/sbin/nginx ]; then
+  COND_DEBS="$COND_DEBS nginx"
+fi
+if ! which git >&/dev/null; then
+  COND_DEGS="$COND_DEBS git"
+fi
 
 main
