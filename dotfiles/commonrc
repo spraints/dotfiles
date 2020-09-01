@@ -19,6 +19,8 @@ which rbenv >/dev/null 2>/dev/null &&
 which nodenv >/dev/null 2>/dev/null &&
   eval "$(nodenv init -)"
 
+[[ -s "$HOME/.cargo/env" ]] && source "$HOME/.cargo/env"
+
 [[ -s "$HOME/.gcloud/env.sh" ]] && source "$HOME/.gcloud/env.sh"
 
 [[ -s "$HOME/.nvm/nvm.sh" ]] && source "$HOME/.nvm/nvm.sh"
