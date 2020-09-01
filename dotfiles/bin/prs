@@ -1,0 +1,133 @@
+#!/usr/bin/env ruby
+#/ Usage: prs [--count N]
+#/ Show my PRs.
+
+require "json"
+require "net/http"
+require "time"
+require "timeout"
+
+def main(token:, count: 20, earliest: (DateTime.now - 90))
+  results = get_data(token: token, count: count)
+  if errors = results["errors"]
+    p errors
+    exit 1
+  end
+  prs = results.dig("data", "viewer", "pullRequests", "nodes")
+  prs.each do |pr|
+    updated_at = DateTime.parse(pr.fetch("updatedAt"))
+    next if updated_at < earliest
+    author = pr.fetch("author").fetch("login")
+    repository = pr.fetch("repository").fetch("nameWithOwner")
+    number = pr.fetch("number")
+    title = pr.fetch("title")
+    permalink = pr.fetch("permalink")
+    draft = pr.fetch("isDraft")
+    decision = pr.fetch("reviewDecision")
+    ago = time_in_words(updated_at)
+
+    color, status =
+      if draft
+        [30, "▪"]
+      elsif decision == "APPROVED"
+        [32, "✔︎"]
+      elsif decision == "CHANGES_REQUESTED"
+        [31, "✖︎"]
+      else
+        [33, "●"]
+      end
+
+    printf "\033[%dm%s\033[0m [%s#%s by %s] %s %s, updated %s\n",
+      color, status,
+      repository, number, author,
+      permalink,
+      title,
+      ago
+  end
+end
+
+DAY = 60 * 60 * 24
+
+def time_in_words(dt)
+  ago = (Time.now - dt.to_time).to_i
+  days = ago / DAY
+  months = days / 30
+  if days < 1
+    "in the last day"
+  elsif days < 7
+    "in the last #{days + 1} days"
+  elsif months < 1
+    "in the last month"
+  else
+    "in the last #{months + 1} months"
+  end
+end
+
+def usage
+  system "cat #{$0} | grep ^#/ | cut -c4-"
+  exit 1
+end
+
+QUERY = <<QUERY
+query ($count: Int) {
+  viewer {
+    pullRequests(states: [OPEN], first: $count, orderBy: {field: CREATED_AT, direction: DESC}) {
+      nodes {
+        author {
+          login
+        }
+        repository {
+          nameWithOwner
+        }
+        reviewDecision
+        number
+        title
+        permalink
+        isDraft
+        createdAt
+        updatedAt
+      }
+    }
+  }
+}
+QUERY
+
+def get_data(token:, count:)
+  request = {
+    query: QUERY,
+    variables: {
+      count: count,
+    },
+  }
+  req = Net::HTTP::Post.new("https://api.github.com/graphql")
+  req["Authorization"] = "token #{token}"
+  req.body = JSON.dump(request)
+
+  Timeout.timeout(30.0) do
+    Net::HTTP.start("api.github.com", 443, use_ssl: true) do |http|
+      JSON.parse(http.request(req).body)
+    end
+  end
+end
+
+opts = {}
+
+while ARGV.first.to_s =~ /^-/
+  case ARGV.shift
+  when "--count"
+    opts[:count] = ARGV.shift.to_i
+  else
+    usage
+  end
+end
+
+usage if ARGV.size > 1
+
+unless opts[:token] = ENV["GITHUB_TOKEN"]
+  token_file = File.read(File.join(ENV["HOME"], ".github-token"))
+  if token_file =~ /(^| )GITHUB_TOKEN=(\w+)/
+    opts[:token] = $2
+  end
+end
+
+main(opts)
