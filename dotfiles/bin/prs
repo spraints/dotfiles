@@ -25,16 +25,24 @@ def main(token:, count: 20, earliest: (DateTime.now - 90))
     draft = pr.fetch("isDraft")
     decision = pr.fetch("reviewDecision")
     ago = time_in_words(updated_at)
+    check_status = pr.dig("headRef", "target", "statusCheckRollup", "state")
+    mergeable = pr.fetch("mergeable")
 
     color, status =
       if draft
-        [30, "▪"]
-      elsif decision == "APPROVED"
-        [32, "✔︎"]
+        [30, "▪ DRAFT"]
+      elsif check_status != "SUCCESS" && check_status != "PENDING" && !check_status.nil?
+        [31, "✖︎ :#{check_status}"]
+      elsif mergeable != "MERGEABLE"
+        [31, "✖︎ #{mergeable}"]
       elsif decision == "CHANGES_REQUESTED"
-        [31, "✖︎"]
+        [31, "✖︎ #{decision}"]
+      elsif check_status == "PENDING"
+        [33, "● CI_#{check_status}"]
+      elsif decision != "APPROVED" && !decision.nil?
+        [33, "● #{decision}"]
       else
-        [33, "●"]
+        [32, "✔︎ #{decision || "no_review"}"]
       end
 
     printf "\033[%dm%s\033[0m [%s#%s by %s] %s %s, updated %s\n",
@@ -79,6 +87,16 @@ query ($count: Int) {
         repository {
           nameWithOwner
         }
+        headRef {
+          target {
+            ... on Commit {
+              statusCheckRollup {
+                state
+              }
+            }
+          }
+        }
+        mergeable
         reviewDecision
         number
         title
