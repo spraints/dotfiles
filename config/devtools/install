@@ -84,10 +84,12 @@ install_mkcert() {
 }
 
 install_docker_compose() {
-  docker-compose version 2>/dev/null && return
+  DC_VERSION=1.27.2
+  DC_URL="https://github.com/docker/compose/releases/download/${DC_VERSION}/docker-compose-$(uname -s)-$(uname -m)"
 
-  echo Installing docker-compose
-  DC_URL="https://github.com/docker/compose/releases/download/1.25.5/docker-compose-$(uname -s)-$(uname -m)"
+  docker-compose version | grep $DC_VERSION 2>/dev/null && return
+
+  echo Installing docker-compose $DC_VERSION
   sudo curl -L -o /usr/local/bin/docker-compose "$DC_URL"
   sudo chmod +x /usr/local/bin/docker-compose
   docker-compose version

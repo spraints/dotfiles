@@ -3,7 +3,7 @@
 set -e
 set -o nounset
 
-VERSION=2.27.0
+VERSION=2.28.0
 TARBALL=https://github.com/git/git/archive/v${VERSION}.tar.gz
 WORKDIR=$HOME/git-build
 
