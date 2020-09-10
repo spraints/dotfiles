@@ -1,5 +1,5 @@
 #!/usr/bin/env ruby
-#/ Usage: ci-status [--skip-green] [branch]
+#/ Usage: ci-status [--skip-green] [branch|PR-url]
 #/ Shows pretty ci status for the current repo and current branch (or the named branch).
 
 require "json"
@@ -192,6 +192,11 @@ case opts[:branch]
 when %r{\Ahttps://github.com/([^/]+/[^/]+)/commit/([a-f0-9]+)\z}
   opts[:nwo] = $1
   opts[:branch] = $2
+when %r{\Ahttps://github.com/([^/]+/[^/]+)/pull/([0-9]+)}
+  opts[:nwo] = $1
+  opts[:branch] = "refs/pull/#{$2}/head"
+when %r{\Ahttps://}
+  raise "Could not figure out nwo from #{opts[:branch].inspect}"
 end
 
 if ! opts[:nwo]
