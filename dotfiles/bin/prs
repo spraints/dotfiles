@@ -1,5 +1,5 @@
 #!/usr/bin/env ruby
-#/ Usage: prs [--count N]
+#/ Usage: prs [--count N] [--last [N] day|week|month|year]
 #/ Show my PRs.
 
 require "json"
@@ -7,7 +7,8 @@ require "net/http"
 require "time"
 require "timeout"
 
-def main(token:, count: 20, earliest: (DateTime.now - 90))
+def main(token:, count: 20, earliest: (Time.now - (90 * DAY)))
+  earliest = earliest.to_datetime
   results = get_data(token: token, count: count)
   if errors = results["errors"]
     p errors
@@ -136,10 +137,43 @@ end
 
 opts = {}
 
+WEEK = 7 * DAY
+MONTH = 32 * DAY
+YEAR = 366 * DAY
+INT_RE = /\A\d+\z/
+
+def parse_since_args
+  case ARGV.first
+  when INT_RE
+    n = ARGV.shift.to_i
+    n * parse_time_unit_arg
+  else
+    parse_time_unit_arg
+  end
+end
+
+def parse_time_unit_arg
+  case arg = ARGV.shift
+  when /\Aday/
+    DAY
+  when /\Aweek/
+    WEEK
+  when /\Amonth/
+    MONTH
+  when /\Ayear/
+    YEAR
+  else
+    $stderr.puts "Unrecognized time value #{arg.inspect}"
+    exit 1
+  end
+end
+
 while ARGV.first.to_s =~ /^-/
   case ARGV.shift
   when "--count"
     opts[:count] = ARGV.shift.to_i
+  when "--last"
+    opts[:earliest] = Time.now - parse_since_args
   else
     usage
   end
