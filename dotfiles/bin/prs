@@ -39,10 +39,10 @@ def main(token:, count: 20, earliest: (DateTime.now - 90))
         [31, "✖︎", decision]
       elsif check_status == "PENDING"
         [33, "●", "CI_#{check_status}"]
-      elsif mergeable == "UNKNOWN"
-        [33, "●", "checking_merge"]
       elsif decision != "APPROVED" && !decision.nil?
         [33, "●", decision]
+      elsif mergeable == "UNKNOWN"
+        [33, "●", "checking_merge"]
       else
         [32, "✔︎", decision || "no_review"]
       end
