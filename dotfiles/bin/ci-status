@@ -195,6 +195,9 @@ when %r{\Ahttps://github.com/([^/]+/[^/]+)/commit/([a-f0-9]+)\z}
 when %r{\Ahttps://github.com/([^/]+/[^/]+)/pull/([0-9]+)}
   opts[:nwo] = $1
   opts[:branch] = "refs/pull/#{$2}/head"
+when %r{\Ahttps://janky.githubapp.com/r/([^/]+/[^/]+)/(.*)}
+  opts[:nwo] = $1
+  opts[:branch] = $2
 when %r{\Ahttps://}
   raise "Could not figure out nwo from #{opts[:branch].inspect}"
 end
