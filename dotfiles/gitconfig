@@ -24,3 +24,5 @@
 	insteadOf = https://github.com/
 [commit]
 	gpgsign = true
+[pull]
+	ff = only
