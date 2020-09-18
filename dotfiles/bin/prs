@@ -43,7 +43,7 @@ def main(token:, count: 20, earliest: (Time.now - (90 * DAY)))
       elsif decision != "APPROVED" && !decision.nil?
         [33, "●", decision]
       elsif mergeable == "UNKNOWN"
-        [33, "●", "checking_merge"]
+        [32, "✔︎", "checking_merge"]
       else
         [32, "✔︎", decision || "no_review"]
       end
