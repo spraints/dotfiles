@@ -7,7 +7,7 @@ require "net/http"
 require "time"
 require "timeout"
 
-def main(token:, count: 20, earliest: (Time.now - (90 * DAY)))
+def main(token:, count: 20, earliest: (Time.now - (90 * DAY)), ignore_trains: false)
   earliest = earliest.to_datetime
   results = get_data(token: token, count: count)
   if errors = results["errors"]
@@ -58,6 +58,25 @@ def main(token:, count: 20, earliest: (Time.now - (90 * DAY)))
       title: title,
       ago: ago,
     })
+    show_train_info(pr) unless ignore_trains
+  end
+end
+
+def show_train_info(pr)
+  if timeline_items = pr.dig("timelineItems", "nodes")
+    timeline_items.each do |item|
+      source = item.fetch("source")
+      next if source.nil? || source.empty?
+      state = source.fetch("state")
+      branch = source.fetch("headRefName")
+      url = source.fetch("url")
+      source_labels = source.dig("labels", "nodes")&.map { |label| label.fetch("name") }
+      train_label = source_labels.grep(/Deploy train/).first
+
+      if state == "OPEN" && train_label
+        puts "  - [#{branch}] #{url} #{source_labels.map { |label| "(#{label})" }.join(" ")}"
+      end
+    end
   end
 end
 
@@ -99,6 +118,24 @@ query ($count: Int) {
             ... on Commit {
               statusCheckRollup {
                 state
+              }
+            }
+          }
+        }
+        timelineItems(last: 10, itemTypes: [CROSS_REFERENCED_EVENT]) {
+          nodes {
+            ... on CrossReferencedEvent {
+              source {
+                ... on PullRequest {
+                  labels(first: 10) {
+                    nodes {
+                      name
+                    }
+                  }
+                  headRefName
+                  state
+                  url
+                }
               }
             }
           }
