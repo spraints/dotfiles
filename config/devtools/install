@@ -9,8 +9,9 @@ cd "${root}"
 main() {
   install_packages $DEBS $GH_DEBS $COND_DEBS
 
-  install_go
   install_docker_compose
+  install_gh
+  install_go
   install_mkcert
   install_ngrok
   install_overmind
@@ -48,41 +49,6 @@ clone_docker_services() {
   fi
 }
 
-install_git() {
-  bash install-git.sh || true
-}
-
-install_overmind() {
-  overmind -version 2>/dev/null && return
-
-  curl -L -o /tmp/overmind.gz https://github.com/DarthSim/overmind/releases/download/v2.1.1/overmind-v2.1.1-linux-amd64.gz
-  rm -f /tmp/overmind
-  gunzip /tmp/overmind.gz
-  chmod +x /tmp/overmind
-  /tmp/overmind -version
-  sudo cp /tmp/overmind /usr/local/bin/overmind
-  rm -f /tmp/overmind
-}
-
-install_ngrok() {
-  ngrok version 2>/dev/null && return
-
-  echo Installing ngrok
-  curl -L -o /tmp/ngrok.zip https://bin.equinox.io/c/4VmDzA7iaHb/ngrok-stable-linux-amd64.zip
-  (cd /usr/local/bin && sudo unzip /tmp/ngrok.zip)
-  rm /tmp/ngrok.zip
-}
-
-install_mkcert() {
-  mkcert -version 2>/dev/null && return
-
-  curl -L -o /tmp/mkcert https://github.com/FiloSottile/mkcert/releases/download/v1.4.1/mkcert-v1.4.1-linux-amd64
-  chmod +x /tmp/mkcert
-  /tmp/mkcert -version
-  sudo cp /tmp/mkcert /usr/local/bin/mkcert
-  rm /tmp/mkcert
-}
-
 install_docker_compose() {
   DC_VERSION=1.27.2
   DC_URL="https://github.com/docker/compose/releases/download/${DC_VERSION}/docker-compose-$(uname -s)-$(uname -m)"
@@ -93,6 +59,26 @@ install_docker_compose() {
   sudo curl -L -o /usr/local/bin/docker-compose "$DC_URL"
   sudo chmod +x /usr/local/bin/docker-compose
   docker-compose version
+}
+
+install_gh() {
+  GH_VERSION=1.0.0
+  GH_URL="https://github.com/cli/cli/releases/download/v${GH_VERSION}/gh_${GH_VERSION}_linux_amd64.tar.gz"
+
+  if gh --version 2>/dev/null | grep "gh version ${GH_VERSION}"; then
+    return 0
+  fi
+
+  cd /tmp
+  curl -L -o gh.tar.gz "$GH_URL"
+  sudo tar xfz gh.tar.gz -C /usr/local --strip-components 1
+  rm -f gh.tar.gz
+
+  gh --version
+}
+
+install_git() {
+  bash install-git.sh || true
 }
 
 install_go() {
@@ -113,6 +99,37 @@ install_go() {
     sudo tar xfz go.tar.gz -C /usr/local
   fi
   rm -f go.tar.gz
+}
+
+install_mkcert() {
+  mkcert -version 2>/dev/null && return
+
+  curl -L -o /tmp/mkcert https://github.com/FiloSottile/mkcert/releases/download/v1.4.1/mkcert-v1.4.1-linux-amd64
+  chmod +x /tmp/mkcert
+  /tmp/mkcert -version
+  sudo cp /tmp/mkcert /usr/local/bin/mkcert
+  rm /tmp/mkcert
+}
+
+install_ngrok() {
+  ngrok version 2>/dev/null && return
+
+  echo Installing ngrok
+  curl -L -o /tmp/ngrok.zip https://bin.equinox.io/c/4VmDzA7iaHb/ngrok-stable-linux-amd64.zip
+  (cd /usr/local/bin && sudo unzip /tmp/ngrok.zip)
+  rm /tmp/ngrok.zip
+}
+
+install_overmind() {
+  overmind -version 2>/dev/null && return
+
+  curl -L -o /tmp/overmind.gz https://github.com/DarthSim/overmind/releases/download/v2.1.1/overmind-v2.1.1-linux-amd64.gz
+  rm -f /tmp/overmind
+  gunzip /tmp/overmind.gz
+  chmod +x /tmp/overmind
+  /tmp/overmind -version
+  sudo cp /tmp/overmind /usr/local/bin/overmind
+  rm -f /tmp/overmind
 }
 
 DEBS="
