@@ -83,7 +83,7 @@ alias zrake="bin/zeus rake"
 if [ "$(uname -s)" = "Linux" ]; then
   alias dominion="ssh laptop open https://dominion.games"
 else
-  alias dominion="open https://dominion.games"
+  alias dominion="open -a Google\ Chrome https://dominion.games"
 fi
 
 function md {
