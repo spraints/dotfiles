@@ -1,12 +1,12 @@
 #!/usr/bin/env ruby
-#/ Usage: ci-status [--skip-green] [branch|PR-url]
+#/ Usage: ci-status [--skip-green] [--urls] [branch|PR-url]
 #/ Shows pretty ci status for the current repo and current branch (or the named branch).
 
 require "json"
 require "net/http"
 require "timeout"
 
-def main(branch:, nwo:, token:, skip_green: false)
+def main(branch:, nwo:, token:, skip_green: false, force_urls: false)
   raw_ci_status = run!({"GITHUB_TOKEN" => token}, "ci-status-raw", nwo, branch)
   begin
     ci_status = JSON.parse(raw_ci_status)
@@ -26,7 +26,7 @@ def main(branch:, nwo:, token:, skip_green: false)
     to_show += prepare_statuses(commit["status"]) if commit["status"]
     to_show += prepare_checks(commit["checkSuites"]) if commit["checkSuites"]
     to_show.reject! { |status| status[:state] == :success } if skip_green
-    show_statuses(to_show)
+    show_statuses(to_show, force_urls: force_urls)
   rescue JSON::ParserError => e
     $stderr.puts "#{e.class.name}: #{e}", raw_ci_status
     exit 1
@@ -87,13 +87,13 @@ STATUS_SORT_ORDER = {
   :success => 3,
 }
 
-def show_statuses(status_data)
+def show_statuses(status_data, force_urls:)
   status_data.sort_by { |status| [STATUS_SORT_ORDER.fetch(status[:state], 99), status[:name]] }.each do |status|
-    show_status(status)
+    show_status(force_urls: force_urls, **status)
   end
 end
 
-def show_status(name:, description:, state:, state_string:, url:)
+def show_status(name:, description:, state:, state_string:, url:, force_urls:)
   opts =
     case state
     when :success
@@ -109,7 +109,7 @@ def show_status(name:, description:, state:, state_string:, url:)
   printf "\033[%dm%s\033[0m %s%s - %s\n",
     opts[:color], opts[:icon],
     opts[:label], name, description
-  unless opts[:hide_url]
+  if force_urls || !opts[:hide_url]
     puts "  #{url}"
   end
 end
@@ -180,6 +180,8 @@ while ARGV.first.to_s =~ /^-/
   case ARGV.shift
   when "--skip-green"
     opts[:skip_green] = true
+  when "--urls"
+    opts[:force_urls] = true
   else
     usage
   end
