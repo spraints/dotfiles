@@ -23,6 +23,7 @@ def main(token:, count: 20, earliest: (Time.now - (90 * DAY)), ignore_trains: fa
     title = pr.fetch("title")
     permalink = pr.fetch("permalink")
     draft = pr.fetch("isDraft")
+    is_read = pr.fetch("isReadByViewer")
     decision = pr.fetch("reviewDecision")
     ago = time_in_words(updated_at)
     check_status = pr.dig("headRef", "target", "statusCheckRollup", "state")
@@ -48,7 +49,16 @@ def main(token:, count: 20, earliest: (Time.now - (90 * DAY)), ignore_trains: fa
         [32, "✔︎", decision || "no_review"]
       end
 
-    printf("\033[%<color>dm%<dot>s %<status>-15s\033[0m %<permalink>s [%<branch>s by %<author>s] %<title>s, updated %<ago>s\n", {
+    read_dot =
+      if is_read
+        " "
+      else
+        mail = "✉"
+        "\033[30m#{mail}\033[0m"
+      end
+
+    printf("%<read_dot>s \033[%<color>dm%<dot>s %<status>-15s\033[0m %<permalink>s [%<branch>s by %<author>s] %<title>s, updated %<ago>s\n", {
+      read_dot: read_dot,
       color: color,
       dot: dot,
       status: status,
@@ -143,6 +153,7 @@ query ($count: Int) {
         createdAt
         headRefName
         isDraft
+        isReadByViewer
         mergeable
         permalink
         reviewDecision
