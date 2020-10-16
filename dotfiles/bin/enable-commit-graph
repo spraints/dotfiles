@@ -1,0 +1,14 @@
+#!/bin/bash
+
+set -e
+set -o nounset
+
+git_dir="$(git rev-parse --git-dir 2>/dev/null)"
+if [ -z "$git_dir" ]; then
+  echo error: Not in a git workspace.
+  exit 1
+fi
+
+echo Enabling commit-graph in "$(cd "$git_dir"/..; pwd -P)"
+git config core.commitGraph true
+git commit-graph write
