@@ -41,5 +41,5 @@
 	path = dotfiles/vim/bundle/govim
 	url = https://github.com/govim/govim.git
 [submodule "vim/bundle/editorconfig-vim"]
-	path = vim/bundle/editorconfig-vim
+	path = dotfiles/vim/bundle/editorconfig-vim
 	url = https://github.com/editorconfig/editorconfig-vim
