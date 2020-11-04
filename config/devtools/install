@@ -62,7 +62,7 @@ install_docker_compose() {
 }
 
 install_gh() {
-  GH_VERSION=1.1.0
+  GH_VERSION=1.2.0
   GH_URL="https://github.com/cli/cli/releases/download/v${GH_VERSION}/gh_${GH_VERSION}_linux_amd64.tar.gz"
 
   if gh --version 2>/dev/null | grep "gh version ${GH_VERSION}"; then
