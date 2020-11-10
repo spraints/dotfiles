@@ -1,9 +1,0 @@
-{
- "proxies":
- {
-   "default":
-   {
-     "httpProxy": "http://spraints-squid:3128"
-   }
- }
-}
