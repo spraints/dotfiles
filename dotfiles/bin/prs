@@ -17,7 +17,8 @@ def main(token:, count: 20, earliest: (Time.now - (90 * DAY)), ignore_trains: fa
   prs = results.dig("data", "viewer", "pullRequests", "nodes")
   prs.each do |pr|
     updated_at = DateTime.parse(pr.fetch("updatedAt"))
-    next if updated_at < earliest
+    archived = pr.fetch("repository").fetch("isArchived")
+    next if updated_at < earliest || archived
     author = pr.fetch("author").fetch("login")
     repository = pr.fetch("repository").fetch("nameWithOwner")
     title = pr.fetch("title")
@@ -119,6 +120,7 @@ query ($count: Int) {
       nodes {
         repository {
           nameWithOwner
+          isArchived
         }
         author {
           login
