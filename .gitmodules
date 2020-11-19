@@ -22,9 +22,6 @@
 [submodule "dotfiles/atom/packages/csharp.tmbundle"]
 	path = dotfiles/atom/packages/csharp.tmbundle
 	url = https://github.com/wintermi/csharp-tmbundle
-[submodule "dotfiles/rbenv/plugins/ruby-build"]
-	path = dotfiles/rbenv/plugins/ruby-build
-	url = https://github.com/rbenv/ruby-build
 [submodule "dotfiles/rbenv/plugins/rbenv-default-gems"]
 	path = dotfiles/rbenv/plugins/rbenv-default-gems
 	url = https://github.com/rbenv/rbenv-default-gems
