@@ -6,6 +6,17 @@ set -o nounset
 root="$(cd "$(dirname "$0")"; pwd -P)"
 cd "${root}"
 
+# https://github.com/docker/compose/releases
+DOCKER_COMPOSE_VERSION=1.27.2
+
+# https://github.com/cli/cli
+GH_CLI_VERSION=1.2.0
+
+# https://golang.org/dl/
+GO_VERSION=1.14.3
+# SHA256 of
+GO_SHA="1c39eac4ae95781b066c144c58e45d6859652247f7515f0d2cba7be7d57d2226"
+
 main() {
   install_packages $DEBS $GH_DEBS $COND_DEBS
 
@@ -50,22 +61,20 @@ clone_docker_services() {
 }
 
 install_docker_compose() {
-  DC_VERSION=1.27.2
-  DC_URL="https://github.com/docker/compose/releases/download/${DC_VERSION}/docker-compose-$(uname -s)-$(uname -m)"
+  DC_URL="https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VERSION}/docker-compose-$(uname -s)-$(uname -m)"
 
-  docker-compose version | grep $DC_VERSION 2>/dev/null && return
+  docker-compose version | grep $DOCKER_COMPOSE_VERSION 2>/dev/null && return
 
-  echo Installing docker-compose $DC_VERSION
+  echo Installing docker-compose $DOCKER_COMPOSE_VERSION
   sudo curl -L -o /usr/local/bin/docker-compose "$DC_URL"
   sudo chmod +x /usr/local/bin/docker-compose
   docker-compose version
 }
 
 install_gh() {
-  GH_VERSION=1.2.0
-  GH_URL="https://github.com/cli/cli/releases/download/v${GH_VERSION}/gh_${GH_VERSION}_linux_amd64.tar.gz"
+  GH_URL="https://github.com/cli/cli/releases/download/v${GH_CLI_VERSION}/gh_${GH_CLI_VERSION}_linux_amd64.tar.gz"
 
-  if gh --version 2>/dev/null | grep "gh version ${GH_VERSION}"; then
+  if gh --version 2>/dev/null | grep "gh version ${GH_CLI_VERSION}"; then
     return 0
   fi
 
@@ -81,9 +90,7 @@ install_git() {
 }
 
 install_go() {
-  GO_VERSION=1.14.3
-  GO_URL="https://dl.google.com/go/go1.14.3.linux-amd64.tar.gz"
-  GO_SHA="1c39eac4ae95781b066c144c58e45d6859652247f7515f0d2cba7be7d57d2226"
+  GO_URL="https://dl.google.com/go/go${GO_VERSION}.linux-amd64.tar.gz"
 
   if [ -f "/usr/local/go/bin/go" ]; then
     echo Go is already installed.
