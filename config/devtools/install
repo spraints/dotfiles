@@ -1,4 +1,5 @@
 #!/bin/bash
+# Installs packages and dev tools on a Linux machine.
 
 set -e
 set -o nounset
@@ -7,15 +8,15 @@ root="$(cd "$(dirname "$0")"; pwd -P)"
 cd "${root}"
 
 # https://github.com/docker/compose/releases
-DOCKER_COMPOSE_VERSION=1.27.2
+DOCKER_COMPOSE_VERSION=1.27.4
 
 # https://github.com/cli/cli
-GH_CLI_VERSION=1.2.0
+GH_CLI_VERSION=1.2.1
 
 # https://golang.org/dl/
-GO_VERSION=1.14.3
-# SHA256 of
-GO_SHA="1c39eac4ae95781b066c144c58e45d6859652247f7515f0d2cba7be7d57d2226"
+GO_VERSION=1.15.5
+# SHA256 of linux-amd64 tarball
+GO_SHA="9a58494e8da722c3aef248c9227b0e9c528c7318309827780f16220998180a0d"
 
 main() {
   install_packages $DEBS $GH_DEBS $COND_DEBS
@@ -66,6 +67,7 @@ install_docker_compose() {
   docker-compose version | grep $DOCKER_COMPOSE_VERSION 2>/dev/null && return
 
   echo Installing docker-compose $DOCKER_COMPOSE_VERSION
+  sudo rm -f /usr/local/bin/docker-compose
   sudo curl -L -o /usr/local/bin/docker-compose "$DC_URL"
   sudo chmod +x /usr/local/bin/docker-compose
   docker-compose version
