@@ -16,6 +16,10 @@ private.yml
 /dotfiles/atom/.node-gyp
 /dotfiles/atom/compile-cache
 
+/dotfiles/config/coc/extensions
+!/dotfiles/config/coc/extensions/package.json
+/dotfiles/config/coc/commands
+/dotfiles/config/coc/list-location-history.json
 /dotfiles/config/configstore
 /dotfiles/config/gh/hosts.yml
 /dotfiles/config/gtk*
