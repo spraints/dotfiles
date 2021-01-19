@@ -34,9 +34,9 @@
 [submodule "dotfiles/vim/bundle/typescript-vim"]
 	path = dotfiles/vim/bundle/typescript-vim
 	url = https://github.com/leafgarland/typescript-vim
-[submodule "dotfiles/vim/bundle/govim"]
-	path = dotfiles/vim/bundle/govim
-	url = https://github.com/govim/govim.git
 [submodule "vim/bundle/editorconfig-vim"]
 	path = dotfiles/vim/bundle/editorconfig-vim
 	url = https://github.com/editorconfig/editorconfig-vim
+[submodule "dotfiles/vim/bundle/coc.nvim"]
+	path = dotfiles/vim/bundle/coc.nvim
+	url = https://github.com/neoclide/coc.nvim
