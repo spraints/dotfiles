@@ -16,14 +16,12 @@ private.yml
 /dotfiles/atom/.node-gyp
 /dotfiles/atom/compile-cache
 
-/dotfiles/config/coc/extensions
+/dotfiles/config
+!/dotfiles/config/coc/extensions/db.json
 !/dotfiles/config/coc/extensions/package.json
-/dotfiles/config/coc/commands
-/dotfiles/config/coc/list-location-history.json
-/dotfiles/config/configstore
-/dotfiles/config/gh/hosts.yml
-/dotfiles/config/gtk*
-/dotfiles/config/sonic-pi.net
+!/dotfiles/config/coc/memos.json
+!/dotfiles/config/gh/config.yml
+!/dotfiles/config/git/ignore
 
 /dotfiles/gnupg/.gpg-agent-info
 
