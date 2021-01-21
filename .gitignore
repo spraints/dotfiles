@@ -16,9 +16,8 @@ private.yml
 /dotfiles/atom/.node-gyp
 /dotfiles/atom/compile-cache
 
+# git add -f anything that should be versioned in this dir.
 /dotfiles/config
-!/dotfiles/config/git
-!/dotfiles/config/google/client_secrets.json.erb
 
 /dotfiles/gnupg/.gpg-agent-info
 
