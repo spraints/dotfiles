@@ -19,7 +19,11 @@ private.yml
 # git add -f anything that should be versioned in this dir.
 /dotfiles/config
 
-/dotfiles/gnupg/.gpg-agent-info
+/dotfiles/gnupg/.*
+/dotfiles/gnupg/gpg-agent.conf
+/dotfiles/gnupg/private-keys-v1.d
+/dotfiles/gnupg/pubring*
+/dotfiles/gnupg/trustdb.gpg
 
 /dotfiles/rbenv/shims
 /dotfiles/rbenv/versions
