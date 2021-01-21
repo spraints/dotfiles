@@ -106,6 +106,10 @@ def show_status(name:, description:, state:, state_string:, url:, force_urls:)
       raise "unrecognized state #{state.inspect}"
     end
 
+  if description && description.lines.count > 1
+    description = description.lines.first.strip + " ..."
+  end
+
   printf "\033[%dm%s\033[0m %s%s - %s\n",
     opts[:color], opts[:icon],
     opts[:label], name, description
