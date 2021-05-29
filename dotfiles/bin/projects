@@ -16,6 +16,8 @@ COLUMNS = [
   "PC_lQDNTr7OFieqrs4Av6FizgDdaHQ", # Review in progress
 ]
 
+MAIL = "✉"
+
 def main(token:)
   results = get_data(token: token, query: QUERY, variables: {"ids" => COLUMNS})
   #results = JSON.parse(File.read("example.json"))
@@ -46,7 +48,17 @@ def show_results(projects)
           content = card.fetch("content")
           assignees = content.fetch("assignees").fetch("nodes").map { |a| a.fetch("login") }
           assignees_str = assignees.empty? ? "" : " (#{assignees.join(",")})"
-          puts "  - #{content.fetch("title")} (#{content.fetch("state")})#{assignees_str}"
+          changes_str =
+            case content["reviewDecision"]
+            when "CHANGES_REQUESTED"
+              " (changes requested)"
+            when "APPROVED"
+              " (approved)"
+            else
+              ""
+            end
+          bullet = content["isReadByViewer"] ? "-" : MAIL
+          puts "  #{bullet} #{content.fetch("title")}#{assignees_str}#{changes_str}"
           puts "    #{content.fetch("url")}"
         when "NOTE_ONLY"
           puts "  - #{card.fetch("note").lines.first}"
@@ -87,7 +99,7 @@ fragment issueDetails on Issue {
   issue_id: id
   url
   title
-  state
+  isReadByViewer
   assignees(first: 10) {
     nodes { login }
   }
@@ -96,7 +108,8 @@ fragment pullDetails on PullRequest {
   pull_id: id
   url
   title
-  state
+  isReadByViewer
+  reviewDecision
   assignees(first: 10) {
     nodes { login }
   }
