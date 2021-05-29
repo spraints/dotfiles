@@ -7,6 +7,7 @@ require "net/http"
 require "timeout"
 
 def main(branch:, nwo:, token:, skip_green: false, force_urls: false)
+  puts "Status for #{branch}:"
   raw_ci_status = run!({"GITHUB_TOKEN" => token}, "ci-status-raw", nwo, branch)
   begin
     ci_status = JSON.parse(raw_ci_status)
