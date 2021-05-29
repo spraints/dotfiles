@@ -1,0 +1,171 @@
+#!/usr/bin/env ruby
+#/ Usage: projects
+#/ List my projects and in-progress or in-review cards
+
+require "json"
+require "net/http"
+require "timeout"
+require "yaml"
+
+PROJECTS = {
+  "MDc6UHJvamVjdDEwNzAyMDk2" => [ # Spokes API
+    "MDEzOlByb2plY3RDb2x1bW4xMjQ0OTM4MA==", # In progress
+    "MDEzOlByb2plY3RDb2x1bW4xMjQ0OTQwMg==", # In review
+  ],
+  "MDc6UHJvamVjdDEyNTU4Njkw" => [ # Mind Meld
+    "PC_lQDNTr7OFieqrs4Av6FizgDdaHM", # In progress
+    "PC_lQDNTr7OFieqrs4Av6FizgDdaHQ", # Review in progress
+  ],
+}
+
+def main(token:)
+  query, variables = build_request(PROJECTS)
+  results = get_data(token: token, query: query, variables: variables)
+  #results = JSON.parse(File.read("example.json"))
+  if errors = results["errors"]
+    p errors
+    exit 1
+  end
+  show_results(collect_results(results.fetch("data")))
+end
+
+def collect_results(data)
+  # {
+  #   "project_id" => {
+  #     name: String,
+  #     columns: {"column_name" => {
+  #       total_count: Number,
+  #       cards: [{title: String, url: String}]}
+  #     }
+  #   }
+  # }
+  # ... and then we'll return the values from it.
+  collected = {}
+
+  data.each do |k, v|
+    case k
+    when /project/
+      project_id = v.fetch("id")
+      project_name = v.fetch("name")
+      collected[project_id] ||= {}
+      collected[project_id][:name] = project_name
+    when /column/
+      project_id = v.fetch("project").fetch("id")
+      column_name = v.fetch("name")
+      total_count = v.fetch("cards").fetch("totalCount")
+      collected[project_id] ||= {}
+      collected[project_id][column_name] = {
+        total_count: total_count,
+        cards: v.fetch("cards").fetch("nodes").map { |card|
+          case card.fetch("state")
+          when "CONTENT_ONLY"
+            {title: card.fetch("content").fetch("title"), url: card.fetch("content").fetch("url")}
+          when "NOTE_ONLY"
+            {title: card.fetch("note").lines.first, url: card.fetch("url")}
+          when "REDACTED"
+            {title: "redacted"}
+          end
+        },
+      }
+    else
+      $stderr.puts "unrecognized result field: #{k}"
+    end
+  end
+
+  collected.values.sort_by { |p| p[:name].to_s }
+end
+
+def show_results(projects)
+  puts YAML.dump(projects)
+end
+
+FRAGMENT = <<END_FRAGMENT
+fragment projectDetails on Project {
+  # do i need this?
+  id
+  name
+}
+fragment columnDetails on ProjectColumn {
+  id
+  name
+  project { id }
+  cards(first: 10) {
+    totalCount
+    nodes {
+      id
+      note
+      state # CONTENT_ONLY or NOTE_ONLY or REDACTED
+      url   # url of project card
+      content {
+        ...issueDetails
+        ...pullDetails
+      }
+    }
+  }
+}
+fragment issueDetails on Issue {
+  issue_id: id
+  url
+  title
+  state
+  assignees(first: 10) {
+    nodes { login }
+  }
+}
+fragment pullDetails on PullRequest {
+  pull_id: id
+  url
+  title
+  state
+  assignees(first: 10) {
+    nodes { login }
+  }
+}
+END_FRAGMENT
+
+def build_request(projects)
+  columns = projects.values.flatten
+  projects = projects.keys
+  variables = {}
+  projects.each_with_index do |proj, i|
+    variables["project_#{i}"] = proj
+  end
+  columns.each_with_index do |col, i|
+    variables["column_#{i}"] = col
+  end
+  variable_decls = variables.keys.map { |name| "$#{name}: ID!" }.join(", ")
+  query = "query (#{variable_decls}) {\n"
+  variables.keys.each do |name|
+    # todo: replace this with 'nodes(ids: [])'
+    query << "  #{name}: node(id: $#{name}) { ...projectDetails ...columnDetails }\n"
+  end
+  query << "}\n" + FRAGMENT
+  return query, variables
+end
+
+def get_data(token:, query:, variables:)
+  request = {query: query, variables: variables}
+
+  req = Net::HTTP::Post.new("https://api.github.com/graphql")
+  req["Authorization"] = "token #{token}"
+  req.body = JSON.dump(request)
+
+  Timeout.timeout(30.0) do
+    Net::HTTP.start("api.github.com", 443, use_ssl: true) do |http|
+      body = http.request(req).body
+      #File.write("example.json", body)
+      JSON.parse(body)
+    end
+  end
+end
+
+opts = {}
+
+unless opts[:token] = ENV["GITHUB_TOKEN"]
+  token_file = File.read(File.join(ENV["HOME"], ".github-token"))
+  if token_file =~ /(^| )GITHUB_TOKEN=(\w+)/
+    opts[:token] = $2
+  end
+end
+
+main(opts)
