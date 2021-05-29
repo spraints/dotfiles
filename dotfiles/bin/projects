@@ -7,88 +7,68 @@ require "net/http"
 require "timeout"
 require "yaml"
 
-PROJECTS = {
-  "MDc6UHJvamVjdDEwNzAyMDk2" => [ # Spokes API
-    "MDEzOlByb2plY3RDb2x1bW4xMjQ0OTM4MA==", # In progress
-    "MDEzOlByb2plY3RDb2x1bW4xMjQ0OTQwMg==", # In review
-  ],
-  "MDc6UHJvamVjdDEyNTU4Njkw" => [ # Mind Meld
-    "PC_lQDNTr7OFieqrs4Av6FizgDdaHM", # In progress
-    "PC_lQDNTr7OFieqrs4Av6FizgDdaHQ", # Review in progress
-  ],
-}
+COLUMNS = [
+  # Spokes API
+  "MDEzOlByb2plY3RDb2x1bW4xMjQ0OTM4MA==", # In progress
+  "MDEzOlByb2plY3RDb2x1bW4xMjQ0OTQwMg==", # In review
+  # Mind Meld
+  "PC_lQDNTr7OFieqrs4Av6FizgDdaHM", # In progress
+  "PC_lQDNTr7OFieqrs4Av6FizgDdaHQ", # Review in progress
+]
 
 def main(token:)
-  query, variables = build_request(PROJECTS)
-  results = get_data(token: token, query: query, variables: variables)
+  results = get_data(token: token, query: QUERY, variables: {"ids" => COLUMNS})
   #results = JSON.parse(File.read("example.json"))
   if errors = results["errors"]
     p errors
     exit 1
   end
-  show_results(collect_results(results.fetch("data")))
+  show_results(collect_columns(results.fetch("data")))
 end
 
-def collect_results(data)
-  # {
-  #   "project_id" => {
-  #     name: String,
-  #     columns: {"column_name" => {
-  #       total_count: Number,
-  #       cards: [{title: String, url: String}]}
-  #     }
-  #   }
-  # }
-  # ... and then we'll return the values from it.
-  collected = {}
-
-  data.each do |k, v|
-    case k
-    when /project/
-      project_id = v.fetch("id")
-      project_name = v.fetch("name")
-      collected[project_id] ||= {}
-      collected[project_id][:name] = project_name
-    when /column/
-      project_id = v.fetch("project").fetch("id")
-      column_name = v.fetch("name")
-      total_count = v.fetch("cards").fetch("totalCount")
-      collected[project_id] ||= {}
-      collected[project_id][column_name] = {
-        total_count: total_count,
-        cards: v.fetch("cards").fetch("nodes").map { |card|
-          case card.fetch("state")
-          when "CONTENT_ONLY"
-            {title: card.fetch("content").fetch("title"), url: card.fetch("content").fetch("url")}
-          when "NOTE_ONLY"
-            {title: card.fetch("note").lines.first, url: card.fetch("url")}
-          when "REDACTED"
-            {title: "redacted"}
-          end
-        },
-      }
-    else
-      $stderr.puts "unrecognized result field: #{k}"
-    end
-  end
-
-  collected.values.sort_by { |p| p[:name].to_s }
+def collect_columns(data)
+  data.fetch("nodes").group_by { |column| column.dig("project", "name") }
 end
 
 def show_results(projects)
-  puts YAML.dump(projects)
+  projects.sort_by(&:first).each do |name, columns|
+    puts "** #{name} **"
+    columns.each do |column|
+      puts "- #{column.fetch("name")}"
+      cards = column.fetch("cards")
+      total_cards = cards.fetch("totalCount")
+      cards = cards.fetch("nodes")
+      cards.each do |card|
+        case card.fetch("state")
+        when "REDACTED"
+          puts "  - (redacted)"
+        when "CONTENT_ONLY"
+          content = card.fetch("content")
+          assignees = content.fetch("assignees").fetch("nodes").map { |a| a.fetch("login") }
+          assignees_str = assignees.empty? ? "" : " (#{assignees.join(",")})"
+          puts "  - #{content.fetch("title")} (#{content.fetch("state")})#{assignees_str}"
+          puts "    #{content.fetch("url")}"
+        when "NOTE_ONLY"
+          puts "  - #{card.fetch("note").lines.first}"
+          puts "    #{card.fetch("url")}"
+        end
+      end
+      remaining = total_cards - cards.size
+      if remaining > 0
+        puts "  (and #{remaining} more)"
+      end
+    end
+  end
 end
 
-FRAGMENT = <<END_FRAGMENT
-fragment projectDetails on Project {
-  # do i need this?
-  id
-  name
+QUERY = <<END_QUERY
+query($ids: [ID!]!) {
+  nodes(ids: $ids) { ... columnDetails }
 }
 fragment columnDetails on ProjectColumn {
   id
   name
-  project { id }
+  project { id name }
   cards(first: 10) {
     totalCount
     nodes {
@@ -121,9 +101,10 @@ fragment pullDetails on PullRequest {
     nodes { login }
   }
 }
-END_FRAGMENT
+END_QUERY
 
-def build_request(projects)
+def build_request(column_ids)
+  variables = {"ids" => column_ids}
   columns = projects.values.flatten
   projects = projects.keys
   variables = {}
