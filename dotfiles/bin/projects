@@ -1,6 +1,7 @@
 #!/usr/bin/env ruby
-#/ Usage: projects
-#/ List my projects and in-progress or in-review cards
+#/ Usage: projects [--find NAME [--scope OWNER-OR-REPO]]
+#/ List my projects and in-progress or in-review cards.
+#/ If --find is provided, show matching projects and columns, along with their IDs.
 
 require "json"
 require "net/http"
@@ -9,6 +10,7 @@ require "yaml"
 
 COLUMNS = [
   # Spokes API
+  "MDEzOlByb2plY3RDb2x1bW4xMjQ0OTM3OQ==", # To Do This Iteration
   "MDEzOlByb2plY3RDb2x1bW4xMjQ0OTM4MA==", # In progress
   "MDEzOlByb2plY3RDb2x1bW4xMjQ0OTQwMg==", # In review
   # Mind Meld
@@ -18,7 +20,8 @@ COLUMNS = [
 
 MAIL = "✉"
 
-def main(token:)
+def main(token:, find: nil, scope: nil)
+  return find_projects(find, token: token, scope: scope) if find
   results = get_data(token: token, query: QUERY, variables: {"ids" => COLUMNS})
   #results = JSON.parse(File.read("example.json"))
   if errors = results["errors"]
@@ -27,6 +30,89 @@ def main(token:)
   end
   show_results(collect_columns(results.fetch("data")))
 end
+
+def usage
+  system "cat #{$0} | grep ^#/ | cut -c4-"
+  exit 1
+end
+
+def find_projects(query, scope:, token:)
+  results = get_data(token: token, **find_projects_query(scope: scope, query: query))
+  if errors = results["errors"]
+    puts "warning: #{errors.inspect}"
+    # continue, there might be other results
+  end
+  results.fetch("data").values.each do |obj|
+    next if obj.nil?
+    obj.fetch("projects").fetch("nodes").each do |project|
+      puts "#{project.fetch("id")} #{project.fetch("name")}"
+      project.fetch("columns").fetch("nodes").each do |column|
+        puts " - #{column.fetch("id")} #{column.fetch("name")}"
+      end
+    end
+  end
+end
+
+def find_projects_query(scope:, query:)
+  case scope
+  when /\//
+    owner, repository = scope.split("/", 2)
+    {query: FIND_REPO_PROJECTS, variables: {owner: owner, repository: repository, query: query}}
+  when String
+    {query: FIND_OWNED_PROJECTS, variables: {owner: scope, query: query}}
+  when nil
+    {query: FIND_MY_PROJECTS, variables: {query: query}}
+  end
+end
+
+PROJECT_LIST = <<-FRAGMENT
+fragment projectList on ProjectConnection{
+  nodes{
+    name id
+    columns(first:10){
+      nodes{ name id }
+    }
+  }
+}
+FRAGMENT
+
+FIND_REPO_PROJECTS = <<-GRAPHQL
+query($query:String,$owner:String!,$repository:String!) {
+  repository(owner:$owner,name:$repository) {
+    projects(search:$query, first:10){
+      ...projectList
+    }
+  }
+}
+#{PROJECT_LIST}
+GRAPHQL
+
+FIND_OWNED_PROJECTS = <<-GRAPHQL
+query($query:String,$owner:String!) {
+  user(login:$owner){
+    projects(search:$query, first:10){
+      ...projectList
+    }
+  }
+  organization(login:$owner){
+    projects(search:$query, first:10){
+      ...projectList
+    }
+  }
+}
+#{PROJECT_LIST}
+GRAPHQL
+
+FIND_MY_PROJECTS = <<-GRAPHQL
+query($query:String) {
+  viewer{
+    projects(search:$query, first:10){
+      ...projectList
+    }
+  }
+}
+#{PROJECT_LIST}
+GRAPHQL
 
 def collect_columns(data)
   data.fetch("nodes").group_by { |column| column.dig("project", "name") }
@@ -78,27 +164,21 @@ query($ids: [ID!]!) {
   nodes(ids: $ids) { ... columnDetails }
 }
 fragment columnDetails on ProjectColumn {
-  id
-  name
+  id name
   project { id name }
   cards(first: 10) {
     totalCount
     nodes {
-      id
-      note
+      id note
       state # CONTENT_ONLY or NOTE_ONLY or REDACTED
       url   # url of project card
-      content {
-        ...issueDetails
-        ...pullDetails
-      }
+      content { ...issueDetails ...pullDetails }
     }
   }
 }
 fragment issueDetails on Issue {
   issue_id: id
-  url
-  title
+  url title
   isReadByViewer
   assignees(first: 10) {
     nodes { login }
@@ -106,10 +186,8 @@ fragment issueDetails on Issue {
 }
 fragment pullDetails on PullRequest {
   pull_id: id
-  url
-  title
-  isReadByViewer
-  reviewDecision
+  url title
+  isReadByViewer reviewDecision
   assignees(first: 10) {
     nodes { login }
   }
@@ -137,7 +215,7 @@ def build_request(column_ids)
   return query, variables
 end
 
-def get_data(token:, query:, variables:)
+def get_data(token:, query:, variables: {})
   request = {query: query, variables: variables}
 
   req = Net::HTTP::Post.new("https://api.github.com/graphql")
@@ -154,6 +232,19 @@ def get_data(token:, query:, variables:)
 end
 
 opts = {}
+
+while ARGV.first.to_s =~ /^-/
+  case ARGV.shift
+  when "--find"
+    opts[:find] = ARGV.shift
+  when "--scope"
+    opts[:scope] = ARGV.shift
+  else
+    usage
+  end
+end
+
+usage if ARGV.size > 0
 
 unless opts[:token] = ENV["GITHUB_TOKEN"]
   token_file = File.read(File.join(ENV["HOME"], ".github-token"))

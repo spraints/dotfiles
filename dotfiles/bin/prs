@@ -220,7 +220,7 @@ while ARGV.first.to_s =~ /^-/
   end
 end
 
-usage if ARGV.size > 1
+usage if ARGV.size > 0
 
 unless opts[:token] = ENV["GITHUB_TOKEN"]
   token_file = File.read(File.join(ENV["HOME"], ".github-token"))
