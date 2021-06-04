@@ -30,6 +30,7 @@ def main(token:, count: 20, earliest: (Time.now - (90 * DAY)), ignore_trains: fa
     check_status = pr.dig("headRef", "target", "statusCheckRollup", "state")
     branch = pr.fetch("headRefName")
     mergeable = pr.fetch("mergeable")
+    automerge_enabled = !pr.dig("autoMergeRequest", "enabledAt").nil?
 
     color, dot, status =
       if draft
@@ -49,6 +50,8 @@ def main(token:, count: 20, earliest: (Time.now - (90 * DAY)), ignore_trains: fa
       else
         [32, "✔︎", decision || "no_review"]
       end
+
+    dot = "🤖" if automerge_enabled
 
     read_dot =
       if is_read
@@ -142,6 +145,7 @@ query ($count: Int) {
         title permalink createdAt updatedAt
         headRefName mergeable
         isDraft isReadByViewer reviewDecision
+        autoMergeRequest { enabledAt }
       }
     }
   }
