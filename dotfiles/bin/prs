@@ -53,6 +53,12 @@ def main(token:, count: 20, earliest: (Time.now - (90 * DAY)), ignore_trains: fa
 
     dot = "🤖" if automerge_enabled
 
+    status = [
+      check_status && "CI_#{check_status}",
+      mergeable,
+      decision,
+    ].compact.join(",")
+
     read_dot =
       if is_read
         " "
