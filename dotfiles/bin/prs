@@ -118,19 +118,12 @@ query ($count: Int) {
   viewer {
     pullRequests(states: [OPEN], first: $count, orderBy: {field: CREATED_AT, direction: DESC}) {
       nodes {
-        repository {
-          nameWithOwner
-          isArchived
-        }
-        author {
-          login
-        }
+        repository { nameWithOwner isArchived }
+        author { login }
         headRef {
           target {
             ... on Commit {
-              statusCheckRollup {
-                state
-              }
+              statusCheckRollup { state }
             }
           }
         }
@@ -139,28 +132,16 @@ query ($count: Int) {
             ... on CrossReferencedEvent {
               source {
                 ... on PullRequest {
-                  labels(first: 10) {
-                    nodes {
-                      name
-                    }
-                  }
-                  headRefName
-                  state
-                  url
+                  labels(first: 10) { nodes { name } }
+                  headRefName state url
                 }
               }
             }
           }
         }
-        createdAt
-        headRefName
-        isDraft
-        isReadByViewer
-        mergeable
-        permalink
-        reviewDecision
-        title
-        updatedAt
+        title permalink createdAt updatedAt
+        headRefName mergeable
+        isDraft isReadByViewer reviewDecision
       }
     }
   }
