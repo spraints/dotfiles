@@ -1,5 +1,5 @@
 #!/usr/bin/env ruby
-#/ Usage: projects [--find NAME [--scope OWNER-OR-REPO]]
+#/ Usage: projects [--find NAME [--scope OWNER-OR-REPO]] [--all]
 #/ List my projects and in-progress or in-review cards.
 #/ If --find is provided, show matching projects and columns, along with their IDs.
 
@@ -8,21 +8,27 @@ require "net/http"
 require "timeout"
 require "yaml"
 
-COLUMNS = [
+COLUMNS = {
   # Spokes API
-  "MDEzOlByb2plY3RDb2x1bW4xMjQ0OTM3OQ==", # To Do This Iteration
-  "MDEzOlByb2plY3RDb2x1bW4xMjQ0OTM4MA==", # In progress
-  "MDEzOlByb2plY3RDb2x1bW4xMjQ0OTQwMg==", # In review
+  "MDEzOlByb2plY3RDb2x1bW4xMjQ0OTM3OQ==" => false, # To Do This Iteration
+  "MDEzOlByb2plY3RDb2x1bW4xMjQ0OTM4MA==" => false, # In progress
+  "MDEzOlByb2plY3RDb2x1bW4xMjQ0OTQwMg==" => true, # In review
   # Mind Meld
-  "PC_lQDNTr7OFieqrs4Av6FizgDdaHM", # In progress
-  "PC_lQDNTr7OFieqrs4Av6FizgDdaHQ", # Review in progress
-]
+  "PC_lQDNTr7OFieqrs4Av6FizgDdaHM" => false, # In progress
+  "PC_lQDNTr7OFieqrs4Av6FizgDdaHQ" => true, # Review in progress
+  # Personal Projects
+  "MDEzOlByb2plY3RDb2x1bW4xMzQwMDU3Mw==" => false, # To do
+  "MDEzOlByb2plY3RDb2x1bW4xMzQwMDU3NA==" => false, # In progress
+  # Git Storage Current Iteration
+  "MDEzOlByb2plY3RDb2x1bW43NjQxODc0" => true, # Needs Review
+}
 
 MAIL = "✉"
 
-def main(token:, find: nil, scope: nil)
+def main(token:, find: nil, scope: nil, all: false)
   return find_projects(find, token: token, scope: scope) if find
-  results = get_data(token: token, query: QUERY, variables: {"ids" => COLUMNS})
+  ids = all ? COLUMNS.keys : COLUMNS.select { |_, ok| ok }.map { |id, _| id }
+  results = get_data(token: token, query: QUERY, variables: {"ids" => ids})
   #results = JSON.parse(File.read("example.json"))
   if errors = results["errors"]
     p errors
@@ -239,6 +245,8 @@ while ARGV.first.to_s =~ /^-/
     opts[:find] = ARGV.shift
   when "--scope"
     opts[:scope] = ARGV.shift
+  when "--all"
+    opts[:all] = true
   else
     usage
   end

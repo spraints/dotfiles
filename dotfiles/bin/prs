@@ -94,7 +94,7 @@ def show_train_info(pr)
       train_label = source_labels.grep(/Deploy train/).first
 
       if state == "OPEN" && train_label
-        puts "  - [#{branch}] #{url} #{source_labels.map { |label| "(#{label})" }.join(" ")}"
+        puts "    [#{branch}] #{url} #{source_labels.map { |label| "(#{label})" }.join(" ")}"
       end
     end
   end
