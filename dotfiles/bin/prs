@@ -2,14 +2,13 @@
 #/ Usage: prs [--count N] [--last [N] day|week|month|year]
 #/ Show my PRs.
 
-require "json"
-require "net/http"
 require "time"
-require "timeout"
+
+require_relative "github-api"
 
 def main(token:, count: 20, earliest: (Time.now - (90 * DAY)), ignore_trains: false)
   earliest = earliest.to_datetime
-  results = get_data(token: token, count: count)
+  results = get_data(token: token, query: QUERY, variables: {count: count})
   if errors = results["errors"]
     p errors
     exit 1
@@ -157,24 +156,6 @@ query ($count: Int) {
   }
 }
 QUERY
-
-def get_data(token:, count:)
-  request = {
-    query: QUERY,
-    variables: {
-      count: count,
-    },
-  }
-  req = Net::HTTP::Post.new("https://api.github.com/graphql")
-  req["Authorization"] = "token #{token}"
-  req.body = JSON.dump(request)
-
-  Timeout.timeout(30.0) do
-    Net::HTTP.start("api.github.com", 443, use_ssl: true) do |http|
-      JSON.parse(http.request(req).body)
-    end
-  end
-end
 
 opts = {}
 

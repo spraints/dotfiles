@@ -3,10 +3,7 @@
 #/ List my projects and in-progress or in-review cards.
 #/ If --find is provided, show matching projects and columns, along with their IDs.
 
-require "json"
-require "net/http"
-require "timeout"
-require "yaml"
+require_relative "github-api"
 
 COLUMNS = {
   # Spokes API
@@ -29,7 +26,6 @@ def main(token:, find: nil, scope: nil, all: false)
   return find_projects(find, token: token, scope: scope) if find
   ids = all ? COLUMNS.keys : COLUMNS.select { |_, ok| ok }.map { |id, _| id }
   results = get_data(token: token, query: QUERY, variables: {"ids" => ids})
-  #results = JSON.parse(File.read("example.json"))
   if errors = results["errors"]
     p errors
     exit 1
@@ -219,22 +215,6 @@ def build_request(column_ids)
   end
   query << "}\n" + FRAGMENT
   return query, variables
-end
-
-def get_data(token:, query:, variables: {})
-  request = {query: query, variables: variables}
-
-  req = Net::HTTP::Post.new("https://api.github.com/graphql")
-  req["Authorization"] = "token #{token}"
-  req.body = JSON.dump(request)
-
-  Timeout.timeout(30.0) do
-    Net::HTTP.start("api.github.com", 443, use_ssl: true) do |http|
-      body = http.request(req).body
-      #File.write("example.json", body)
-      JSON.parse(body)
-    end
-  end
 end
 
 opts = {}
