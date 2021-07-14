@@ -122,7 +122,7 @@ end
 
 def show_results(projects)
   projects.sort_by(&:first).each do |name, columns|
-    puts "** #{name} **"
+    puts "** #{name} ** #{columns.first.dig("project", "url")}"
     columns.each do |column|
       puts "- #{column.fetch("name")}"
       cards = column.fetch("cards")
@@ -167,7 +167,7 @@ query($ids: [ID!]!) {
 }
 fragment columnDetails on ProjectColumn {
   id name
-  project { id name }
+  project { id name url }
   cards(first: 10) {
     totalCount
     nodes {
