@@ -1,5 +1,6 @@
 call plug#begin()
 Plug 'neovim/nvim-lspconfig'
+Plug 'fatih/vim-go', { 'do': ':GoInstallBinaries' }
 call plug#end()
 
 lua <<END
