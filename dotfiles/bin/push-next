@@ -1,0 +1,37 @@
+#!/usr/bin/ruby
+
+def main(force: false, remote: "origin")
+  unless system("ci-status", "--skip-green")
+    unless force
+      puts "error: CI hasn't finished yet. Wait for it to be all green, or pass --force."
+      exit 1
+    end
+  end
+
+  current_branch = get_current_branch
+  sha = `git rev-list HEAD ^@{u}`.lines.last&.strip
+
+  if sha && sha.size == 40 && current_branch && current_branch != ""
+    unless system("git", "push", remote, "#{sha}:#{current_branch}")
+      exit 1
+    end
+  end
+end
+
+def get_current_branch
+  `git branch --no-color`.lines.grep(/^\*/).map { |l| l.sub("* ", "").strip }.first
+end
+
+opts = {}
+
+until ARGV.empty?
+  case arg = ARGV.shift
+  when "--force"
+    opts[:force] = true
+  else
+    puts "Usage: push-next [--force]"
+    exit 1
+  end
+end
+
+main(**opts)

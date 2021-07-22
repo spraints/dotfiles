@@ -26,8 +26,10 @@ def main(branch:, nwo:, token:, skip_green: false, force_urls: false)
     to_show = []
     to_show += prepare_statuses(commit["status"]) if commit["status"]
     to_show += prepare_checks(commit["checkSuites"]) if commit["checkSuites"]
+    all_ok = !to_show.empty? && to_show.all? { |status| status[:state] == :success }
     to_show.reject! { |status| status[:state] == :success } if skip_green
     show_statuses(to_show, force_urls: force_urls)
+    exit 2 unless all_ok
   rescue JSON::ParserError => e
     $stderr.puts "#{e.class.name}: #{e}", raw_ci_status
     exit 1
