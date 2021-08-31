@@ -134,8 +134,9 @@ def show_results(projects)
           puts "  - (redacted)"
         when "CONTENT_ONLY"
           content = card.fetch("content")
+          author = content.fetch("author").fetch("login")
           assignees = content.fetch("assignees").fetch("nodes").map { |a| a.fetch("login") }
-          assignees_str = assignees.empty? ? "" : " (#{assignees.join(",")})"
+          assignees_str = assignees.empty? ? " (#{author})" : " (assigned to #{assignees.join(",")})"
           changes_str =
             case content["reviewDecision"]
             when "CHANGES_REQUESTED"
@@ -179,6 +180,7 @@ fragment columnDetails on ProjectColumn {
   }
 }
 fragment issueDetails on Issue {
+  author { login }
   issue_id: id
   url title
   isReadByViewer
@@ -187,6 +189,7 @@ fragment issueDetails on Issue {
   }
 }
 fragment pullDetails on PullRequest {
+  author { login }
   pull_id: id
   url title
   isReadByViewer reviewDecision
