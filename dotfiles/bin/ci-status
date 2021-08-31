@@ -1,4 +1,7 @@
-#!/usr/bin/env ruby
+#!/bin/bash
+export RBENV_VERSION=system
+exec ruby "$0" "$@"
+#!ruby
 #/ Usage: ci-status [--skip-green] [--urls] [branch|PR-url]
 #/ Shows pretty ci status for the current repo and current branch (or the named branch).
 
