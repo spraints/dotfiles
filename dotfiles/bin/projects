@@ -175,7 +175,7 @@ query($ids: [ID!]!) {
 fragment columnDetails on ProjectColumn {
   id name
   project { id name url }
-  cards(first: 10) {
+  cards(first: 10, archivedStates: [NOT_ARCHIVED]) {
     totalCount
     nodes {
       id note
