@@ -18,6 +18,12 @@ COLUMNS = {
   "MDEzOlByb2plY3RDb2x1bW4xMzQwMDU3NA==" => false, # In progress
   # Git Storage Current Iteration
   "MDEzOlByb2plY3RDb2x1bW43NjQxODc0" => true, # Needs Review
+  # varnish
+  "PC_lAPNJr_OAMq5CM4A809W" => true, # To do
+  "PC_lAPNJr_OAMq5CM4A809X" => true, # In progress
+  "PC_lAPNJr_OAMq5CM4A809Y" => true, # Review in progress
+  "PC_lAPNJr_OAMq5CM4A809Z" => true, # Reviewer approved
+  "PC_lAPNJr_OAMq5CM4A809a" => false, # Done
 }
 
 MAIL = "✉"
