@@ -230,6 +230,15 @@ if ! opts[:nwo]
     end
 end
 
+opts[:token] ||= ENV["GITHUB_TOKEN"]
+opts[:token] ||=
+  begin
+    token_file = File.read(File.join(ENV["HOME"], ".github-token"))
+    if token_file =~ /(^| )GITHUB_TOKEN=(\w+)/
+      $2
+    end
+  end
+
 token_file = File.read(File.join(ENV["HOME"], ".github-token"))
 if token_file =~ /(^| )GITHUB_TOKEN=(\w+)/
   opts[:token] = $2
