@@ -1,0 +1,10 @@
+#!/bin/bash
+
+set -e
+
+script/install-dotfiles
+# TODO fix git config?
+
+sudo apt-get install -y \
+  neovim \
+  silversearcher-ag
