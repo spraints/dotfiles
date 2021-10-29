@@ -5,6 +5,11 @@ set -e
 script/install-dotfiles
 # TODO fix git config?
 
+git config --file=dotfiles/gitconfig --unset user.signingkey
+git config --file=dotfiles/gitconfig --unset credential.helper
+git config --file=dotfiles/gitconfig --unset url.git@github.com:.insteadof
+git config --file=dotfiles/gitconfig --unset url.git@ghe.io:.insteadof
+
 sudo apt-get install -y \
   neovim \
   silversearcher-ag
