@@ -2,6 +2,7 @@ call plug#begin()
 Plug 'neovim/nvim-lspconfig'
 Plug 'fatih/vim-go', { 'do': ':GoInstallBinaries' }
 Plug 'mileszs/ack.vim'
+Plug 'rust-lang/rust.vim'
 call plug#end()
 
 lua <<END
@@ -29,6 +30,8 @@ function go_org_imports(wait_ms)
 end
 vim.api.nvim_command("au BufWritePre *.go lua go_org_imports( 1000)")
 END
+
+let g:rustfmt_autosave=1
 
 let g:ackprg="ag --nocolor --nogroup --column"
 
