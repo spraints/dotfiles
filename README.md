@@ -18,7 +18,5 @@ I may expand on this, but for now just copy/paste this:
 
 ```
 git clone https://github.com/spraints/dotfiles ~/.dotfiles
-(cd ~/.dotfiles && script/install-dotfiles)
+(cd ~/.dotfiles && script/install-codespaces)
 ```
-
-... and then copy `~/.gitconfig.orig` over the similar bits in `~/.gitconfig`.
