@@ -9,7 +9,7 @@ git config --file=dotfiles/gitconfig --unset user.signingkey
 git config --file=dotfiles/gitconfig --unset credential.helper
 git config --file=dotfiles/gitconfig --unset url.git@github.com:.insteadof
 git config --file=dotfiles/gitconfig --unset url.git@ghe.io:.insteadof
-git config --file=dotfiles/gitconfig url.https://github.com/.insteadof git@github.com:
+test -f ${HOME}/.gitconfig.orig && cat ${HOME}/.gitconfig.orig >> dotfiles/gitconfig
 
 sudo apt-get install -y \
   neovim \
