@@ -1,0 +1,7 @@
+[[battery.display]]
+threshold = 30
+
+[env_var]
+variable = "STARSHIP_THIS_PID"
+format = "sid [$env_value]($style) "
+default = "unknown"

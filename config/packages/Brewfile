@@ -4,6 +4,7 @@
 #    brew bundle
 
 tap "heroku/brew"
+tap "homebrew/cask-fonts"
 
 # useful stuff for my programming hobby
 brew "graphviz"
@@ -17,6 +18,7 @@ brew "pstree"
 brew "rbenv"
 brew "reattach-to-user-namespace"
 brew "ruby-build"
+brew "starship"
 brew "tcptrace"
 brew "the_silver_searcher" # ag, ack replacement
 brew "tmux"
@@ -50,3 +52,6 @@ brew "sl"
 #wip - trying to get gpg commit signing set up again :(
 brew "gnupg"
 brew "pinentry-mac"
+
+# fonts
+brew "font-fira-mono-nerd-font"
