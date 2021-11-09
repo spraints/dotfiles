@@ -1,6 +1,7 @@
 ConnectTimeout 16
 
 Include config.local
+UpdateHostKeys ask
 
 # From vagrant guest to the host.
 Host laptop
