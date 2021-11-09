@@ -29,4 +29,4 @@
 [pull]
 	ff = only
 [init]
-	defaultBranch = refs/heads/main
+	defaultBranch = main
