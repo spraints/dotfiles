@@ -1,7 +1,10 @@
 ConnectTimeout 16
 
 Include config.local
-UpdateHostKeys ask
+
+Host github.com
+  UpdateHostKeys ask
+  CheckHostIP no
 
 # From vagrant guest to the host.
 Host laptop
