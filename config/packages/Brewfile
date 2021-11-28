@@ -18,6 +18,7 @@ brew "pstree"
 brew "rbenv"
 brew "reattach-to-user-namespace"
 brew "ruby-build"
+brew "rustup-init"
 brew "starship"
 brew "tcptrace"
 brew "the_silver_searcher" # ag, ack replacement
@@ -25,33 +26,26 @@ brew "tmux"
 brew "watch"
 
 # other apps that I use
+cask "gnucash"
+cask "handbrake"
+cask "keepassxc"
+cask "iterm2"
 brew "ledger"
 brew "youtube-dl"
 
-cask "firefox"
-cask "gnucash"
-cask "google-chrome"
-cask "handbrake"
-#cask "insomnia" - i installed this some other way
-cask "iterm2"
-cask "keepassx"
-cask "keybase"
-cask "spotify"
-cask "virtualbox"
-cask "viscosity"
-cask "visual-studio-code"
-
-# fun mistyped commands
-brew "gti"
-brew "sl"
-
-# these should go in projects' Brewfiles
-#brew "mercurial"
-#brew "subversion"
+# Things I might want to use homebrew to install, but might not.
+#cask "firefox"
+#cask "google-chrome"
+#cask "keybase"
+#cask "spotify"
+#cask "virtualbox"
+#cask "viscosity"
+#cask "visual-studio-code"
 
 #wip - trying to get gpg commit signing set up again :(
 brew "gnupg"
 brew "pinentry-mac"
 
 # fonts
-brew "font-fira-mono-nerd-font"
+tap "homebrew/cask-fonts"
+cask "font-fira-mono-nerd-font"
