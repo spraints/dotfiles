@@ -201,6 +201,9 @@ usage if ARGV.size > 1
 
 opts[:branch] = ARGV.first || `git branch --no-color 2> /dev/null | sed -e '/^[^*]/d' -e 's/^* //'`.strip
 case opts[:branch]
+when %r{\Ahttps://github.com/([^/]+/[^/]+)\z}
+  opts[:nwo] = $1
+  opts[:branch] = "HEAD"
 when %r{\Ahttps://github.com/([^/]+/[^/]+)/commit/([a-f0-9]+)\z}
   opts[:nwo] = $1
   opts[:branch] = $2
