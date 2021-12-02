@@ -117,7 +117,7 @@ def time_in_words(dt)
 end
 
 def usage
-  system "cat #{$0} | grep ^#/ | cut -c4-"
+  puts File.read(__FILE__).lines.grep(/^#\//).join.gsub(/^#\/ /, '')
   exit 1
 end
 
