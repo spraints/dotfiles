@@ -5,13 +5,13 @@ set -o nounset
 
 if [ "$(uname -s)" != "Linux" ]; then
   echo 'Use config/brewfile to install neovim here!'
-  exit 1
+  exit
 fi
 
 if which nvim >/dev/null; then
   echo 'Neovim is already installed, not going to install it again.'
   nvim --version | head -n 1
-  exit 1
+  exit
 fi
 
 start_dir="$(pwd -P)"
