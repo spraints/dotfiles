@@ -1,0 +1,30 @@
+#!/bin/bash
+
+set -e
+set -o nounset
+
+if [ "$(uname -s)" != "Linux" ]; then
+  echo 'Use config/brewfile to install neovim here!'
+  exit 1
+fi
+
+if which nvim >/dev/null; then
+  echo 'Neovim is already installed, not going to install it again.'
+  nvim --version | head -n 1
+  exit 1
+fi
+
+start_dir="$(pwd -P)"
+curl -LO https://github.com/neovim/neovim/releases/latest/download/nvim.appimage
+chmod u+x nvim.appimage
+
+cd /
+sudo "${start_dir}/nvim.appimage" --appimage-extract
+rm -f "${start_dir}/nvim.appimage"
+sudo mv squashfs-root neovim-root
+
+cd "${HOME}"
+rm -f .bin/nvim
+ln -s /neovim-root/AppRun .bin/nvim
+
+cd "${start_dir}"
