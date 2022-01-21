@@ -245,9 +245,4 @@ opts[:token] ||=
     end
   end
 
-token_file = File.read(File.join(ENV["HOME"], ".github-token"))
-if token_file =~ /(^| )GITHUB_TOKEN=(\w+)/
-  opts[:token] = $2
-end
-
 main(opts)
