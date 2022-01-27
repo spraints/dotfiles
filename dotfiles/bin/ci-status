@@ -44,7 +44,12 @@ def usage
   exit 1
 end
 
-STATUS_STATES = {"SUCCESS" => :success, "FAILURE" => :failure, "ERROR" => :failure}.freeze
+STATUS_STATES = {
+  "SUCCESS" => :success,
+  "NEUTRAL" => :neutral,
+  "FAILURE" => :failure,
+  "ERROR" => :failure,
+}.freeze
 
 def prepare_statuses(statuses)
   statuses["contexts"].map { |context| {
@@ -70,7 +75,7 @@ def prepare_checks(checks)
         if run["conclusion"] == "SUCCESS"
           state = :success
         elsif run["conclusion"] == "NEUTRAL"
-          state = :pending
+          state = :neutral
         else
           state = :failure
         end
@@ -90,7 +95,8 @@ end
 STATUS_SORT_ORDER = {
   :failure => 1,
   :pending => 2,
-  :success => 3,
+  :neutral => 3,
+  :success => 4,
 }
 
 def show_statuses(status_data, force_urls:)
@@ -104,6 +110,12 @@ def show_status(name:, description:, state:, state_string:, url:, force_urls:)
     case state
     when :success
       {color: 32, icon: "✔︎", hide_url: true}
+    when :neutral
+      {color: 30, icon: "⊘", hide_url: true}
+      # ❀
+      # ⁐
+      # ⊘
+      # ∓
     when :failure
       {color: 31, icon: "✖︎"}
     when :pending
