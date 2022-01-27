@@ -1,42 +1,67 @@
 #!/usr/bin/env ruby
-#/ Usage: projects [--find NAME [--scope OWNER-OR-REPO]] [--all]
-#/ List my projects and in-progress or in-review cards.
-#/ If --find is provided, show matching projects and columns, along with their IDs.
+#/ Usage: projects [--cards SUBSET]
+#/  - List cards for the given subset. SUBSET may be todo, wip, review, or all.
+#/    The default is review.
+#/ Usage: projects --list
+#/  - List projects with their URLs.
+#/ Usage: projects --find NAME [--scope OWNER-OR-REPO]
+#/  - List projects that match, with their columns.
 
 require_relative "github-api"
 
 COLUMNS = {
   # Spokes API
-  "MDEzOlByb2plY3RDb2x1bW4xMjQ0OTM3OQ==" => false, # To Do This Iteration
-  "MDEzOlByb2plY3RDb2x1bW4xMjQ0OTM4MA==" => false, # In progress
-  "MDEzOlByb2plY3RDb2x1bW4xMjQ0OTQwMg==" => true, # In review
+  "MDEzOlByb2plY3RDb2x1bW4xMjQ0OTM3OQ==" => :todo, # To Do
+  "MDEzOlByb2plY3RDb2x1bW4xMjQ0OTM4MA==" => :wip, # In progress
+  "MDEzOlByb2plY3RDb2x1bW4xMjQ0OTQwMg==" => :review, # In review
   # Mind Meld
-  "PC_lQDNTr7OFieqrs4Av6FizgDdaHM" => false, # In progress
-  "PC_lQDNTr7OFieqrs4Av6FizgDdaHQ" => true, # Review in progress
+  "PC_lQDNTr7OFieqrs4Av6FizgDdaHM" => :wip, # In progress
+  "PC_lQDNTr7OFieqrs4Av6FizgDdaHQ" => :review, # Review in progress
   # Personal Projects
-  "MDEzOlByb2plY3RDb2x1bW4xMzQwMDU3Mw==" => false, # To do
-  "MDEzOlByb2plY3RDb2x1bW4xMzQwMDU3NA==" => false, # In progress
+  "MDEzOlByb2plY3RDb2x1bW4xMzQwMDU3Mw==" => :todo, # To do
+  "MDEzOlByb2plY3RDb2x1bW4xMzQwMDU3NA==" => :wip, # In progress
   # Git Storage Current Iteration
-  "MDEzOlByb2plY3RDb2x1bW43NjQxODc0" => true, # Needs Review
+  "MDEzOlByb2plY3RDb2x1bW43NjQxODc0" => :review, # Needs Review
+  "MDEzOlByb2plY3RDb2x1bW43NjQxODc1" => :review, # Reviewer approved
+  # Git Protocols On Deck
+  "PC_lAPNJr_OAECYbs4BDLfX" => :review, # In Review
   # varnish
-  "PC_lAPNJr_OAMq5CM4A809W" => true, # To do
-  "PC_lAPNJr_OAMq5CM4A809X" => true, # In progress
-  "PC_lAPNJr_OAMq5CM4A809Y" => true, # Review in progress
-  "PC_lAPNJr_OAMq5CM4A809Z" => true, # Reviewer approved
-  "PC_lAPNJr_OAMq5CM4A809a" => false, # Done
+  "PC_lAPNJr_OAMq5CM4A809W" => :todo, # To do
+  "PC_lAPNJr_OAMq5CM4A809X" => :wip, # In progress
+  "PC_lAPNJr_OAMq5CM4A809Y" => :review, # Review in progress
+  "PC_lAPNJr_OAMq5CM4A809Z" => :review, # Reviewer approved
 }
 
 MAIL = "✉"
 
-def main(token:, find: nil, scope: nil, all: false)
-  return find_projects(find, token: token, scope: scope) if find
-  ids = all ? COLUMNS.keys : COLUMNS.select { |_, ok| ok }.map { |id, _| id }
-  results = get_data(token: token, query: QUERY, variables: {"ids" => ids})
-  if errors = results["errors"]
-    p errors
-    exit 1
+def main(token:, query: nil, scope: nil, mode: :review)
+  case mode
+  when :find
+    find_projects(query, token: token, scope: scope)
+
+  when :projects, :all
+    ids = COLUMNS.keys
+    results = get_data(token: token, query: QUERY, variables: {"ids" => ids})
+    if errors = results["errors"]
+      p errors
+      exit 1
+    end
+    show_results collect_columns(results.fetch("data")),
+      hide_columns: mode == :projects
+
+  else
+    ids = COLUMNS.select { |_, m| mode == m }.map { |id, _| id }
+    if ids.empty?
+      puts "error: no columns for SUBSET #{mode}"
+      return
+    end
+    results = get_data(token: token, query: QUERY, variables: {"ids" => ids})
+    if errors = results["errors"]
+      p errors
+      exit 1
+    end
+    show_results collect_columns(results.fetch("data"))
   end
-  show_results(collect_columns(results.fetch("data")))
 end
 
 def usage
@@ -126,9 +151,10 @@ def collect_columns(data)
   data.fetch("nodes").group_by { |column| column.dig("project", "name") }
 end
 
-def show_results(projects)
+def show_results(projects, hide_columns: false)
   projects.sort_by(&:first).each do |name, columns|
     puts "** #{name} ** #{columns.first.dig("project", "url")}"
+    next if hide_columns
     columns.each do |column|
       puts "- #{column.fetch("name")}"
       cards = column.fetch("cards")
@@ -231,11 +257,14 @@ opts = {}
 while ARGV.first.to_s =~ /^-/
   case ARGV.shift
   when "--find"
-    opts[:find] = ARGV.shift
+    opts[:mode] = :find
+    opts[:query] = ARGV.shift
   when "--scope"
     opts[:scope] = ARGV.shift
-  when "--all"
-    opts[:all] = true
+  when "--cards"
+    opts[:mode] = ARGV.shift.to_sym
+  when "--list"
+    opts[:mode] = :projects
   else
     usage
   end
