@@ -1,6 +1,10 @@
 #!/bin/bash
 
-set -ex
+set -e
 
-env > "$(dirname "$0")/env.capture.$(date +%s)"
-script/install-dotfiles
+if [ "${CODESPACES}" = "true" ]; then
+  script/install-codespaces
+else
+  echo This only does anything in Codespaces. Try running one of the install scripts.
+  ls script/install-*
+fi

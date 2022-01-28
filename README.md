@@ -14,7 +14,7 @@ script/install-config --all
 
 ## In codespaces
 
-I may expand on this, but for now just copy/paste this:
+Enable [automatic installation in your settings](https://github.com/settings/codespaces), or do this manually:
 
 ```
 git clone https://github.com/spraints/dotfiles ~/.dotfiles
