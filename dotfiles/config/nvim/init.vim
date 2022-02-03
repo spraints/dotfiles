@@ -1,8 +1,9 @@
 call plug#begin()
 Plug 'neovim/nvim-lspconfig'
 Plug 'fatih/vim-go', { 'do': ':GoInstallBinaries' }
-Plug 'mileszs/ack.vim'
 Plug 'rust-lang/rust.vim'
+Plug 'junegunn/fzf', { 'do': { -> fzf#install() } }
+Plug 'junegunn/fzf.vim'
 call plug#end()
 
 lua <<END
