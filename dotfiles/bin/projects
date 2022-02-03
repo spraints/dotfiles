@@ -1,5 +1,5 @@
 #!/usr/bin/env ruby
-#/ Usage: projects [--cards SUBSET]
+#/ Usage: projects [SUBSET]
 #/  - List cards for the given subset. SUBSET may be todo, wip, review, or all.
 #/    The default is review.
 #/ Usage: projects --list
@@ -261,13 +261,26 @@ while ARGV.first.to_s =~ /^-/
     opts[:query] = ARGV.shift
   when "--scope"
     opts[:scope] = ARGV.shift
-  when "--cards"
-    opts[:mode] = ARGV.shift.to_sym
   when "--list"
     opts[:mode] = :projects
   else
     usage
   end
+end
+
+case ARGV.first
+when "todo"
+  opts[:mode] = :todo
+  ARGV.shift
+when "wip"
+  opts[:mode] = :wip
+  ARGV.shift
+when "review"
+  opts[:mode] = :review
+  ARGV.shift
+when "all"
+  opts[:mode] = :all
+  ARGV.shift
 end
 
 usage if ARGV.size > 0
