@@ -2,14 +2,14 @@
 export RBENV_VERSION=system
 exec ruby "$0" "$@"
 #!ruby
-#/ Usage: ci-status [--skip-green] [--urls] [branch|PR-url]
+#/ Usage: ci-status [--skip-green|--failed] [--urls] [branch|PR-url]
 #/ Shows pretty ci status for the current repo and current branch (or the named branch).
 
 require "json"
 require "net/http"
 require "timeout"
 
-def main(branch:, nwo:, token:, skip_green: false, force_urls: false)
+def main(branch:, nwo:, token:, filter: :all, force_urls: false)
   puts "Status for #{branch}:"
   raw_ci_status = run!({"GITHUB_TOKEN" => token}, "ci-status-raw", nwo, branch)
   begin
@@ -30,7 +30,12 @@ def main(branch:, nwo:, token:, skip_green: false, force_urls: false)
     to_show += prepare_statuses(commit["status"]) if commit["status"]
     to_show += prepare_checks(commit["checkSuites"]) if commit["checkSuites"]
     all_ok = !to_show.empty? && to_show.all? { |status| status[:state] == :success }
-    to_show.reject! { |status| status[:state] == :success } if skip_green
+    case filter
+    when :skip_green
+      to_show.reject! { |status| status[:state] == :success }
+    when :failed
+      to_show.select! { |status| status[:state] == :failure }
+    end
     show_statuses(to_show, force_urls: force_urls)
     exit 2 unless all_ok
   rescue JSON::ParserError => e
@@ -201,7 +206,9 @@ opts = {}
 while ARGV.first.to_s =~ /^-/
   case ARGV.shift
   when "--skip-green"
-    opts[:skip_green] = true
+    opts[:filter] = :skip_green
+  when "--failed", "--fail"
+    opts[:filter] = :failed
   when "--urls"
     opts[:force_urls] = true
   else
@@ -258,3 +265,5 @@ opts[:token] ||=
   end
 
 main(opts)
+
+# vim: ft=ruby
