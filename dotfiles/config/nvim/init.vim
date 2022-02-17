@@ -7,25 +7,13 @@ Plug 'junegunn/fzf.vim'
 call plug#end()
 
 lua <<END
+require "spraints.opts"
 require "spraints.lsp"
 END
 
 let g:rustfmt_autosave=1
 
 let g:ackprg="ag --nocolor --nogroup --column"
-
-se sw=2
-"se sw=4
-se ai
-se nu
-se nowrap
-se expandtab
-"au is short for autocmd
-"au BufNewFile,BufRead [tT]horfile,*.thor	setf ruby
-"au BufNewFile,BufRead *.rabl                    setf ruby
-"au BufNewFile,BufRead *.hb                      setf mustache
-
-se modeline modelines=2
 
 noremap <silent> <Leader>w :call ToggleWrap()<CR>
 function ToggleWrap()
