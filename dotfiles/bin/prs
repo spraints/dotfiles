@@ -13,15 +13,23 @@ def main(token:, count: 20, earliest: (Time.now - (90 * DAY)), ignore_trains: fa
     p errors
     exit 1
   end
-  prs = results.dig("data", "viewer", "pullRequests", "nodes")
+  prs =
+    results.dig("data", "assigned", "nodes") +
+    results.dig("data", "viewer", "pullRequests", "nodes")
+  viewed = {}
   prs.each do |pr|
+    next if pr.empty?
+    permalink = pr.fetch("permalink")
+    next if viewed[permalink]
+    viewed[permalink] = true
+
     updated_at = DateTime.parse(pr.fetch("updatedAt"))
     archived = pr.fetch("repository").fetch("isArchived")
     next if updated_at < earliest || archived
+
     author = pr.fetch("author").fetch("login")
     repository = pr.fetch("repository").fetch("nameWithOwner")
     title = pr.fetch("title")
-    permalink = pr.fetch("permalink")
     draft = pr.fetch("isDraft")
     is_read = pr.fetch("isReadByViewer")
     decision = pr.fetch("reviewDecision")
@@ -123,36 +131,73 @@ end
 
 QUERY = <<QUERY
 query ($count: Int) {
+  assigned: search(
+    type: ISSUE
+    query: "assignee:spraints state:open is:pr"
+    first: $count
+  ) {
+    nodes {
+      ...pullRequestDetails
+    }
+  }
   viewer {
-    pullRequests(states: [OPEN], first: $count, orderBy: {field: CREATED_AT, direction: DESC}) {
+    pullRequests(
+      states: [OPEN]
+      first: $count
+      orderBy: { field: CREATED_AT, direction: DESC }
+    ) {
       nodes {
-        repository { nameWithOwner isArchived }
-        author { login }
-        headRef {
-          target {
-            ... on Commit {
-              statusCheckRollup { state }
-            }
-          }
-        }
-        timelineItems(last: 10, itemTypes: [CROSS_REFERENCED_EVENT]) {
-          nodes {
-            ... on CrossReferencedEvent {
-              source {
-                ... on PullRequest {
-                  labels(first: 10) { nodes { name } }
-                  headRefName state url
-                }
-              }
-            }
-          }
-        }
-        title permalink createdAt updatedAt
-        headRefName mergeable
-        isDraft isReadByViewer reviewDecision
-        autoMergeRequest { enabledAt }
+        ...pullRequestDetails
       }
     }
+  }
+}
+fragment pullRequestDetails on PullRequest {
+  repository {
+    nameWithOwner
+    isArchived
+  }
+  author {
+    login
+  }
+  headRef {
+    target {
+      ... on Commit {
+        statusCheckRollup {
+          state
+        }
+      }
+    }
+  }
+  timelineItems(last: 10, itemTypes: [CROSS_REFERENCED_EVENT]) {
+    nodes {
+      ... on CrossReferencedEvent {
+        source {
+          ... on PullRequest {
+            labels(first: 10) {
+              nodes {
+                name
+              }
+            }
+            headRefName
+            state
+            url
+          }
+        }
+      }
+    }
+  }
+  title
+  permalink
+  createdAt
+  updatedAt
+  headRefName
+  mergeable
+  isDraft
+  isReadByViewer
+  reviewDecision
+  autoMergeRequest {
+    enabledAt
   }
 }
 QUERY
