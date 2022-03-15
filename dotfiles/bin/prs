@@ -18,17 +18,65 @@ def main(token:, count: 20, earliest: (Time.now - (90 * DAY)), ignore_trains: fa
     results.dig("data", "viewer", "pullRequests", "nodes")
   viewed = {}
   prs.each do |pr|
-    next if pr.empty?
     permalink = pr.fetch("permalink")
-    next if viewed[permalink]
+    if viewed[permalink]
+      #puts "skip duplicate #{permalink}"
+      next
+    end
     viewed[permalink] = true
 
     updated_at = DateTime.parse(pr.fetch("updatedAt"))
     archived = pr.fetch("repository").fetch("isArchived")
-    next if updated_at < earliest || archived
+    if updated_at < earliest || archived
+      #puts "skip obsolete #{permalink} #{updated_at} #{earliest} #{archived.inspect}"
+      next
+    end
 
+    case pr.fetch("__typename")
+    when "PullRequest"
+      show_pr(pr, ignore_trains: ignore_trains)
+    when "Issue"
+      show_issue(pr)
+    else
+      puts "SKIP #{pr.fetch("__typename").inspect} (#{pr.keys.sort.inspect})"
+    end
+  end
+end
+
+def show_issue(pr)
+    permalink = pr.fetch("permalink")
+    is_read = pr.fetch("isReadByViewer")
     author = pr.fetch("author").fetch("login")
-    repository = pr.fetch("repository").fetch("nameWithOwner")
+    title = pr.fetch("title")
+    updated_at = DateTime.parse(pr.fetch("updatedAt"))
+    ago = time_in_words(updated_at)
+
+    color, dot, status = 30, "▪", "ISSUE"
+
+    read_dot =
+      if is_read
+        " "
+      else
+        mail = "✉"
+        "\033[30m#{mail}\033[0m"
+      end
+
+    printf("%<read_dot>s \033[%<color>dm%<dot>s %<status>-15s\033[0m %<permalink>s [by %<author>s] %<title>s, updated %<ago>s\n", {
+      read_dot: read_dot,
+      color: color,
+      dot: dot,
+      status: status,
+      permalink: permalink,
+      author: author,
+      title: title,
+      ago: ago,
+    })
+end
+
+def show_pr(pr, ignore_trains:)
+    permalink = pr.fetch("permalink")
+    updated_at = DateTime.parse(pr.fetch("updatedAt"))
+    author = pr.fetch("author").fetch("login")
     title = pr.fetch("title")
     draft = pr.fetch("isDraft")
     is_read = pr.fetch("isReadByViewer")
@@ -86,7 +134,6 @@ def main(token:, count: 20, earliest: (Time.now - (90 * DAY)), ignore_trains: fa
       ago: ago,
     })
     show_train_info(pr) unless ignore_trains
-  end
 end
 
 def show_train_info(pr)
@@ -133,11 +180,13 @@ QUERY = <<QUERY
 query ($count: Int) {
   assigned: search(
     type: ISSUE
-    query: "assignee:spraints state:open is:pr"
+    query: "assignee:spraints state:open"
     first: $count
   ) {
     nodes {
+      __typename
       ...pullRequestDetails
+      ...issueDetails
     }
   }
   viewer {
@@ -147,19 +196,51 @@ query ($count: Int) {
       orderBy: { field: CREATED_AT, direction: DESC }
     ) {
       nodes {
+        __typename
         ...pullRequestDetails
       }
     }
   }
 }
+fragment issueDetails on Issue {
+  ...rnd
+  ...comm
+  ...issonly
+}
 fragment pullRequestDetails on PullRequest {
+  ...rnd
+  ...comm
+  ...pronly
+}
+fragment rnd on RepositoryNode {
   repository {
-    nameWithOwner
     isArchived
   }
+}
+fragment comm on Comment {
   author {
     login
   }
+  createdAt
+  updatedAt
+}
+fragment issonly on Issue {
+  title
+  permalink: url
+  isReadByViewer
+}
+fragment pronly on PullRequest {
+  title
+  permalink
+  headRefName
+  mergeable
+  isDraft
+  isReadByViewer
+  reviewDecision
+  autoMergeRequest {
+    enabledAt
+  }
+
   headRef {
     target {
       ... on Commit {
@@ -186,18 +267,6 @@ fragment pullRequestDetails on PullRequest {
         }
       }
     }
-  }
-  title
-  permalink
-  createdAt
-  updatedAt
-  headRefName
-  mergeable
-  isDraft
-  isReadByViewer
-  reviewDecision
-  autoMergeRequest {
-    enabledAt
   }
 }
 QUERY
@@ -241,6 +310,9 @@ while ARGV.first.to_s =~ /^-/
     opts[:count] = ARGV.shift.to_i
   when "--last"
     opts[:earliest] = Time.now - parse_since_args
+  when "--query"
+    puts QUERY
+    exit 0
   else
     usage
   end
