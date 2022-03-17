@@ -15,7 +15,7 @@ cbosxsensorservice() {
       sudo pfctl -e
       echo Installing dummynet rules for CarbonBlack...
       sudo pfctl -a spraints -f /etc/pf.anchors/spraints
-      sudo dnctl pipe 1 config bw 100Kbit/s
+      sudo dnctl pipe 1 config bw 500Kbit/s queue 25
       ;;
     tr*)
       # If my network is having trouble and I want to limit CB's footprint.
