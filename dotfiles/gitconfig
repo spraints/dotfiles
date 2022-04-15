@@ -18,15 +18,9 @@
 	default = simple
 [grep]
 	lineNumber = true
-[credential]
-	helper = osxkeychain
-[url "git@github.com:"]
-	insteadOf = https://github.com/
-#[commit]
-#	gpgsign = true
-[url "git@ghe.io:"]
-	insteadOf = https://ghe.io/
 [pull]
 	ff = only
 [init]
 	defaultBranch = main
+[include]
+	path = ".gitconfig.local"
