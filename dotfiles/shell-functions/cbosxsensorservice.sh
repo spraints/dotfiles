@@ -5,6 +5,24 @@ cbosxsensorservice() {
     #stop|pause)
     #  sudo launchctl unload /Library/LaunchDaemons/com.carbonblack.daemon.plist ;;
     status)
+      if ! sudo pfctl -s dummynet -a spraints | grep spraints; then
+        printf '%s\n' \
+          '***' \
+          'My anchor is not defined. Run this:' \
+          '  cbosxsensorservice enable-pf'
+        return 1
+      fi
+      if ! sudo pfctl -s all | grep spraints; then
+        printf '%s\n' \
+          '***' \
+          'My anchors are not loaded in /etc/pf.conf!' \
+          'Add these lines there:' \
+          '  dummynet-anchor spraints' \
+          '  anchor spraints' \
+          'Then reload pf' \
+          '  sudo pfctl -f /etc/pf.conf'
+        return 1
+      fi
       ps ax | grep -i [c]bosx
       sudo lsof -nP -c CbOsxSens | grep IP
       sudo dnctl list
@@ -15,7 +33,19 @@ cbosxsensorservice() {
       sudo pfctl -e
       echo Installing dummynet rules for CarbonBlack...
       sudo pfctl -a spraints -f /etc/pf.anchors/spraints
-      sudo dnctl pipe 1 config bw 500Kbit/s queue 25
+      sudo dnctl pipe 1 config bw 100Kbit/s queue 25
+
+      if ! sudo pfctl -s all | grep spraints; then
+        printf '%s\n' \
+          '***' \
+          'My anchors are not loaded in /etc/pf.conf!' \
+          'Add these lines there:' \
+          '  dummynet-anchor spraints' \
+          '  anchor spraints' \
+          'Then reload pf' \
+          '  sudo pfctl -f /etc/pf.conf'
+        return 1
+      fi
       ;;
     tr*)
       # If my network is having trouble and I want to limit CB's footprint.
