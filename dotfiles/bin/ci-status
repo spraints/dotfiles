@@ -234,7 +234,7 @@ when %r{\Ahttps://github.com/([^/]+/[^/]+)/pull/([0-9]+)}
   opts[:branch] = "refs/pull/#{$2}/head"
 when %r{\Ahttps://github.com/([^/]+/[^/]+)/(pull|compare|tree)/(.*)}
   opts[:nwo] = $1
-  opts[:branch] = $3
+  opts[:branch] = $3.split(/\.\.\./).last
 when %r{\Ahttps://janky.githubapp.com/r/([^/]+/[^/]+)/(.*)}
   opts[:nwo] = $1
   opts[:branch] = $2
