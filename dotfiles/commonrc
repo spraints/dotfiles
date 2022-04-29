@@ -40,13 +40,16 @@ export USE_CAPYBARA_WEBKIT=true
 alias b='bundle exec'
 alias slurp='gstash && git pull && gstash pop'
 
-for e in /usr/local/bin/nvim /usr/bin/vim `which vim 2>/dev/null` `which vi 2>/dev/null`; do
-  if [ -e "$e" ]; then
-    export EDITOR="$e"
+for e in nvim vim vi; do
+  re=$(which $e 2>/dev/null)
+  if [ -e "$re" ]; then
+    export EDITOR="$re"
     break
   fi
 done
-export GIT_EDITOR="$EDITOR"
+if [ -n "$EDITOR" ]; then
+  export GIT_EDITOR="$EDITOR"
+fi
 
 # For AWS:
 if [ -d /usr/local/Cellar/ec2-api-tools/1.5.0.1/jars ]
