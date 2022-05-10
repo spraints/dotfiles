@@ -11,8 +11,10 @@ require "timeout"
 
 def main(branch:, nwo:, token:, filter: :all, force_urls: false)
   puts "Status for #{branch}:"
-  raw_ci_status = run!({"GITHUB_TOKEN" => token}, "ci-status-raw", nwo, branch)
-  begin
+  to_show = []
+  queries = [{}]
+  while q = queries.shift
+    raw_ci_status = run!({"GITHUB_TOKEN" => token}, "ci-status-raw", nwo, branch, q)
     ci_status = JSON.parse(raw_ci_status)
     if errors = ci_status["errors"]
       p errors
@@ -26,22 +28,49 @@ def main(branch:, nwo:, token:, filter: :all, force_urls: false)
       puts "No CI results"
       return
     end
-    to_show = []
     to_show += prepare_statuses(commit["status"]) if commit["status"]
     to_show += prepare_checks(commit["checkSuites"]) if commit["checkSuites"]
-    all_ok = !to_show.empty? && to_show.all? { |status| status[:state] == :success }
-    case filter
-    when :skip_green
-      to_show.reject! { |status| status[:state] == :success }
-    when :failed
-      to_show.select! { |status| status[:state] == :failure }
-    end
-    show_statuses(to_show, force_urls: force_urls)
-    exit 2 unless all_ok
-  rescue JSON::ParserError => e
-    $stderr.puts "#{e.class.name}: #{e}", raw_ci_status
-    exit 1
+
+    queries += check_suite_queries(commit, q)
+    queries += check_run_queries(commit, q)
   end
+
+  # De-duplicate.
+  to_show = to_show.group_by { |s| s[:url] }.map { |_, v| v.first }
+
+  all_ok = !to_show.empty? && to_show.all? { |status| status[:state] == :success }
+  case filter
+  when :skip_green
+    to_show.reject! { |status| status[:state] == :success }
+  when :failed
+    to_show.select! { |status| status[:state] == :failure }
+  end
+  show_statuses(to_show, force_urls: force_urls)
+  exit 2 unless all_ok
+
+rescue JSON::ParserError => e
+  $stderr.puts "#{e.class.name}: #{e}", raw_ci_status
+  exit 1
+end
+
+def check_suite_queries(commit, _)
+  res = []
+  page_info = commit.dig("checkSuites", "pageInfo")
+  if page_info["hasNextPage"]
+    res.push({"checkSuiteCursor" => page_info["endCursor"]})
+  end
+  res
+end
+
+def check_run_queries(commit, q)
+  res = []
+  (commit.dig("checkSuites", "nodes") || []).each do |cs|
+    page_info = cs.dig("checkRuns", "pageInfo")
+    if page_info["hasNextPage"]
+      res.push(q.merge({"checkRunCursor" => page_info["endCursor"]}))
+    end
+  end
+  res
 end
 
 def usage
@@ -142,7 +171,7 @@ def show_status(name:, description:, state:, state_string:, url:, force_urls:)
 end
 
 CI_STATUS_GQL_QUERY = <<-GQL
-query ($owner: String!, $repo: String!, $ref: String!) {
+query ($owner: String!, $repo: String!, $ref: String!, $checkRunCursor: String, $checkSuiteCursor: String) {
   repository(owner: $owner, name: $repo) {
     object(expression: $ref) {
       ... on Commit {
@@ -155,10 +184,12 @@ query ($owner: String!, $repo: String!, $ref: String!) {
             createdAt
           }
         }
-        checkSuites(first: 100) {
+        checkSuites(first: 100, after: $checkSuiteCursor) {
+          pageInfo { hasNextPage endCursor }
           nodes {
             app { name }
-            checkRuns(first: 100) {
+            checkRuns(first: 100, after: $checkRunCursor) {
+              pageInfo { hasNextPage endCursor }
               nodes {
                 conclusion
                 detailsUrl
@@ -177,7 +208,7 @@ query ($owner: String!, $repo: String!, $ref: String!) {
 }
 GQL
 
-def run!(env, _, nwo, branch)
+def run!(env, _, nwo, branch, cursors)
   token = env.fetch("GITHUB_TOKEN")
   owner, repo = nwo.split("/", 2)
   req_data = {
@@ -186,7 +217,7 @@ def run!(env, _, nwo, branch)
       "owner" => owner,
       "repo" => repo,
       "ref" => branch,
-    },
+    }.merge(cursors),
   }
 
   req = Net::HTTP::Post.new("https://api.github.com/graphql")
