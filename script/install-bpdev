@@ -8,3 +8,10 @@ script/install-config config/nvim
 script/install-config config/neovim-vim-plug
 #script/install-config config/gnupg
 #script/install-config config/ssh
+
+cat > ~/.gitconfig.local <<GITCONFIG
+[url "git@github.com:"]
+	insteadOf = https://github.com/
+[url "git@ghe.io:"]
+	insteadOf = https://ghe.io/
+GITCONFIG
