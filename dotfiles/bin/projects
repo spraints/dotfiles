@@ -22,8 +22,6 @@ COLUMNS = {
   "MDEzOlByb2plY3RDb2x1bW4xMzQwMDU3NA==" => :wip, # In progress
   # Git Storage Current Iteration
   "MDEzOlByb2plY3RDb2x1bW43NjQxODc0" => :review, # Needs Review
-  # Git Protocols On Deck
-  "PC_lAPNJr_OAECYbs4BDLfX" => :review, # In Review
   # varnish
   "PC_lAPNJr_OAMq5CM4A809W" => :todo, # To do
   "PC_lAPNJr_OAMq5CM4A809X" => :wip, # In progress
