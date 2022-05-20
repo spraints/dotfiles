@@ -69,7 +69,10 @@ end
 def find_projects(query, scope:, token:)
   results = get_data(token: token, **find_projects_query(scope: scope, query: query))
   if errors = results["errors"]
-    puts "warning: #{errors.inspect}"
+    errors.each do |err|
+      next if err["type"] == "NOT_FOUND"
+      puts "warning: #{error.inspect}"
+    end
     # continue, there might be other results
   end
   results.fetch("data").values.each do |obj|
