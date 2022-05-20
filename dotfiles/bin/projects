@@ -80,7 +80,13 @@ def find_projects(query, scope:, token:)
     obj.fetch("projects").fetch("nodes").each do |project|
       puts "#{project.fetch("id")} #{project.fetch("name")}"
       project.fetch("columns").fetch("nodes").each do |column|
-        puts " - #{column.fetch("id")} #{column.fetch("name")}"
+        puts " column: #{column.fetch("id")} #{column.fetch("name")}"
+      end
+    end
+    obj.fetch("projectsNext").fetch("nodes").each do |project|
+      puts "#{project.fetch("id")} (beta) #{project.fetch("title")}"
+      project.fetch("views").fetch("nodes").each do |view|
+        puts " view: #{view.fetch("id")} #{view.fetch("name")}"
       end
     end
   end
@@ -107,6 +113,14 @@ fragment projectList on ProjectConnection{
     }
   }
 }
+fragment projectNextList on ProjectNextConnection {
+  nodes {
+    title id
+    views(first:10) {
+      nodes{ name id }
+    }
+  }
+}
 FRAGMENT
 
 FIND_REPO_PROJECTS = <<-GRAPHQL
@@ -114,6 +128,9 @@ query($query:String,$owner:String!,$repository:String!) {
   repository(owner:$owner,name:$repository) {
     projects(search:$query, first:10){
       ...projectList
+    }
+    projectsNext(query:$query, first:10){
+      ...projectNextList
     }
   }
 }
@@ -126,10 +143,16 @@ query($query:String,$owner:String!) {
     projects(search:$query, first:10){
       ...projectList
     }
+    projectsNext(query:$query, first:10){
+      ...projectNextList
+    }
   }
   organization(login:$owner){
     projects(search:$query, first:10){
       ...projectList
+    }
+    projectsNext(query:$query, first:10){
+      ...projectNextList
     }
   }
 }
@@ -141,6 +164,9 @@ query($query:String) {
   viewer{
     projects(search:$query, first:10){
       ...projectList
+    }
+    projectsNext(query:$query, first:10){
+      ...projectNextList
     }
   }
 }
