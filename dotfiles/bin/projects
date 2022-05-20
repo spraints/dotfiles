@@ -10,10 +10,6 @@
 require_relative "github-api"
 
 COLUMNS = {
-  # Spokes API
-  "MDEzOlByb2plY3RDb2x1bW4xMjQ0OTM3OQ==" => :todo, # To Do
-  "MDEzOlByb2plY3RDb2x1bW4xMjQ0OTM4MA==" => :wip, # In progress
-  "MDEzOlByb2plY3RDb2x1bW4xMjQ0OTQwMg==" => :review, # In review
   # Mind Meld
   "PC_lQDNTr7OFieqrs4Av6FizgDdaHM" => :wip, # In progress
   "PC_lQDNTr7OFieqrs4Av6FizgDdaHQ" => :review, # Review in progress
@@ -27,6 +23,11 @@ COLUMNS = {
   "PC_lAPNJr_OAMq5CM4A809X" => :wip, # In progress
   "PC_lAPNJr_OAMq5CM4A809Y" => :review, # Review in progress
   "PC_lAPNJr_OAMq5CM4A809Z" => :review, # Reviewer approved
+
+  # (beta)
+
+  # Spokes API
+  "PNV_lADNJr_OAAf6DM4ADzl7" => [:wip, :review], # In Progress, In Review
 }
 
 MAIL = "✉"
@@ -47,7 +48,7 @@ def main(token:, query: nil, scope: nil, mode: :review)
       hide_columns: mode == :projects
 
   else
-    ids = COLUMNS.select { |_, m| mode == m }.map { |id, _| id }
+    ids = COLUMNS.select { |_, m| Array(m).include?(mode) }.map { |id, _| id }
     if ids.empty?
       puts "error: no columns for SUBSET #{mode}"
       return
@@ -174,55 +175,119 @@ query($query:String) {
 GRAPHQL
 
 def collect_columns(data)
-  data.fetch("nodes").group_by { |column| column.dig("project", "name") }
+  data.fetch("nodes").group_by { |column| [column.fetch("__typename"), column.dig("project", "name") || column.dig("project", "title")] }
 end
 
 def show_results(projects, hide_columns: false)
-  projects.sort_by(&:first).each do |name, columns|
+  projects.sort_by(&:first).each do |type_and_name, columns|
+    type, name = type_and_name
     puts "** #{name} ** #{columns.first.dig("project", "url")}"
     next if hide_columns
     columns.each do |column|
-      puts "- #{column.fetch("name")}"
-      cards = column.fetch("cards")
-      total_cards = cards.fetch("totalCount")
-      cards = cards.fetch("nodes")
-      cards.each do |card|
-        case card.fetch("state")
-        when "REDACTED"
-          puts "  - (redacted)"
-        when "CONTENT_ONLY"
-          content = card.fetch("content")
-          author = content.fetch("author").fetch("login")
-          assignees = content.fetch("assignees").fetch("nodes").map { |a| a.fetch("login") }
-          assignees_str = assignees.empty? ? " (#{author})" : " (assigned to #{assignees.join(",")})"
-          changes_str =
-            case content["reviewDecision"]
-            when "CHANGES_REQUESTED"
-              " (changes requested)"
-            when "APPROVED"
-              " (approved)"
-            else
-              ""
-            end
-          bullet = content["isReadByViewer"] ? "-" : MAIL
-          puts "  #{bullet} #{content.fetch("title")}#{assignees_str}#{changes_str}"
-          puts "    #{content.fetch("url")}"
-        when "NOTE_ONLY"
-          puts "  - #{card.fetch("note").lines.first}"
-          puts "    #{card.fetch("url")}"
-        end
-      end
-      remaining = total_cards - cards.size
-      if remaining > 0
-        puts "  (and #{remaining} more)"
+      case type
+      when "ProjectColumn"
+        show_project_column(column)
+      when "ProjectView"
+        show_memex_column(column)
+      else
+        p unrecognized_type: column
       end
     end
   end
 end
 
+def show_project_column(column)
+  puts "- #{column.fetch("name")}"
+  cards = column.fetch("cards")
+  total_cards = cards.fetch("totalCount")
+  cards = cards.fetch("nodes")
+  cards.each do |card|
+    case card.fetch("state")
+    when "REDACTED"
+      puts "  - (redacted)"
+    when "CONTENT_ONLY"
+      show_card_content(card.fetch("content"))
+    when "NOTE_ONLY"
+      puts "  - #{card.fetch("note").lines.first}"
+      puts "    #{card.fetch("url")}"
+    end
+  end
+  remaining = total_cards - cards.size
+  if remaining > 0
+    puts "  (and #{remaining} more)"
+  end
+end
+
+def show_card_content(content)
+  author = content.fetch("author").fetch("login")
+  assignees = content.fetch("assignees").fetch("nodes").map { |a| a.fetch("login") }
+  assignees_str = assignees.empty? ? " (#{author})" : " (assigned to #{assignees.join(",")})"
+  changes_str =
+    case content["reviewDecision"]
+    when "CHANGES_REQUESTED"
+      " (changes requested)"
+    when "APPROVED"
+      " (approved)"
+    else
+      ""
+    end
+  bullet = content["isReadByViewer"] ? "-" : MAIL
+  puts "  #{bullet} #{content.fetch("title")}#{assignees_str}#{changes_str}"
+  puts "    #{content.fetch("url")}"
+end
+
+def show_memex_column(column)
+  puts "* #{column.fetch("name")} #{column.dig("project", "url")}/views/#{column.fetch("number")}"
+  items = column.fetch("items")
+  total_items = items.fetch("totalCount")
+  items = items.fetch("nodes")
+  # Go through the items by status, but try to keep the same order of statuses
+  # as in the results.
+  statuses = items.map { |item| memex_field(item, "Status") }.uniq
+  statuses.each do |status|
+    puts "- #{status}"
+    items.each do |item|
+      next unless status == memex_field(item, "Status")
+      case item.fetch("type")
+      when "REDACTED"
+        puts "  - (redacted)"
+      when "DRAFT_ISSUE"
+        puts "  - #{memex_field(item, "Title")}"
+      when "ISSUE", "PULL_REQUEST"
+        show_card_content(item.fetch("content"))
+      else
+        puts "  - (unrecognized) #{type}: #{item.inspect}"
+      end
+    end
+  end
+
+  remaining = total_items - items.size
+  if remaining > 0
+    puts "  (and #{remaining} more)"
+  end
+end
+
+VALUE_SUB = {
+  "db748484" => "In Progress",
+  "0cc20570" => "In Review",
+}
+
+def memex_field(item, field_name)
+  item.fetch("fieldValues").fetch("nodes").each do |field|
+    next unless field_name == field.fetch("projectField").fetch("name")
+    raw_value = field.fetch("value")
+    return VALUE_SUB.fetch(raw_value, raw_value)
+  end
+  nil
+end
+
 QUERY = <<END_QUERY
 query($ids: [ID!]!) {
-  nodes(ids: $ids) { ... columnDetails }
+  nodes(ids: $ids) {
+    __typename
+    ... columnDetails
+    ... viewDetails
+  }
 }
 fragment columnDetails on ProjectColumn {
   id name
@@ -233,6 +298,20 @@ fragment columnDetails on ProjectColumn {
       id note
       state # CONTENT_ONLY or NOTE_ONLY or REDACTED
       url   # url of project card
+      content { ...issueDetails ...pullDetails }
+    }
+  }
+}
+fragment viewDetails on ProjectView {
+  id name number
+  project { id title url }
+  items(first: 20) {
+    totalCount
+    nodes {
+      id type
+      fieldValues(first: 10) {
+        nodes { value projectField { name } }
+      }
       content { ...issueDetails ...pullDetails }
     }
   }
