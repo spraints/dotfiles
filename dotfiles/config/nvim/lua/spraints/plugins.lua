@@ -5,6 +5,17 @@ local M = {}
 function M.setup()
   local function plugins()
     use {
+      "junegunn/fzf",
+      run = "./install --all",
+      event = "VimEnter",
+    }
+
+    use {
+      "junegunn/fzf.vim",
+      event = "BufEnter",
+    }
+
+    use {
       "neovim/nvim-lspconfig",
       -- opt = true,
       event = "BufReadPre",
