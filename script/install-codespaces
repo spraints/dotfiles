@@ -4,7 +4,6 @@ set -e
 
 script/install-dotfiles
 config/nvim/install
-config/neovim-vim-plug/install
 
 # Codespaces has some opinionated git config that we need to use, instead of
 # the git config I usually use on my machine.
