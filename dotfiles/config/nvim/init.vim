@@ -1,5 +1,6 @@
 lua <<END
 require "spraints.opts"
+require "spraints.lsp"
 END
 
 let g:rustfmt_autosave=1
