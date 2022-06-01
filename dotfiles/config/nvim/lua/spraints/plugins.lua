@@ -1,3 +1,5 @@
+-- After changing anything in this file, you probably need to run
+-- :PackerSync and choose N when asked about deleteing packer.nvim.
 local M = {}
 
 function M.setup()
