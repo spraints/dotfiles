@@ -5,7 +5,7 @@ set -e
 script/install-dotfiles
 SKIP_GIT=y script/install-config config/devtools
 script/install-config config/nvim
-script/install-config config/neovim-vim-plug
+script/install-config config/neovim-packer
 #script/install-config config/gnupg
 #script/install-config config/ssh
 

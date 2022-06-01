@@ -29,5 +29,5 @@ script/install-config config/sudoers
 script/install-config config/gnupg
 script/install-config config/ssh
 script/install-config config/brewfile
-script/install-config config/neovim-vim-plug
+script/install-config config/neovim-packer
 script/install-config config/macos

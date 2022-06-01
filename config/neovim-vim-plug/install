@@ -1,9 +1,0 @@
-#!/bin/bash
-
-set -e
-set -o nounset
-
-root="$(cd "$(dirname "$0")"; pwd -P)"
-mkdir -p ~/.local/share/nvim/site/autoload
-cp "${root}/plug.vim" ~/.local/share/nvim/site/autoload/plug.vim
-nvim --headless +'PlugInstall --sync' +qall

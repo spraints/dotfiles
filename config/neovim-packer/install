@@ -1,0 +1,17 @@
+#!/bin/bash
+
+set -e
+set -o nounset
+
+DEST_DIR=~/.local/share/nvim/site/pack/packer/start/packer.nvim
+VERSION=4dedd3b08f8c6e3f84afbce0c23b66320cd2a8f2
+
+ARCHIVE_URL=https://github.com/wbthomason/packer.nvim/archive/$VERSION.tar.gz
+
+set -x
+
+rm -rf ${DEST_DIR}
+mkdir -p ${DEST_DIR}
+
+cd ${DEST_DIR}
+curl -L -s $ARCHIVE_URL | tar xvz --strip-components 1

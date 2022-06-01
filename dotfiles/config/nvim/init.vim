@@ -1,15 +1,9 @@
-call plug#begin()
-Plug 'neovim/nvim-lspconfig'
-Plug 'fatih/vim-go', { 'do': ':GoInstallBinaries' }
-Plug 'rust-lang/rust.vim'
-Plug 'junegunn/fzf', { 'do': { -> fzf#install() } }
-Plug 'junegunn/fzf.vim'
-call plug#end()
-
 lua <<END
 require "spraints.opts"
-require "spraints.lsp"
+require("spraints.plugins").setup()
 END
+
+autocmd BufWritePre *.go,*.rs lua vim.lsp.buf.formatting_sync()
 
 let g:rustfmt_autosave=1
 
