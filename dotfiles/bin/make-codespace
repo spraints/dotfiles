@@ -1,0 +1,19 @@
+#!/usr/bin/env ruby
+
+cmd = ["gh", "cs", "create"]
+
+# Add current repository, if known.
+remote_url = `git config remote.origin.url`.strip
+case remote_url
+when %r{\Agit@.*?:(.*?)(\.git)?\z}
+  cmd += ["--repo", $1]
+when %r{\Ahttps?://[^/]+/(.*?)(\.git)?\z}
+  cmd += ["--repo", $1]
+end
+
+# Add current branch.
+current_branch = `git branch --no-color 2> /dev/null | sed -e '/^[^*]/d' -e 's/^* //'`.strip
+cmd += ["--branch", current_branch]
+
+puts cmd.join(" ")
+exec *cmd
