@@ -1,6 +1,7 @@
 local M = {}
 
 local servers = {
+  dockerls = {},
   gopls = {},
   rust_analyzer = {},
   tsserver = {},
