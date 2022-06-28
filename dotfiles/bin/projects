@@ -246,7 +246,7 @@ def show_memex_column(column)
   statuses = items.map { |item| memex_field(item, "Status") }.uniq
   statuses.each do |status|
     puts "- #{memex_field_string(status, column, "Status")}"
-    items.each do |item|
+    items.reverse.each do |item|
       next unless status == memex_field(item, "Status")
       case item.fetch("type")
       when "REDACTED"
