@@ -5,13 +5,15 @@ cbosxsensorservice() {
     #stop|pause)
     #  sudo launchctl unload /Library/LaunchDaemons/com.carbonblack.daemon.plist ;;
     status)
-      if ! sudo pfctl -s dummynet -a spraints | grep spraints; then
+      echo Checking for my dummynet...
+      if ! sudo pfctl -s dummynet -a spraints | grep ^dummynet; then
         printf '%s\n' \
           '***' \
           'My anchor is not defined. Run this:' \
           '  cbosxsensorservice enable-pf'
         return 1
       fi
+      echo Checking for my anchor...
       if ! sudo pfctl -s all | grep spraints; then
         printf '%s\n' \
           '***' \
@@ -23,6 +25,7 @@ cbosxsensorservice() {
           '  sudo pfctl -f /etc/pf.conf'
         return 1
       fi
+      echo Other status info:
       ps ax | grep -i [c]bosx
       sudo lsof -nP -c CbOsxSens | grep IP
       sudo dnctl list
@@ -35,6 +38,7 @@ cbosxsensorservice() {
       sudo pfctl -a spraints -f /etc/pf.anchors/spraints
       sudo dnctl pipe 1 config bw 100Kbit/s queue 25
 
+      echo Checking for my anchors...
       if ! sudo pfctl -s all | grep spraints; then
         printf '%s\n' \
           '***' \
@@ -62,8 +66,20 @@ cbosxsensorservice() {
     un*)
       # I might want to do this ???
       sudo dnctl pipe 1 config bw 0 queue 50 ;;
+    watch-dn)
+      sudo watch -n 1 dnctl list ;;
+    watch-store)
+      sudo watch du -sk \
+        /private/var/lib/cb \
+        /private/var/lib/cb/store \
+        /private/var/lib/cb/store_extended \
+        /private/var/lib/cb/upgrade \
+        ;;
+      watch*)
+        echo 'Did you mean watch-store or watch-dn?'
+        ;;
     *)
-      echo 'Usage: cbosxsensorservice start|stop|status|enable-pf|SPEED'
+      echo 'Usage: cbosxsensorservice start|stop|status|enable-pf|watch-dn|watch-store|SPEED'
       echo 'where SPEED is one of'
       echo '  trickle -   1 kbps'
       echo '  quiet   -  50 kbps'
