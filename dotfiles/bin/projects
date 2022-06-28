@@ -27,7 +27,7 @@ COLUMNS = {
   # (beta)
 
   # Spokes API
-  "PNV_lADNJr_OAAf6DM4ADzl7" => [:wip, :review], # In Progress, In Review
+  "PVTV_lADNJr_OAAf6DM4ADzl7" => [:wip, :review], # In Progress, In Review
 }
 
 MAIL = "✉"
@@ -79,13 +79,13 @@ def find_projects(query, scope:, token:)
   results.fetch("data").values.each do |obj|
     next if obj.nil?
     obj.fetch("projects").fetch("nodes").each do |project|
-      puts "#{project.fetch("id")} #{project.fetch("name")}"
+      puts "#{project.fetch("id")} #{project.fetch("name")} #{project.fetch("url")}"
       project.fetch("columns").fetch("nodes").each do |column|
         puts " column: #{column.fetch("id")} #{column.fetch("name")}"
       end
     end
-    obj.fetch("projectsNext").fetch("nodes").each do |project|
-      puts "#{project.fetch("id")} (beta) #{project.fetch("title")}"
+    obj.fetch("projectsV2").fetch("nodes").each do |project|
+      puts "#{project.fetch("id")} (beta) #{project.fetch("title")} #{project.fetch("url")}"
       project.fetch("views").fetch("nodes").each do |view|
         puts " view: #{view.fetch("id")} #{view.fetch("name")}"
       end
@@ -108,15 +108,15 @@ end
 PROJECT_LIST = <<-FRAGMENT
 fragment projectList on ProjectConnection{
   nodes{
-    name id
+    name id url
     columns(first:10){
       nodes{ name id }
     }
   }
 }
-fragment projectNextList on ProjectNextConnection {
+fragment projectV2List on ProjectV2Connection {
   nodes {
-    title id
+    title id url
     views(first:10) {
       nodes{ name id }
     }
@@ -130,8 +130,8 @@ query($query:String,$owner:String!,$repository:String!) {
     projects(search:$query, first:10){
       ...projectList
     }
-    projectsNext(query:$query, first:10){
-      ...projectNextList
+    projectsV2(query:$query, first:10){
+      ...projectV2List
     }
   }
 }
@@ -144,16 +144,16 @@ query($query:String,$owner:String!) {
     projects(search:$query, first:10){
       ...projectList
     }
-    projectsNext(query:$query, first:10){
-      ...projectNextList
+    projectsV2(query:$query, first:10){
+      ...projectV2List
     }
   }
   organization(login:$owner){
     projects(search:$query, first:10){
       ...projectList
     }
-    projectsNext(query:$query, first:10){
-      ...projectNextList
+    projectsV2(query:$query, first:10){
+      ...projectV2List
     }
   }
 }
@@ -166,8 +166,8 @@ query($query:String) {
     projects(search:$query, first:10){
       ...projectList
     }
-    projectsNext(query:$query, first:10){
-      ...projectNextList
+    projectsV2(query:$query, first:10){
+      ...projectV2List
     }
   }
 }
@@ -187,7 +187,7 @@ def show_results(projects, hide_columns: false)
       case type
       when "ProjectColumn"
         show_project_column(column)
-      when "ProjectView"
+      when "ProjectV2View"
         show_memex_column(column)
       else
         p unrecognized_type: column
@@ -245,7 +245,7 @@ def show_memex_column(column)
   # as in the results.
   statuses = items.map { |item| memex_field(item, "Status") }.uniq
   statuses.each do |status|
-    puts "- #{memex_field_string(status, column, "Status")}"
+    puts "- #{status}"
     items.reverse.each do |item|
       next unless status == memex_field(item, "Status")
       case item.fetch("type")
@@ -267,23 +267,9 @@ def show_memex_column(column)
   end
 end
 
-def memex_field_string(val, column, field_name)
-  fields = column.dig("project", "fields", "nodes") || []
-  field = fields.find { |f| f["name"] == field_name }
-  return val unless field
-  settings = JSON.parse(field.fetch("settings"))
-  options = settings.fetch("options")
-  options.each do |setting|
-    if setting.fetch("id") == val
-      return setting.fetch("name")
-    end
-  end
-  val
-end
-
 def memex_field(item, field_name)
   item.fetch("fieldValues").fetch("nodes").each do |field|
-    next unless field_name == field.fetch("projectField").fetch("name")
+    next unless field_name == field.fetch("field").fetch("name")
     return field.fetch("value")
   end
   nil
@@ -310,24 +296,64 @@ fragment columnDetails on ProjectColumn {
     }
   }
 }
-fragment viewDetails on ProjectView {
+fragment viewDetails on ProjectV2View {
   id name number
   project {
     id title url
-    fields(first:20) {
-      nodes { name settings }
-    }
+    #fields(first:20) {
+    #  nodes { name settings }
+    #}
   }
   items(first: 20) {
     totalCount
     nodes {
       id type
       fieldValues(first: 10) {
-        nodes { value projectField { name } }
+        nodes {
+          __typename
+          ... on ProjectV2ItemFieldDateValue {
+            field { ...fieldInfo }
+          }
+          ... on ProjectV2ItemFieldIterationValue {
+            field { ...fieldInfo }
+          }
+          ... on ProjectV2ItemFieldLabelValue {
+            field { ...fieldInfo }
+          }
+          ... on ProjectV2ItemFieldMilestoneValue {
+            field { ...fieldInfo }
+          }
+          ... on ProjectV2ItemFieldNumberValue {
+            field { ...fieldInfo }
+          }
+          ... on ProjectV2ItemFieldPullRequestValue {
+            field { ...fieldInfo }
+          }
+          ... on ProjectV2ItemFieldRepositoryValue {
+            field { ...fieldInfo }
+          }
+          ... on ProjectV2ItemFieldReviewerValue {
+            field { ...fieldInfo }
+          }
+          ... on ProjectV2ItemFieldSingleSelectValue {
+            field { ...fieldInfo }
+            value:name
+          }
+          ... on ProjectV2ItemFieldTextValue {
+            field { ...fieldInfo }
+            value:text
+          }
+          ... on ProjectV2ItemFieldUserValue {
+            field { ...fieldInfo }
+          }
+        }
       }
       content { ...issueDetails ...pullDetails }
     }
   }
+}
+fragment fieldInfo on ProjectV2FieldCommon {
+  name
 }
 fragment issueDetails on Issue {
   author { login }
