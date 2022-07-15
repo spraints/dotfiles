@@ -6,8 +6,3 @@ script/install-dotfiles
 config/nvim/install
 config/neovim-packer/install
 config/vagrant/install
-
-sudo apt-get install -y \
-  silversearcher-ag
-
-ssh-keyscan -H github.com >> ~/.ssh/known_hosts
