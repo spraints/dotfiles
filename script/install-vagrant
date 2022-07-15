@@ -1,0 +1,18 @@
+#!/bin/bash
+
+set -e
+
+script/install-dotfiles
+config/nvim/install
+config/neovim-packer/install
+
+# Codespaces has some opinionated git config that we need to use, instead of
+# the git config I usually use on my machine.
+git config --file=dotfiles/gitconfig --unset user.signingkey
+git config --file=dotfiles/gitconfig --unset credential.helper
+#git config --file=dotfiles/gitconfig --unset url.git@github.com:.insteadof
+#git config --file=dotfiles/gitconfig --unset url.git@ghe.io:.insteadof
+test -f ${HOME}/.gitconfig.orig && cat ${HOME}/.gitconfig.orig >> dotfiles/gitconfig
+
+sudo apt-get install -y \
+  silversearcher-ag
