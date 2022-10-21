@@ -1,0 +1,34 @@
+#!/bin/bash
+
+ROOT="$(cd "$(dirname "$0")"; pwd -P)"
+
+install() {
+  local file="$1"
+  local path="$ROOT/$file"
+  local link="$HOME/.$file"
+
+  if [ -f "$link" ]; then
+    if [ -L "$link" ]; then
+      local cur="$(readlink "$link")"
+      if [ "$cur" != "$path" ]; then
+        echo "$file: error: linked to $cur but should be $path"
+        echo "  remove $link and rerun this script to fix it"
+      else
+        echo "$file: already linked"
+      fi
+    else
+      echo "$file: error: $link already exists"
+      diff -u $link $path
+    fi
+  else
+    ln -s "$path" "$link"
+    echo "$file: created link"
+  fi
+}
+
+install gitconfig.local
+
+sudo apt-get install -y \
+  silversearcher-ag
+
+ssh-keyscan -H github.com >> ~/.ssh/known_hosts

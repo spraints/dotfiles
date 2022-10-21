@@ -66,5 +66,9 @@ fft() {
 PERL_MB_OPT="--install_base \"/Users/spraints/perl5\""; export PERL_MB_OPT;
 PERL_MM_OPT="INSTALL_BASE=/Users/spraints/perl5"; export PERL_MM_OPT;
 
-export STARSHIP_THIS_PID=$$
-eval "$(starship init bash 2>/dev/null)"
+if which starship >/dev/null 2>/dev/null; then
+  export STARSHIP_THIS_PID=$$
+  eval "$(starship init bash 2>/dev/null)"
+fi
+
+[ -f ~/.fzf.bash ] && source ~/.fzf.bash

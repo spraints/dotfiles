@@ -1,0 +1,8 @@
+#!/bin/bash
+
+set -e
+
+script/install-dotfiles
+config/nvim/install
+config/neovim-packer/install
+config/vagrant/install
