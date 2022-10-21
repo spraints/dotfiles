@@ -5,6 +5,7 @@ exec ruby "$0" "$@"
 #/ Usage: ci-status [--skip-green|--failed] [--urls] [branch|PR-url]
 #/ Shows pretty ci status for the current repo and current branch (or the named branch).
 
+require "date"
 require "json"
 require "net/http"
 require "timeout"
@@ -89,6 +90,7 @@ def prepare_statuses(statuses)
   statuses["contexts"].map { |context| {
     name: context["context"],
     description: context["description"],
+    elapsed: "",
     state: STATUS_STATES.fetch(context["state"], :pending),
     state_string: context["state"],
     url: context["targetUrl"],
@@ -116,13 +118,47 @@ def prepare_checks(checks)
       end
 
       {
-        name: run["name"],
-        description: run["summary"] || run["conclusion"] || run["status"],
+        name: check_name(suite: suite, run: run),
+        description: check_description(run),
+        elapsed: check_elapsed(run),
         state: state,
         state_string: state_string,
         url: "#{run["detailsUrl"]} - #{run["permalink"]}",
       }
     }
+  end
+end
+
+def check_name(suite:, run:)
+  run_name = run.fetch("name")
+  if workflow_name = suite.dig("workflowRun", "workflow", "name")
+    "#{workflow_name} / #{run_name}"
+  else
+    run_name
+  end
+end
+
+def check_description(run)
+  status = run["conclusion"] || run["status"]
+  if summary = run["summary"]
+    if summary.lines.count > 1
+      summary = summary.lines.first.strip + " ..."
+    end
+    "#{status} (#{summary})"
+  else
+    status
+  end
+end
+
+def check_elapsed(run)
+  start = run["startedAt"]
+  stop = run["completedAt"]
+  if stop
+    " in #{DateTime.parse(stop).to_time.to_i - DateTime.parse(start).to_time.to_i} seconds"
+  elsif start
+    " for #{Time.now.to_i - DateTime.parse(start).to_time.to_i} seconds"
+  else
+    ""
   end
 end
 
@@ -139,7 +175,7 @@ def show_statuses(status_data, force_urls:)
   end
 end
 
-def show_status(name:, description:, state:, state_string:, url:, force_urls:)
+def show_status(name:, description:, state:, state_string:, url:, force_urls:, elapsed:)
   opts =
     case state
     when :success
@@ -158,13 +194,10 @@ def show_status(name:, description:, state:, state_string:, url:, force_urls:)
       raise "unrecognized state #{state.inspect}"
     end
 
-  if description && description.lines.count > 1
-    description = description.lines.first.strip + " ..."
-  end
-
-  printf "\033[%dm%s\033[0m %s%s - %s\n",
+  printf "\033[%dm%s\033[0m %s%s - %s%s\n",
     opts[:color], opts[:icon],
-    opts[:label], name, description
+    opts[:label], name, description,
+    elapsed
   if force_urls || !opts[:hide_url]
     puts "  #{url}"
   end
@@ -188,6 +221,7 @@ query ($owner: String!, $repo: String!, $ref: String!, $checkRunCursor: String, 
           pageInfo { hasNextPage endCursor }
           nodes {
             app { name }
+            workflowRun { workflow { name } }
             checkRuns(first: 100, after: $checkRunCursor) {
               pageInfo { hasNextPage endCursor }
               nodes {
@@ -198,6 +232,8 @@ query ($owner: String!, $repo: String!, $ref: String!, $checkRunCursor: String, 
                 status
                 summary
                 title
+                startedAt
+                completedAt
               }
             }
           }
