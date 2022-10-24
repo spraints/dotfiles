@@ -8,7 +8,7 @@ require_relative "github-api"
 
 def main(token:, count: 20, earliest: (Time.now - (90 * DAY)), ignore_trains: false)
   earliest = earliest.to_datetime
-  results = get_data(token: token, query: QUERY, variables: {count: count})
+  results = get_data(token: token, query: QUERY, variables: {count: count}, features: [:merge_queue])
   if errors = results["errors"]
     p errors
     exit 1
@@ -86,10 +86,14 @@ def show_pr(pr, ignore_trains:)
     branch = pr.fetch("headRefName")
     mergeable = pr.fetch("mergeable")
     automerge_enabled = !pr.dig("autoMergeRequest", "enabledAt").nil?
+    mq = pr.dig("mergeQueueEntry")
+    mq_blocked = mq && mq.dig("blockedByMergeConflicts")
 
     color, dot, status =
       if draft
         [30, "▪", "DRAFT"]
+      elsif mq_blocked
+        [31, "✖︎", "blocked in merge queue"]
       elsif check_status != "SUCCESS" && check_status != "PENDING" && !check_status.nil?
         [31, "✖︎", "CI_#{check_status}"]
       elsif mergeable != "MERGEABLE" && mergeable != "UNKNOWN"
@@ -106,13 +110,19 @@ def show_pr(pr, ignore_trains:)
         [32, "✔︎", decision || "no_review"]
       end
 
-    dot = "🤖" if automerge_enabled
+    dot = "🤖" if automerge_enabled || mq
 
-    status = [
+    status_parts = [
       check_status && "CI_#{check_status}",
       mergeable,
       decision,
-    ].compact.join(",")
+    ]
+    if mq
+      status_parts << "QUEUED(#{mq["position"]}, ETA #{mq["estimatedTimeToMerge"]/60} minutes)"
+      status_parts << "MQ_SOLO" if mq["isSolo"]
+      status_parts << "MQ_CONFLICT" if mq["blockedByMergeConflicts"]
+    end
+    status = status_parts.compact.join(",")
 
     read_dot =
       if is_read
@@ -240,6 +250,13 @@ fragment pronly on PullRequest {
   autoMergeRequest {
     enabledAt
   }
+  mergeQueueEntry {
+    blockedByMergeConflicts
+    estimatedTimeToMerge
+    isSolo
+    position
+  }
+
 
   headRef {
     target {

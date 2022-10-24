@@ -2,11 +2,12 @@ require "json"
 require "net/http"
 require "timeout"
 
-def get_data(token:, query:, variables: {}, out: nil)
+def get_data(token:, query:, variables: {}, out: nil, features: nil)
   request = {query: query, variables: variables}
 
   req = Net::HTTP::Post.new("https://api.github.com/graphql")
   req["Authorization"] = "token #{token}"
+  req["GraphQL-Features"] = Array(features).flatten.join(",") if features
   req.body = JSON.dump(request)
 
   Timeout.timeout(30.0) do
