@@ -2,7 +2,7 @@
 export RBENV_VERSION=system
 exec ruby "$0" "$@"
 #!ruby
-#/ Usage: ci-status [--skip-green|--failed] [--urls] [branch|PR-url]
+#/ Usage: ci-status [--skip-green|--failed] [--urls] [--ids] [branch|PR-url]
 #/ Shows pretty ci status for the current repo and current branch (or the named branch).
 
 require "date"
@@ -10,7 +10,7 @@ require "json"
 require "net/http"
 require "timeout"
 
-def main(branch:, nwo:, token:, filter: :all, force_urls: false)
+def main(branch:, nwo:, token:, filter: :all, force_urls: false, show_ids: false)
   puts "Status for #{branch}:"
   to_show = []
   queries = [{}]
@@ -46,7 +46,7 @@ def main(branch:, nwo:, token:, filter: :all, force_urls: false)
   when :failed
     to_show.select! { |status| status[:state] == :failure }
   end
-  show_statuses(to_show, force_urls: force_urls)
+  show_statuses(to_show, config: {force_urls: force_urls, show_ids: show_ids})
   exit 2 unless all_ok
 
 rescue JSON::ParserError => e
@@ -88,6 +88,7 @@ STATUS_STATES = {
 
 def prepare_statuses(statuses)
   statuses["contexts"].map { |context| {
+    id: context["id"],
     name: context["context"],
     description: context["description"],
     elapsed: "",
@@ -118,6 +119,7 @@ def prepare_checks(checks)
       end
 
       {
+        id: run["id"],
         name: check_name(suite: suite, run: run),
         description: check_description(run),
         elapsed: check_elapsed(run),
@@ -169,13 +171,15 @@ STATUS_SORT_ORDER = {
   :success => 4,
 }
 
-def show_statuses(status_data, force_urls:)
+def show_statuses(status_data, config:)
   status_data.sort_by { |status| [STATUS_SORT_ORDER.fetch(status[:state], 99), status[:name]] }.each do |status|
-    show_status(force_urls: force_urls, **status)
+    show_status(config: config, **status)
   end
 end
 
-def show_status(name:, description:, state:, state_string:, url:, force_urls:, elapsed:)
+def show_status(id:, name:, description:, state:, state_string:, url:, elapsed:, config:)
+  force_urls = config.fetch(:force_urls)
+  show_ids = config.fetch(:show_ids)
   opts =
     case state
     when :success
@@ -194,8 +198,9 @@ def show_status(name:, description:, state:, state_string:, url:, force_urls:, e
       raise "unrecognized state #{state.inspect}"
     end
 
-  printf "\033[%dm%s\033[0m %s%s - %s%s\n",
+  printf "\033[%dm%s\033[0m %s%s%s - %s%s\n",
     opts[:color], opts[:icon],
+    show_ids ? "[#{id}] " : "",
     opts[:label], name, description,
     elapsed
   if force_urls || !opts[:hide_url]
@@ -210,6 +215,7 @@ query ($owner: String!, $repo: String!, $ref: String!, $checkRunCursor: String, 
       ... on Commit {
         status {
           contexts {
+            id
             context
             state
             description
@@ -225,6 +231,7 @@ query ($owner: String!, $repo: String!, $ref: String!, $checkRunCursor: String, 
             checkRuns(first: 100, after: $checkRunCursor) {
               pageInfo { hasNextPage endCursor }
               nodes {
+                id
                 conclusion
                 detailsUrl
                 name
@@ -278,6 +285,8 @@ while ARGV.first.to_s =~ /^-/
     opts[:filter] = :failed
   when "--urls"
     opts[:force_urls] = true
+  when "--ids"
+    opts[:show_ids] = true
   else
     usage
   end
