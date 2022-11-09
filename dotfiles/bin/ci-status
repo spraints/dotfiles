@@ -340,6 +340,10 @@ opts[:token] ||=
     end
   end
 
-main(opts)
+if RUBY_VERSION.split(".").first.to_i >2
+  main(**opts)
+else
+  main opts
+end
 
 # vim: ft=ruby
