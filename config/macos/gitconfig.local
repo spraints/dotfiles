@@ -4,5 +4,7 @@
 	insteadOf = https://github.com/
 [url "git@ghe.io:"]
 	insteadOf = https://ghe.io/
+[url "git@gist.ghe.io:"]
+	insteadOf = https://gist.ghe.io/
 [commit]
 	gpgsign = true
