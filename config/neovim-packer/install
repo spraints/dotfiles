@@ -4,7 +4,7 @@ set -e
 set -o nounset
 
 DEST_DIR=~/.local/share/nvim/site/pack/packer/start/packer.nvim
-VERSION=4dedd3b08f8c6e3f84afbce0c23b66320cd2a8f2
+VERSION=dac4088c70f4337c6c40d1a2751266a324765797
 
 ARCHIVE_URL=https://github.com/wbthomason/packer.nvim/archive/$VERSION.tar.gz
 
