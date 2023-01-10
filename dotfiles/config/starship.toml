@@ -8,3 +8,7 @@ default = "unknown"
 
 [time]
 disabled = false
+
+# 'cc --version' is super slow, so don't.
+[c]
+disabled = true
