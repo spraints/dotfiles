@@ -118,7 +118,11 @@ def show_pr(pr, ignore_trains:)
       decision,
     ]
     if mq
-      status_parts << "QUEUED(#{mq["position"]}, ETA #{mq["estimatedTimeToMerge"]/60} minutes)"
+      eta = ""
+      if ettm = mq["estimatedTimeToMerge"]
+        ettm = ", ETA #{ettm/60} minutes"
+      end
+      status_parts << "QUEUED(#{mq["position"]}#{eta})"
       status_parts << "MQ_SOLO" if mq["isSolo"]
       status_parts << "MQ_CONFLICT" if mq["blockedByMergeConflicts"]
     end
