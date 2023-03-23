@@ -340,7 +340,8 @@ opts[:token] ||=
     end
   end
 
-if RUBY_VERSION.split(".").first.to_i >2
+rmaj, rmin, = RUBY_VERSION.split(".").map(&:to_i)
+if rmaj > 2 || (rmaj == 2 && rmin >= 7)
   main(**opts)
 else
   main opts
