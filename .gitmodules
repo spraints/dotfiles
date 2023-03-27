@@ -37,6 +37,3 @@
 [submodule "vim/bundle/editorconfig-vim"]
 	path = dotfiles/vim/bundle/editorconfig-vim
 	url = https://github.com/editorconfig/editorconfig-vim
-[submodule "dotfiles/vim/bundle/coc.nvim"]
-	path = dotfiles/vim/bundle/coc.nvim
-	url = https://github.com/neoclide/coc.nvim
