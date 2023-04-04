@@ -39,16 +39,26 @@ newbranch() {
   fi
   if [ -z "$base" ]
   then
-    for r in origin/HEAD origin/master; do
+    for r in origin/HEAD origin/main origin/master; do
       if git rev-parse "$r" >&/dev/null; then
+        echo "Using $r as base branch."
         base=$(git rev-parse "$r")
         break
       fi
     done
   fi
-  if [ -z "$base" ]
+  if [ -z "$base" ] && [ "$fetch" == "yes" ]
   then
     base=$(git ls-remote origin HEAD | head -n 1 | cut -c1-40)
+    if [ -n "$base" ]
+    then
+      echo "Using origin's HEAD as base branch."
+    fi
+  fi
+  if [ -z "$base" ]
+  then
+    echo "error: Could not figure out which base branch to use."
+    return
   fi
   git checkout --no-track -b "$branch_name" "$base"
   )
