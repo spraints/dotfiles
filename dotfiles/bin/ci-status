@@ -40,13 +40,17 @@ def main(branch:, nwo:, token:, filter: :all, force_urls: false, show_ids: false
   to_show = to_show.group_by { |s| s[:url] }.map { |_, v| v.first }
 
   all_ok = !to_show.empty? && to_show.all? { |status| status[:state] == :success }
+  counts = to_show.group_by { |status| status[:state] }.map { |k, v| {state: k, count: v.size} }
+
   case filter
   when :skip_green
     to_show.reject! { |status| status[:state] == :success }
   when :failed
     to_show.select! { |status| status[:state] == :failure }
   end
-  show_statuses(to_show, config: {force_urls: force_urls, show_ids: show_ids})
+
+  show_statuses(to_show, counts: counts, config: {force_urls: force_urls, show_ids: show_ids})
+
   exit 2 unless all_ok
 
 rescue JSON::ParserError => e
@@ -171,32 +175,36 @@ STATUS_SORT_ORDER = {
   :success => 4,
 }
 
-def show_statuses(status_data, config:)
+def show_statuses(status_data, counts:, config:)
   status_data.sort_by { |status| [STATUS_SORT_ORDER.fetch(status[:state], 99), status[:name]] }.each do |status|
     show_status(config: config, **status)
+  end
+  show_counts(counts.sort_by { |c| STATUS_SORT_ORDER.fetch(c[:state], 99) })
+end
+
+def disp_opts(state, state_string = nil)
+  case state
+  when :success
+    {color: 32, icon: "✔︎", hide_url: true}
+  when :neutral
+    {color: 30, icon: "⊘", hide_url: true}
+    # ❀
+    # ⁐
+    # ⊘
+    # ∓
+  when :failure
+    {color: 31, icon: "✖︎"}
+  when :pending
+    {color: 33, icon: "●", label: "#{state_string} - "}
+  else
+    raise "unrecognized state #{state.inspect}"
   end
 end
 
 def show_status(id:, name:, description:, state:, state_string:, url:, elapsed:, config:)
   force_urls = config.fetch(:force_urls)
   show_ids = config.fetch(:show_ids)
-  opts =
-    case state
-    when :success
-      {color: 32, icon: "✔︎", hide_url: true}
-    when :neutral
-      {color: 30, icon: "⊘", hide_url: true}
-      # ❀
-      # ⁐
-      # ⊘
-      # ∓
-    when :failure
-      {color: 31, icon: "✖︎"}
-    when :pending
-      {color: 33, icon: "●", label: "#{state_string} - "}
-    else
-      raise "unrecognized state #{state.inspect}"
-    end
+  opts = disp_opts(state, state_string)
 
   printf "\033[%dm%s\033[0m %s%s%s - %s%s\n",
     opts[:color], opts[:icon],
@@ -206,6 +214,15 @@ def show_status(id:, name:, description:, state:, state_string:, url:, elapsed:,
   if force_urls || !opts[:hide_url]
     puts "  #{url}"
   end
+end
+
+def show_counts(counts)
+  formatted = counts.map { |c|
+    opts = disp_opts(c[:state])
+    sprintf "\033[%dm%d %s\033[0m",
+      opts[:color], c[:count], c[:state]
+  }
+  puts formatted.join(", ")
 end
 
 CI_STATUS_GQL_QUERY = <<-GQL
