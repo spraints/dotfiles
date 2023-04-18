@@ -1,9 +1,9 @@
 cbosxsensorservice() {
   case "$1" in
-    #start|resume)
-    #  sudo launchctl load /Library/LaunchDaemons/com.carbonblack.daemon.plist ;;
-    #stop|pause)
-    #  sudo launchctl unload /Library/LaunchDaemons/com.carbonblack.daemon.plist ;;
+    start|resume)
+      sudo launchctl load /Library/LaunchDaemons/com.carbonblack.daemon.plist ;;
+    stop|pause)
+      sudo launchctl unload /Library/LaunchDaemons/com.carbonblack.daemon.plist ;;
     status)
       echo Checking for my dummynet...
       if ! sudo pfctl -s dummynet -a spraints | grep ^dummynet; then
