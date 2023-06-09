@@ -85,15 +85,10 @@ def show_pr(pr, ignore_trains:)
     check_status = pr.dig("headRef", "target", "statusCheckRollup", "state")
     branch = pr.fetch("headRefName")
     mergeable = pr.fetch("mergeable")
-    automerge_enabled = !pr.dig("autoMergeRequest", "enabledAt").nil?
-    mq = pr.dig("mergeQueueEntry")
-    mq_blocked = mq && mq.dig("blockedByMergeConflicts")
 
     color, dot, status =
       if draft
         [30, "▪", "DRAFT"]
-      elsif mq_blocked
-        [31, "✖︎", "blocked in merge queue"]
       elsif check_status != "SUCCESS" && check_status != "PENDING" && !check_status.nil?
         [31, "✖︎", "CI_#{check_status}"]
       elsif mergeable != "MERGEABLE" && mergeable != "UNKNOWN"
@@ -110,23 +105,11 @@ def show_pr(pr, ignore_trains:)
         [32, "✔︎", decision || "no_review"]
       end
 
-    dot = "🤖" if automerge_enabled || mq
-
     status_parts = [
       check_status && "CI_#{check_status}",
       mergeable,
       decision,
-    ]
-    if mq
-      eta = ""
-      if ettm = mq["estimatedTimeToMerge"]
-        ettm = ", ETA #{ettm/60} minutes"
-      end
-      status_parts << "QUEUED(#{mq["position"]}#{eta})"
-      status_parts << "MQ_SOLO" if mq["isSolo"]
-      status_parts << "MQ_CONFLICT" if mq["blockedByMergeConflicts"]
-    end
-    status = status_parts.compact.join(",")
+    ].compact.join(",")
 
     read_dot =
       if is_read
@@ -148,6 +131,7 @@ def show_pr(pr, ignore_trains:)
       ago: ago,
     })
     show_train_info(pr) unless ignore_trains
+    show_mq_info(pr)
 end
 
 def show_train_info(pr)
@@ -168,6 +152,25 @@ def show_train_info(pr)
   end
 end
 
+def show_mq_info(pr)
+  if mq = pr.dig("mergeQueueEntry")
+    state = mq.fetch("state")
+    position = mq.fetch("position")
+    ttm = human_duration(mq.fetch("estimatedTimeToMerge"))
+    solo_str = mq.fetch("solo") ? " SOLO" : ""
+    head_url = mq.dig("headCommit", "url")
+    ci_state = mq.dig("headCommit", "statusCheckRollup", "state")
+    # Align the commit URL with the PR url on the line above
+    printf "     🤖 queued      %<head_url>s %<solo_str>s spot=%<position>d merging in %<ttm>s - mq:%<state>s/ci:%<ci_state>s\n",
+      state: state,
+      ci_state: ci_state,
+      position: position,
+      ttm: ttm,
+      solo_str: solo_str,
+      head_url: head_url
+  end
+end
+
 DAY = 60 * 60 * 24
 
 def time_in_words(dt)
@@ -183,6 +186,10 @@ def time_in_words(dt)
   else
     "in the last #{months + 1} months"
   end
+end
+
+def human_duration(seconds)
+  "#{seconds} seconds" # TODO
 end
 
 def usage
@@ -251,14 +258,17 @@ fragment pronly on PullRequest {
   isDraft
   isReadByViewer
   reviewDecision
-  autoMergeRequest {
-    enabledAt
-  }
   mergeQueueEntry {
-    blockedByMergeConflicts
     estimatedTimeToMerge
-    isSolo
+    solo
     position
+    state
+    headCommit {
+      url
+      statusCheckRollup {
+        state
+      }
+    }
   }
 
 
