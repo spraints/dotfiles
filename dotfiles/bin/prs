@@ -183,7 +183,8 @@ def show_mq_info(pr)
     solo_str = mq.fetch("solo") ? " SOLO" : ""
     head_url = mq.dig("headCommit", "url")
     ci_state = mq.dig("headCommit", "statusCheckRollup", "state")
-    group_size = pr.dig("repository", "mergeQueue", "configuration", "maximumEntriesToMerge").to_i
+    group_size = mq.dig("mergeQueue", "configuration", "maximumEntriesToMerge").to_i
+    mq_url = mq.dig("mergeQueue", "url")
 
     state_color =
       case state
@@ -209,14 +210,15 @@ def show_mq_info(pr)
         RED
       end
 
-    printf "   🤖 %<state>s spot=%<position>2d group=%<group_size>2d%<solo_str>s - merging in %<ttm>s - %<head_url>s (%<ci_state>s)\n",
+    printf "   🤖 %<state>s spot=%<position>2d group=%<group_size>2d%<solo_str>s %<mq_url>s\n      merging in %<ttm>s - %<head_url>s (%<ci_state>s)\n",
       ci_state: color(ci_state, ci_state_color),
       group_size: group_size,
       head_url: head_url,
       position: position,
       solo_str: solo_str,
       state: color(state, state_color),
-      ttm: ttm
+      ttm: ttm,
+      mq_url: mq_url
   end
 end
 
@@ -289,11 +291,13 @@ query ($count: Int) {
   }
 }
 fragment issueDetails on Issue {
+  id
   ...rnd
   ...comm
   ...issonly
 }
 fragment pullRequestDetails on PullRequest {
+  id
   ...rnd
   ...comm
   ...pronly
@@ -334,12 +338,11 @@ fragment pronly on PullRequest {
         state
       }
     }
-  }
-  repository {
     mergeQueue {
       configuration {
         maximumEntriesToMerge
       }
+      url
     }
   }
 
