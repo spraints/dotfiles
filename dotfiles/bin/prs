@@ -180,14 +180,15 @@ def show_mq_info(pr)
     solo_str = mq.fetch("solo") ? " SOLO" : ""
     head_url = mq.dig("headCommit", "url")
     ci_state = mq.dig("headCommit", "statusCheckRollup", "state")
-    # Align the commit URL with the PR url on the line above
-    printf "     🤖 queued      %<head_url>s %<solo_str>s spot=%<position>d merging in %<ttm>s - mq:%<state>s/ci:%<ci_state>s\n",
-      state: state,
+    group_size = pr.dig("repository", "mergeQueue", "configuration", "maximumEntriesToMerge").to_i
+    printf "   🤖 %<state>s spot=%<position>2d group=%<group_size>2d%<solo_str>s - merging in %<ttm>s - %<head_url>s (%<ci_state>s)\n",
       ci_state: ci_state,
+      group_size: group_size,
+      head_url: head_url,
       position: position,
-      ttm: ttm,
       solo_str: solo_str,
-      head_url: head_url
+      state: state,
+      ttm: ttm
   end
 end
 
@@ -208,8 +209,20 @@ def time_in_words(dt)
   end
 end
 
-def human_duration(seconds)
-  "#{seconds} seconds" # TODO
+def human_duration(seconds, prefix = "")
+  if seconds > 3600
+    h = seconds / 3600
+    s = seconds % 3600
+    "#{prefix}#{h}h#{human_duration(s, " ")}"
+  elsif seconds > 60
+    m = seconds / 60
+    s = seconds % 60
+    "#{prefix}#{m}m#{human_duration(s, " ")}"
+  elsif seconds > 0
+    "#{prefix}#{seconds}s"
+  else
+    ""
+  end
 end
 
 def usage
@@ -287,6 +300,13 @@ fragment pronly on PullRequest {
       url
       statusCheckRollup {
         state
+      }
+    }
+  }
+  repository {
+    mergeQueue {
+      configuration {
+        maximumEntriesToMerge
       }
     }
   }
