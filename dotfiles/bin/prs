@@ -6,6 +6,11 @@ require "time"
 
 require_relative "github-api"
 
+GRAY = 30
+RED = 31
+YELLOW = 32
+GREEN = 33
+
 def main(token:, count: 20, earliest: (Time.now - (90 * DAY)), ignore_trains: false, cached: false)
   earliest = earliest.to_datetime
   results =
@@ -108,21 +113,21 @@ def show_pr(pr, ignore_trains:)
 
     color, dot, status =
       if draft
-        [30, "▪", "DRAFT"]
+        [GRAY, "▪", "DRAFT"]
       elsif check_status != "SUCCESS" && check_status != "PENDING" && !check_status.nil?
-        [31, "✖︎", "CI_#{check_status}"]
+        [RED, "✖︎", "CI_#{check_status}"]
       elsif mergeable != "MERGEABLE" && mergeable != "UNKNOWN"
-        [31, "✖︎", mergeable]
+        [RED, "✖︎", mergeable]
       elsif decision == "CHANGES_REQUESTED"
-        [31, "✖︎", decision]
+        [RED, "✖︎", decision]
       elsif check_status == "PENDING"
-        [33, "●", "CI_#{check_status}"]
+        [GREEN, "●", "CI_#{check_status}"]
       elsif decision != "APPROVED" && !decision.nil?
-        [33, "●", decision]
+        [GREEN, "●", decision]
       elsif mergeable == "UNKNOWN"
-        [32, "✔︎", "checking_merge"]
+        [YELLOW, "✔︎", "checking_merge"]
       else
-        [32, "✔︎", decision || "no_review"]
+        [YELLOW, "✔︎", decision || "no_review"]
       end
 
     status_parts = [
@@ -136,14 +141,12 @@ def show_pr(pr, ignore_trains:)
         " "
       else
         mail = "✉"
-        "\033[30m#{mail}\033[0m"
+        color(mail, GRAY)
       end
 
-    printf("%<read_dot>s \033[%<color>dm%<dot>s %<status>-15s\033[0m %<permalink>s [%<branch>s by %<author>s] %<title>s, updated %<ago>s\n", {
+    printf("%<read_dot>s %<color_status>s %<permalink>s [%<branch>s by %<author>s] %<title>s, updated %<ago>s\n", {
       read_dot: read_dot,
-      color: color,
-      dot: dot,
-      status: status,
+      color_status: color(sprintf("%s %-15s", dot, status), color),
       permalink: permalink,
       branch: branch,
       author: author,
@@ -181,13 +184,38 @@ def show_mq_info(pr)
     head_url = mq.dig("headCommit", "url")
     ci_state = mq.dig("headCommit", "statusCheckRollup", "state")
     group_size = pr.dig("repository", "mergeQueue", "configuration", "maximumEntriesToMerge").to_i
+
+    state_color =
+      case state
+      when "QUEUED"
+        GRAY
+      when "AWAITING_CHECKS"
+        YELLOW
+      when "MERGEABLE"
+        GREEN
+      else
+        RED
+      end
+
+    ci_state_color =
+      case ci_state
+      when "EXPECTED"
+        GRAY
+      when "PENDING"
+        YELLOW
+      when "SUCCESS"
+        GREEN
+      else
+        RED
+      end
+
     printf "   🤖 %<state>s spot=%<position>2d group=%<group_size>2d%<solo_str>s - merging in %<ttm>s - %<head_url>s (%<ci_state>s)\n",
-      ci_state: ci_state,
+      ci_state: color(ci_state, ci_state_color),
       group_size: group_size,
       head_url: head_url,
       position: position,
       solo_str: solo_str,
-      state: state,
+      state: color(state, state_color),
       ttm: ttm
   end
 end
@@ -223,6 +251,10 @@ def human_duration(seconds, prefix = "")
   else
     ""
   end
+end
+
+def color(text, color_code)
+  "\033[#{color_code}m#{text}\033[0m"
 end
 
 def usage
