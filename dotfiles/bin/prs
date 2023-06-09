@@ -6,12 +6,20 @@ require "time"
 
 require_relative "github-api"
 
-def main(token:, count: 20, earliest: (Time.now - (90 * DAY)), ignore_trains: false)
+def main(token:, count: 20, earliest: (Time.now - (90 * DAY)), ignore_trains: false, cached: false)
   earliest = earliest.to_datetime
-  results = get_data(token: token, query: QUERY, variables: {count: count}, features: [:merge_queue])
+  results =
+    if cached
+      get_cached_results
+    else
+      get_data(token: token, query: QUERY, variables: {count: count}, features: [:merge_queue])
+    end
   if errors = results["errors"]
     p errors
     exit 1
+  end
+  if !cached
+    write_cache(results)
   end
   prs =
     results.dig("data", "assigned", "nodes") +
@@ -41,6 +49,18 @@ def main(token:, count: 20, earliest: (Time.now - (90 * DAY)), ignore_trains: fa
       puts "SKIP #{pr.fetch("__typename").inspect} (#{pr.keys.sort.inspect})"
     end
   end
+end
+
+def get_cached_results
+  JSON.load(File.read(cache_file))
+end
+
+def write_cache(data)
+  File.write(cache_file, JSON.dump(data))
+end
+
+def cache_file
+  File.join(ENV["HOME"], ".prs-cache")
 end
 
 def show_issue(pr)
@@ -344,6 +364,8 @@ while ARGV.first.to_s =~ /^-/
   when "--query"
     puts QUERY
     exit 0
+  when /^--cach/
+    opts[:cached] = true
   else
     usage
   end
