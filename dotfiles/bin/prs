@@ -8,8 +8,8 @@ require_relative "github-api"
 
 GRAY = 30
 RED = 31
-YELLOW = 32
-GREEN = 33
+YELLOW = 33
+GREEN = 32
 
 def main(token:, count: 20, earliest: (Time.now - (90 * DAY)), ignore_trains: false, cached: false)
   earliest = earliest.to_datetime
@@ -111,30 +111,63 @@ def show_pr(pr, ignore_trains:)
     branch = pr.fetch("headRefName")
     mergeable = pr.fetch("mergeable")
 
-    color, dot, status =
+    status_parts = []
+
+    status_parts <<
       if draft
-        [GRAY, "▪", "DRAFT"]
-      elsif check_status != "SUCCESS" && check_status != "PENDING" && !check_status.nil?
-        [RED, "✖︎", "CI_#{check_status}"]
-      elsif mergeable != "MERGEABLE" && mergeable != "UNKNOWN"
-        [RED, "✖︎", mergeable]
-      elsif decision == "CHANGES_REQUESTED"
-        [RED, "✖︎", decision]
-      elsif check_status == "PENDING"
-        [GREEN, "●", "CI_#{check_status}"]
-      elsif decision != "APPROVED" && !decision.nil?
-        [GREEN, "●", decision]
-      elsif mergeable == "UNKNOWN"
-        [YELLOW, "✔︎", "checking_merge"]
+        [GRAY, "DRAFT  "]
       else
-        [YELLOW, "✔︎", decision || "no_review"]
+        case decision
+        when "REQ_CHG"
+          [RED, decision]
+        when "APPROVED"
+          [GREEN, "APPROVE"]
+        when "REVIEW_REQUIRED"
+          [YELLOW, "REV_REQ"]
+        else
+          [YELLOW, decision]
+        end
       end
 
-    status_parts = [
-      check_status && "CI_#{check_status}",
-      mergeable,
-      decision,
-    ].compact.join(",")
+    status_parts <<
+      case check_status
+      when NilClass
+        [GRAY, "  "]
+      when "SUCCESS"
+        [GREEN, "CI"]
+      when "PENDING"
+        [YELLOW, "CI"]
+      when "FAILURE"
+        [RED, "CI"]
+      else
+        [RED, "CI_#{check_status}"]
+      end
+
+    status_parts <<
+      case mergeable
+      when "MERGEABLE"
+        [GREEN, "MERGE_OK"]
+      when "UNKNOWN"
+        [YELLOW, "check_mg"]
+      else
+        [RED, mergeable]
+      end
+
+    colors = status_parts.group_by { |color, _| color }
+
+    status_parts.unshift \
+      case
+      when colors[GRAY]
+        [GRAY, "▪"]
+      when colors[RED]
+        [RED, "✖︎"]
+      when colors[YELLOW]
+        [YELLOW, "●"]
+      when colors[GREEN]
+        [GREEN, "✔︎"]
+      else
+        [GRAY, "?"]
+      end
 
     read_dot =
       if is_read
@@ -144,9 +177,9 @@ def show_pr(pr, ignore_trains:)
         color(mail, GRAY)
       end
 
-    printf("%<read_dot>s %<color_status>s %<permalink>s [%<branch>s by %<author>s] %<title>s, updated %<ago>s\n", {
+    printf("%<read_dot>s %<statuses>s %<permalink>s [%<branch>s by %<author>s] %<title>s, updated %<ago>s\n", {
       read_dot: read_dot,
-      color_status: color(sprintf("%s %-15s", dot, status_parts), color),
+      statuses: status_parts.map { |c, text| color(text, c) }.join(" "),
       permalink: permalink,
       branch: branch,
       author: author,
