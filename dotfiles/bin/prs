@@ -146,7 +146,7 @@ def show_pr(pr, ignore_trains:)
 
     printf("%<read_dot>s %<color_status>s %<permalink>s [%<branch>s by %<author>s] %<title>s, updated %<ago>s\n", {
       read_dot: read_dot,
-      color_status: color(sprintf("%s %-15s", dot, status), color),
+      color_status: color(sprintf("%s %-15s", dot, status_parts), color),
       permalink: permalink,
       branch: branch,
       author: author,
@@ -240,6 +240,7 @@ def time_in_words(dt)
 end
 
 def human_duration(seconds, prefix = "")
+  return "(unknown)" unless seconds
   if seconds > 3600
     h = seconds / 3600
     s = seconds % 3600
