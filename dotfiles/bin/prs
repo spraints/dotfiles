@@ -148,7 +148,9 @@ def show_pr(pr, ignore_trains:)
       when "MERGEABLE"
         [GREEN, "MERGE_OK"]
       when "UNKNOWN"
-        [YELLOW, "check_mg"]
+        [GRAY, "checking"]
+      when "CONFLICTING"
+        [RED, "CONFLICT"]
       else
         [RED, mergeable]
       end
