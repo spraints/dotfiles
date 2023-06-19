@@ -112,6 +112,8 @@ def show_pr(pr, ignore_trains:)
     mergeable = pr.fetch("mergeable")
 
     status_parts = []
+    ci_ok = false
+    approved = false
 
     status_parts <<
       if draft
@@ -121,6 +123,7 @@ def show_pr(pr, ignore_trains:)
         when "REQ_CHG"
           [RED, decision]
         when "APPROVED"
+          approved = true
           [GREEN, "APPROVE"]
         when "REVIEW_REQUIRED"
           [YELLOW, "REV_REQ"]
@@ -134,6 +137,7 @@ def show_pr(pr, ignore_trains:)
       when NilClass
         [GRAY, "  "]
       when "SUCCESS"
+        ci_ok = true
         [GREEN, "CI"]
       when "PENDING"
         [YELLOW, "CI"]
@@ -179,7 +183,12 @@ def show_pr(pr, ignore_trains:)
         color(mail, GRAY)
       end
 
-    printf("%<read_dot>s %<statuses>s %<permalink>s [%<branch>s by %<author>s] %<title>s, updated %<ago>s\n", {
+    queue = ""
+    if ci_ok && approved && !pr.dig("mergeQueueEntry") && q = pr.dig("repository", "mergeQueue")
+      queue = color(" (merge queue depth = #{q.dig("entries", "totalCount")}, batch size = #{q.dig("configuration", "maximumEntriesToMerge")})", GREEN)
+    end
+
+    printf("%<read_dot>s %<statuses>s %<permalink>s [%<branch>s by %<author>s] %<title>s, updated %<ago>s%<queue>s\n", {
       read_dot: read_dot,
       statuses: status_parts.map { |c, text| color(text, c) }.join(" "),
       permalink: permalink,
@@ -187,6 +196,7 @@ def show_pr(pr, ignore_trains:)
       author: author,
       title: title,
       ago: ago,
+      queue: queue,
     })
     show_train_info(pr) unless ignore_trains
     show_mq_info(pr)
@@ -381,7 +391,16 @@ fragment pronly on PullRequest {
       url
     }
   }
-
+  repository {
+    mergeQueue {
+      configuration {
+        maximumEntriesToMerge
+      }
+      entries {
+        totalCount
+      }
+    }
+  }
 
   headRef {
     target {
