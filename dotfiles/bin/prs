@@ -127,6 +127,8 @@ def show_pr(pr, ignore_trains:)
           [GREEN, "APPROVE"]
         when "REVIEW_REQUIRED"
           [YELLOW, "REV_REQ"]
+        when NilClass
+          [GRAY, "       "]
         else
           [YELLOW, decision]
         end
