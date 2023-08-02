@@ -325,6 +325,9 @@ when %r{\Ahttps://github.com/([^/]+/[^/]+)/pull/[0-9]+/commits/([a-f0-9]+)\z}
 when %r{\Ahttps://github.com/([^/]+/[^/]+)/pull/([0-9]+)}
   opts[:nwo] = $1
   opts[:branch] = "refs/pull/#{$2}/head"
+when %r{\Ahttps://github.com/([^/]+/[^/]+)/pull/new/(.*)}
+  opts[:nwo] = $1
+  opts[:branch] = $2
 when %r{\Ahttps://github.com/([^/]+/[^/]+)/(pull|compare|tree)/(.*)}
   opts[:nwo] = $1
   opts[:branch] = $3.split(/\.\.\./).last
