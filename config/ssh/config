@@ -45,3 +45,7 @@ Host apps
 Host nachos
   HostName nachos.cloud.pickardayune.com
   User spraints
+
+Host matty-pi
+  HostName 192.168.164.101
+  User dietpi
