@@ -4,13 +4,20 @@ exec ruby "$0" "$@"
 #!ruby
 #/ Usage: ci-status [--skip-green|--failed] [--urls] [--ids] [branch|PR-url]
 #/ Shows pretty ci status for the current repo and current branch (or the named branch).
+#/ Usage: ci-status --failures [branch|PR-url]
+#/ Summarizes failures based on annotations.
 
 require "date"
 require "json"
 require "net/http"
 require "timeout"
 
-def main(branch:, nwo:, token:, filter: :all, force_urls: false, show_ids: false)
+def main(branch:, nwo:, token:, filter: :all, force_urls: false, show_ids: false, summarize_failures: false)
+  if summarize_failures
+    failures_main(branch: branch, nwo: nwo, token: token)
+    return
+  end
+
   puts "Status for #{branch}:"
   to_show = []
   queries = [{}]
@@ -56,6 +63,76 @@ def main(branch:, nwo:, token:, filter: :all, force_urls: false, show_ids: false
 rescue JSON::ParserError => e
   $stderr.puts "#{e.class.name}: #{e}", raw_ci_status
   exit 1
+end
+
+def failures_main(branch:, nwo:, token:)
+  owner, repo = nwo.split("/", 2)
+  res = JSON.parse(json = query({
+    "query" => PROBLEMS_QUERY,
+    "variables" => {
+      "owner" => owner,
+      "repo" => repo,
+      "ref" => branch,
+    },
+  }, token: token))
+  #File.write("ci-status.json", json)
+
+  if errors = res["errors"]
+    p errors
+    exit 1
+  end
+
+  check_suites = res.dig("data", "repository", "object", "checkSuites")
+  check_suite_nodes = check_suites.fetch("nodes")
+  additional_check_suites = check_suites.fetch("totalCount") - check_suite_nodes.size
+
+  summary = Hash.new { |h, k| h[k] = [] }
+  additional_check_runs = 0
+  additional_annotations = 0
+  check_suite_nodes.each do |check_suite|
+    check_runs = check_suite.fetch("checkRuns")
+    check_run_nodes = check_runs.fetch("nodes")
+    additional_check_runs += check_runs.fetch("totalCount") - check_run_nodes.size
+
+    workflow_name = check_suite.dig("workflowRun", "workflow", "name")
+    workflow_file = check_suite.dig("workflowRun", "file", "path")
+    workflow_url  = check_suite.dig("workflowRun", "url")
+
+    check_run_nodes.each do |check_run|
+      annotations = check_run.fetch("annotations")
+      annotation_nodes = annotations.fetch("nodes")
+      additional_annotations += annotations.fetch("totalCount") - annotation_nodes.size
+
+      annotation_nodes.each do |annotation|
+        path = annotation.fetch("path")
+        if path != ".github"
+          info = {
+            line: annotation.dig("location", "start", "line"),
+            test_name: annotation.fetch("message"),
+            workflow_name: workflow_name,
+            workflow_file: workflow_file,
+            workflow_url: workflow_url,
+          }
+          summary[path] << info
+        end
+      end
+    end
+  end
+
+  puts "Files with failures:"
+  summary.sort_by { |k, _| k }.each do |path, annotations|
+    uniq = annotations.map { |n| n[:test_name] }.uniq.size
+    puts "  #{path}: #{uniq} distinct failures"
+  end
+  if additional_check_suites > 0
+    puts "check suites not included: #{additional_check_suites}"
+  end
+  if additional_check_runs > 0
+    puts "check runs not included: #{additional_check_runs}"
+  end
+  if additional_annotations > 0
+    puts "annotations not included: #{additional_annotations}"
+  end
 end
 
 def check_suite_queries(commit, _)
@@ -268,6 +345,42 @@ query ($owner: String!, $repo: String!, $ref: String!, $checkRunCursor: String, 
 }
 GQL
 
+PROBLEMS_QUERY = <<GQL
+query ($owner: String!, $repo: String!, $ref: String!) {
+  repository(owner: $owner, name: $repo) {
+    object(expression: $ref) {
+      ... on Commit {
+        checkSuites(first: 30) {
+          totalCount
+          nodes {
+            workflowRun {
+              file { path }
+              workflow { name }
+              url
+            }
+            checkRuns(filterBy: { conclusions: [FAILURE] }, first: 30) {
+              totalCount
+              nodes {
+                name
+                annotations(first: 30) {
+                  totalCount
+                  nodes {
+                    message
+                    path
+                    title
+                    location { start { line } }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+GQL
+
 def run!(env, _, nwo, branch, cursors)
   token = env.fetch("GITHUB_TOKEN")
   owner, repo = nwo.split("/", 2)
@@ -280,6 +393,10 @@ def run!(env, _, nwo, branch, cursors)
     }.merge(cursors),
   }
 
+  query(req_data, token: token)
+end
+
+def query(req_data, token:)
   req = Net::HTTP::Post.new("https://api.github.com/graphql")
   req.basic_auth token, "x-oauth-basic"
   req["Accept"] = "application/vnd.github.antiope-preview+json"
@@ -304,6 +421,8 @@ while ARGV.first.to_s =~ /^-/
     opts[:force_urls] = true
   when "--ids"
     opts[:show_ids] = true
+  when "--failures"
+    opts[:summarize_failures] = true
   else
     usage
   end
