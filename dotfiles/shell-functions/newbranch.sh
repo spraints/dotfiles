@@ -60,6 +60,9 @@ newbranch() {
     echo "error: Could not figure out which base branch to use."
     return
   fi
+  if ! git rev-parse --verify "${base}^{commit}" >&/dev/null && git rev-parse --verify "origin/${base}^{commit}" >&/dev/null; then
+    base="origin/${base}"
+  fi
   git checkout --no-track -b "$branch_name" "$base"
   )
 }
