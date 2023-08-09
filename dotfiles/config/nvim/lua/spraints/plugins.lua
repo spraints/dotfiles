@@ -16,16 +16,25 @@ function M.setup()
     }
 
     use {
-      "neovim/nvim-lspconfig",
-      -- opt = true,
-      event = "BufReadPre",
-      wants = { "nvim-lsp-installer", "lsp_signature.nvim" },
+      "williamboman/mason.nvim",
+    }
+
+    use {
+      "williamboman/mason-lspconfig.nvim",
+      requires = {
+        "williamboman/mason.nvim",
+        "ray-x/lsp_signature.nvim",
+      },
       config = function()
         require("spraints.lsp").setup()
       end,
+    }
+
+    use {
+      "neovim/nvim-lspconfig",
       requires = {
-        "williamboman/nvim-lsp-installer",
-        "ray-x/lsp_signature.nvim",
+        "william-bowman/mason.nvim",
+        "williambowman/mason-lspconfig.nvim",
       },
     }
   end
