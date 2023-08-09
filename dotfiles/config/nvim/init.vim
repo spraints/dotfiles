@@ -3,7 +3,7 @@ require "spraints.opts"
 require("spraints.plugins").setup()
 END
 
-autocmd BufWritePre *.go,*.rs lua vim.lsp.buf.formatting_sync()
+autocmd BufWritePre *.go,*.rs lua vim.lsp.buf.format()
 
 let g:rustfmt_autosave=1
 
