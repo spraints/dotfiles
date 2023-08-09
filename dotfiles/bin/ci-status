@@ -121,8 +121,12 @@ def failures_main(branch:, nwo:, token:)
 
   puts "Files with failures:"
   summary.sort_by { |k, _| k }.each do |path, annotations|
-    uniq = annotations.map { |n| n[:test_name] }.uniq.size
-    puts "  #{path}: #{uniq} distinct failures"
+    puts "  #{path}:"
+    annotations.each do |annotation|
+      test_name = annotation.fetch(:test_name)
+      workflow_name = annotation.fetch(:workflow_name)
+      puts "  - #{test_name} (#{workflow_name})"
+    end
   end
   if additional_check_suites > 0
     puts "check suites not included: #{additional_check_suites}"
