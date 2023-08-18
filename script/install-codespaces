@@ -5,7 +5,7 @@ set -ex
 script/install-dotfiles
 
 # Codespaces has some opinionated git config that we need to use.
-test -f ${HOME}/.gitconfig.orig && cat ${HOME}/.gitconfig.orig >> dotfiles/gitconfig
+ln -s .gitconfig.orig ${HOME}/.gitconfig.local
 
 sudo apt-get install -y \
   silversearcher-ag \
