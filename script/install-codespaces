@@ -4,9 +4,6 @@ set -ex
 
 script/install-dotfiles
 
-# Codespaces has some opinionated git config that we need to use.
-ln -s .gitconfig.orig ${HOME}/.gitconfig.local
-
 sudo apt-get install -y \
   silversearcher-ag \
   tmux
@@ -14,3 +11,4 @@ sudo apt-get install -y \
 # Do this last. If it fails, I'd rather have the other parts done.
 config/nvim/install
 config/neovim-packer/install
+config/codespaces/install

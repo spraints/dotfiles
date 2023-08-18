@@ -1,0 +1,6 @@
+[include]
+	path = ".gitconfig.orig"
+[credetial "https://github.com"]
+	username = spraints
+[core]
+	askPass = echo-github-token
