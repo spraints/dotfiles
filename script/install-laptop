@@ -10,7 +10,7 @@ case "${1:-}" in
     strap_url=https://strap.githubapp.com/
     ;;
   --personal)
-    strap_url=https://macos-strap.herokuapp.com/
+    strap_url=https://strap.mikemcquaid.com/
     ;;
   *)
     cat "$0" | grep ^#/ | cut -c4-
