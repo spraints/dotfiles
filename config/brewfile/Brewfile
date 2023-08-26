@@ -6,6 +6,7 @@
 tap "homebrew/cask-fonts"
 
 # useful stuff for my programming hobby
+brew "gh"
 brew "graphviz"
 brew "imagemagick"
 brew "jq"
