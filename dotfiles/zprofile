@@ -1,2 +1,0 @@
-PROMPT='%m %F{yellow}%*%f (%F{magenta}%j%f) >>> '
-. ~/.commonrc

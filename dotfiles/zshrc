@@ -1,0 +1,16 @@
+PROMPT='%m %F{yellow}%*%f (%F{magenta}%j%f) >>> '
+
+. ~/.commonrc
+
+# brew install starship
+if which starship >/dev/null 2>/dev/null; then
+  export STARSHIP_THIS_PID=$$
+  eval "$(starship init zsh 2>/dev/null)"
+fi
+
+# https://docs.brew.sh/Shell-Completion
+if type brew >&/dev/null; then
+  FPATH=$(brew --prefix)/share/zsh/site-functions:$FPATH
+  autoload -Uz compinit
+  compinit
+fi

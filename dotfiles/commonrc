@@ -17,12 +17,6 @@ elif [ -x /usr/local/bin/brew ]; then
   eval "$(/usr/local/bin/brew shellenv)"
 fi
 
-# brew install starship
-if which starship >/dev/null 2>/dev/null; then
-  export STARSHIP_THIS_PID=$$
-  eval "$(starship init bash 2>/dev/null)"
-fi
-
 [[ -s "$HOME/.cargo/env" ]] && source "$HOME/.cargo/env"
 
 [[ -s "$HOME/.gcloud/env.sh" ]] && source "$HOME/.gcloud/env.sh"
