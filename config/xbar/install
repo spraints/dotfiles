@@ -1,0 +1,25 @@
+#!/bin/bash
+
+set -e
+set -o nounset
+
+root="$(cd "$(dirname $0)"; pwd -P)"
+ts=$(date +%s)
+
+linkup() {
+  local f="$1"
+  local src="${root}/plugins/${f}"
+  local dst="${HOME}/Library/Application Support/xbar/plugins/${f}"
+  if [ ! -e "$dst" ]; then
+    (set -x; ln -s "$src" "$dst")
+  elif [ "$(readlink "$dst")" != "$src" ]; then
+    (set -x; mv "$dst" "$dst.bak.$ts"; ln -s "$src" "$dst")
+  else
+    echo $dst already exists
+  fi
+}
+
+cd "${root}/plugins"
+for f in *; do
+  linkup $f
+done

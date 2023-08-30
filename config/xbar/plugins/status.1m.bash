@@ -1,0 +1,1 @@
+/Users/spraints/src/github.com/github/github-status-bar/plugins/status.1m.bash
