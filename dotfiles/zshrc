@@ -14,3 +14,15 @@ if type brew >&/dev/null; then
   autoload -Uz compinit
   compinit
 fi
+
+source "${HOME}/.shell-functions/current-branch.sh"
+source "${HOME}/.shell-functions/journal.sh"
+source "${HOME}/.shell-functions/newbranch.sh"
+source "${HOME}/.shell-functions/paste-crash-dump.sh"
+source "${HOME}/.shell-functions/sync-tmux-window-name.sh"
+source "${HOME}/.shell-functions/temps"
+source "${HOME}/.shell-functions/temps.sh"
+source "${HOME}/.shell-functions/viconflicts"
+source "${HOME}/.shell-functions/vidiff"
+
+[ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
