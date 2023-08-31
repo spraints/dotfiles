@@ -1,0 +1,47 @@
+#!/usr/bin/env ruby
+#
+# 🌡️
+
+require "json"
+require "net/http"
+require "time"
+
+def main
+  uri = URI("https://temps.pickardayune.com/")
+  req = Net::HTTP::Get.new(uri)
+  req["Accept"] = "application/json"
+
+  Net::HTTP.start(uri.host, uri.port, use_ssl: true) do |http|
+    res = http.request(req)
+
+    if res.code != "200"
+      printf "🌡️❓\n---\nHTTP #{res.code}\n#{res.body}"
+      return
+    end
+
+    temps = JSON.load(res.body).fetch("temps")
+    outdoors = temps.find { |t| t["location"] == "Outdoors" }.dig("value", "f").to_i
+    landing = temps.find { |t| t["location"] == "1 landing" }.dig("value", "f").to_i
+
+    now = Time.now
+    temps.each do |t|
+      t["hours_old"] = (now - Time.parse(t["updated_at"])) / 3600.0
+    end
+
+    old, new = temps.partition { |t| t["hours_old"] > 1.5 }
+
+    puts "🌡️ #{outdoors} F (#{landing} F 🏠)"
+    puts "---"
+    new.each do |t|
+      puts "#{t.dig("value", "f").to_i} F - #{t["location"]}"
+    end
+    unless old.empty?
+      puts "---"
+      old.sort_by { |t| t["hours_old"] }.each do |t|
+        puts "#{t.dig("value", "f").to_i} F - #{t["location"]} (#{t["hours_old"].to_i} hours ago)"
+      end
+    end
+  end
+end
+
+main

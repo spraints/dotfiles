@@ -5,12 +5,16 @@ set -e
 set -o nounset
 
 strap_url=
+work=false
+personal=false
 case "${1:-}" in
   --work)
     strap_url=https://strap.githubapp.com/
+    work=true
     ;;
   --personal)
     strap_url=https://strap.mikemcquaid.com/
+    personal=true
     ;;
   *)
     cat "$0" | grep ^#/ | cut -c4-
@@ -31,3 +35,7 @@ script/install-config config/ssh
 script/install-config config/brewfile
 script/install-config config/neovim-packer
 script/install-config config/macos
+
+if $work; then
+  script/install-config config/xbar
+fi
