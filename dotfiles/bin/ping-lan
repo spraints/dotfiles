@@ -40,90 +40,19 @@ nets.each do |addr, netmask|
   end
 end
 
-# build_msg builds an ICMP_ECHOREQUEST message.
-def build_msg(ping_id:, checksum: 0)
-  msg = [
-    8, # ICMP_ECHO
-    0, # ICMP_SUBCODE
-    checksum,
-    ping_id,
-    1, # seq
-    "", # data
-  ].pack("C2 n3 A56")
+r, w = IO.pipe
+all_dests.each do |dest|
+  spawn("ping", "-c", "1", "-t", "2", dest, out: w)
 end
+w.close
 
-# checksum calculates the checksum of an ICMP message.
-def checksum(msg)
-  length = msg.length
-  num_word = length / 2
-  check = msg.unpack("n#{num_word}").inject(0) { |res, word| res + word }
-  if length % 2 > 0
-    check += msg[length-1, 1].unpack("C").first << 8
-  end
-  check = (check >> 16) + (check & 0xffff)
-  return (~((check >> 16 + check) & 0xffff))
-end
-
-# Don't ping them all at the same time, there's a limit to how many files we
-# can have open. 200 probably should be based on ulimits, rather than being a
-# constant.
-ping_id = Process.pid & 0xffff
-seen = 0
-all_dests.each_slice(200) do |dests|
-  # Create a socket for each peer, and record its IP in sock2addr.
-  sock2addr = {}
-  socks = []
-  dests.each do |dest|
-    s = Socket.new(Socket::PF_INET, Socket::SOCK_RAW, Socket::IPPROTO_ICMP)
-    checksum = 0
-    msg = build_msg(ping_id: ping_id)
-    msg = build_msg(ping_id: ping_id, checksum: checksum(msg))
-    saddr = Socket.pack_sockaddr_in(0, dest)
-    sock2addr[s] = dest
-    socks << [s, saddr, msg]
-  end
-
-  # Send all the pings at the same time.
-  start = Time.now.to_f
-  socks.each do |sock, saddr, msg|
-    sock.send(msg, 0, saddr)
-  end
-  setup_done = Time.now.to_f
-
-  pending = socks.map { |s, _, _| s }
-  deadline = setup_done + TIMEOUT
-
-  now = Time.now.to_f
-  until pending.empty?
-    break if now > deadline
-    p now: now, deadline: deadline, remaining: deadline - now if DEBUG
-    rs, = IO.select(pending, nil, nil, deadline - now)
-    now = Time.now.to_f
-    rs.each do |sock|
-      # We don't need to wait for this peer anymore.
-      pending.delete(sock)
-      begin
-        data = sock.recvfrom(1500).first
-        type = data[20, 2].unpack("C2").first
-        p sock: sock.to_i, type: type if DEBUG
-        case type
-        when 0 # ICMP_ECHOREPLY
-          # We got an ACK!
-          printf "%15s ok %7.3f seconds\n", sock2addr[sock], (now - start)
-        when 8 # ICMP_ECHOREQUEST
-          # Actually, we should ignore this packet and wait longer for this host.
-          pending << sock
-        when 11
-          # "time exceeded", this probably means the host doesn't exist?
-        else
-          printf "%15s no %d\n", sock2addr[sock], type
-        end
-      #rescue => e
-      #  printf "%15s err %s\n", sock2addr[sock], e
-      end
+begin
+  while line = r.readline
+    if line =~ /bytes from/
+      puts line
     end
+    Process.wait(-1, Process::WNOHANG)
   end
-  pending.each(&:close)
+rescue EOFError
+  # ok
 end
-
-puts "got responses from #{seen} / #{all_dests.size} addresses"
