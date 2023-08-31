@@ -3,12 +3,10 @@
 set -e
 set -o nounset
 
-PLUGIN=github.com/github/github-status-bar
-PLUGIN_DIR=~/src/$PLUGIN
+PLUGIN_DIR="$(/usr/bin/dirname $(/usr/bin/readlink -f "$0"))"/github-status-bar
 
 if [ ! -d "$PLUGIN_DIR" ]; then
-  printf "❓\n---\ngithub-status-bar is not checked out.\nenable like this:\n> git clone https://%s %s\n" \
-    "$PLUGIN" "$PLUGIN_DIR"
+  printf "❓\n---\ngithub-status-bar is not checked out.\nTry running config/xbar/install again.\n"
   exit 0
 fi
 

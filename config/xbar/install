@@ -21,5 +21,10 @@ linkup() {
 
 cd "${root}/plugins"
 for f in *; do
-  linkup $f
+  if [ ! -d "$f" ]; then
+    linkup $f
+  fi
 done
+
+echo Installing github-status-bar dependencies
+(cd github-status-bar && npm install >&/dev/null)

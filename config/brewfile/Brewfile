@@ -14,6 +14,7 @@ brew "jq"
 brew "moreutils" # particularly for the `ts` command
 brew "mtr"
 brew "neovim"
+brew "node"
 brew "pstree"
 brew "rbenv"
 brew "reattach-to-user-namespace"
