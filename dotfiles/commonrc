@@ -1,16 +1,8 @@
-if [ -f /opt/github/env.sh ]
-then
-  source /opt/github/env.sh
-fi
-
 export PATH=$PATH:${HOME}/.local/bin
 export PATH=/usr/local/bin:$PATH
 export PATH=$PATH:/usr/local/sbin
-export PATH=$PATH:${HOME}/.cabal/bin
 export PATH=$PATH:${HOME}/dev/private/localbin
-export PATH=$PATH:/usr/local/go/bin
 export PATH=$PATH:${HOME}/go/bin
-export PATH=$PATH:spraints/bin
 export PATH=$PATH:${HOME}/.bin
 
 which rbenv >/dev/null 2>/dev/null &&
@@ -18,6 +10,12 @@ which rbenv >/dev/null 2>/dev/null &&
 
 which nodenv >/dev/null 2>/dev/null &&
   eval "$(nodenv init -)"
+
+if [ -x /opt/homebrew/bin/brew ]; then
+  eval "$(/opt/homebrew/bin/brew shellenv)"
+elif [ -x /usr/local/bin/brew ]; then
+  eval "$(/usr/local/bin/brew shellenv)"
+fi
 
 [[ -s "$HOME/.cargo/env" ]] && source "$HOME/.cargo/env"
 
@@ -30,15 +28,7 @@ which nodenv >/dev/null 2>/dev/null &&
 # Let me configure stuff on just one machine.
 [[ -s "$HOME/.localrc" ]] && source "$HOME/.localrc"
 
-export RUBY_BUILD_DEFINITIONS=${HOME}/dev/puppet-ruby/files/definitions
-
-export JAVA_MEM=-Xmx2g
-
-export BCDATABASE_PATH=${HOME}/.nubic/db
-
-export USE_CAPYBARA_WEBKIT=true
 alias b='bundle exec'
-alias slurp='gstash && git pull && gstash pop'
 
 for e in nvim vim vi; do
   re=$(which $e 2>/dev/null)
@@ -52,10 +42,10 @@ if [ -n "$EDITOR" ]; then
 fi
 
 # For AWS:
-if [ -d /usr/local/Cellar/ec2-api-tools/1.5.0.1/jars ]
+if [ -d "${HOMEBREW_CELLAR}/ec2-api-tools/1.5.0.1/jars" ]
 then
   export JAVA_HOME="/System/Library/Frameworks/JavaVM.framework/Home"
-  export EC2_HOME="/usr/local/Cellar/ec2-api-tools/1.5.0.1/jars"
+  export EC2_HOME="${HOMEBREW_CELLAR}/ec2-api-tools/1.5.0.1/jars"
 fi
 if [ -d $HOME/.ec2 ]
 then
@@ -74,23 +64,11 @@ alias gp='git push'
 alias gfa="git fetch --all --prune"
 alias gstash="git -c commit.gpgsign=false stash"
 
-alias fixshoved="~/.bin/poke -d shoved.githubapp.com:8080 -p aux1-ext.rs.github.com -i 127.0.0.23"
-alias tmux-ps="~/.bin/tmux-ps"
-
-alias turbo="ssh router script/turbo-me"
-alias unturbo="ssh router script/unturbo-me"
-
-# gh
-alias zt="bin/testrb_or_zt"
-alias zc="bin/zeus console"
-alias zr="bin/zeus runner"
-alias zrake="bin/zeus rake"
-
 # important thing
 if [ "$(uname -s)" = "Linux" ]; then
   alias dominion="ssh laptop open https://dominion.games"
 else
-  alias dominion="open -a Google\ Chrome https://dominion.games"
+  alias dominion="open https://dominion.games"
 fi
 
 function md {
@@ -101,12 +79,6 @@ function md {
     pwd
   fi
 }
-
-# Make git-svn work
-export PERL5LIB=/opt/boxen/homebrew/Cellar/subversion17/1.7.13/Library/Perl/5.16
-
-# Make `python -e "import mercurial"` work
-#export PYTHONPATH=/opt/boxen/homebrew/Cellar/mercurial/2.8.2/lib/python2.7/site-packages
 
 test -f ~/Dropbox/self/t.csv && export T_DATA_FILE=~/Dropbox/self/t.csv
 
@@ -120,7 +92,5 @@ code () {
         open -a "Visual Studio Code" --args "$F"
     fi
 }
-
-export GPG_TTY=$(tty)
 
 # vim: ft=sh

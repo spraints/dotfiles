@@ -6,6 +6,12 @@ test -f ~/.bashrc-defaults && . ~/.bashrc-defaults
 
 . ~/.commonrc
 
+# brew install starship
+if which starship >/dev/null 2>/dev/null; then
+  export STARSHIP_THIS_PID=$$
+  eval "$(starship init bash 2>/dev/null)"
+fi
+
 for fun in ~/.shell-functions/*; do
   . $fun
 done
