@@ -26,3 +26,5 @@ source "${HOME}/.shell-functions/viconflicts"
 source "${HOME}/.shell-functions/vidiff"
 
 [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
+
+bindkey -e
