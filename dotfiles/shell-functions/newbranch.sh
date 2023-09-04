@@ -2,7 +2,7 @@ newbranch() {
   (
   set -e
   usage="Usage: newbranch [--help] [-h] [--no-fetch] [--base start] branch-name"
-  fetch=yes
+  fetch=true
   base=
   while [ $# -gt 0 ]
   do
@@ -11,7 +11,7 @@ newbranch() {
         echo $usage
         return ;;
       --no-fetch)
-        fetch=no
+        fetch=false
         shift ;;
       --base)
         base="$2"
@@ -32,7 +32,7 @@ newbranch() {
     echo $usage
     return
   fi
-  if [ "$fetch" == "yes" ]
+  if $fetch
   then
     echo "Fetching from origin..."
     git fetch origin
@@ -47,7 +47,7 @@ newbranch() {
       fi
     done
   fi
-  if [ -z "$base" ] && [ "$fetch" == "yes" ]
+  if [ -z "$base" ] && $fetch
   then
     base=$(git ls-remote origin HEAD | head -n 1 | cut -c1-40)
     if [ -n "$base" ]
