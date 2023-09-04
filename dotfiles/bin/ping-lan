@@ -2,10 +2,7 @@
 
 require "socket"
 
-TIMEOUT = 10.0
 DEBUG = false
-
-# TODO - bail if not root.
 
 # List all interfaces.
 ifaddrs = Socket.getifaddrs
