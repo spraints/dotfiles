@@ -47,5 +47,5 @@ Host nachos
   User spraints
 
 Host matty-pi
-  HostName 192.168.164.101
+  HostName 192.168.164.110
   User dietpi
