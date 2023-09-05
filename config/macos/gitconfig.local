@@ -1,10 +1,4 @@
-[credential]
-	helper = osxkeychain
-[url "git@github.com:"]
-	insteadOf = https://github.com/
-#[url "git@ghe.io:"]
-#	insteadOf = https://ghe.io/
-[url "git@gist.ghe.io:"]
-	insteadOf = https://gist.ghe.io/
-[commit]
-	gpgsign = true
+[gpg]
+	format = ssh
+[user]
+	signingkey = /Users/spraints/.ssh/id_ed25519.pub

@@ -3,12 +3,11 @@
 # Then, you can cd here and do this:
 #    brew bundle
 
-tap "heroku/brew"
 tap "homebrew/cask-fonts"
 
 # useful stuff for my programming hobby
+brew "gh"
 brew "graphviz"
-brew "heroku"
 brew "imagemagick"
 brew "jq"
 brew "moreutils" # particularly for the `ts` command
@@ -27,12 +26,12 @@ brew "tmux"
 brew "watch"
 
 # other apps that I use
-cask "gnucash"
-cask "handbrake"
-cask "keepassxc"
-cask "iterm2"
+brew "gnucash"
+brew "handbrake"
+brew "keepassxc"
+brew "iterm2"
 brew "ledger"
-brew "youtube-dl"
+brew "yt-dlp"
 
 # Things I might want to use homebrew to install, but might not.
 #cask "firefox"
@@ -44,9 +43,8 @@ brew "youtube-dl"
 #cask "visual-studio-code"
 
 #wip - trying to get gpg commit signing set up again :(
-brew "gnupg"
-brew "pinentry-mac"
+#brew "gnupg"
+#brew "pinentry-mac"
 
 # fonts
-tap "homebrew/cask-fonts"
 cask "font-fira-mono-nerd-font"

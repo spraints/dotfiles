@@ -13,7 +13,7 @@ case "${1:-}" in
     work=true
     ;;
   --personal)
-    strap_url=https://macos-strap.herokuapp.com/
+    strap_url=https://strap.mikemcquaid.com/
     personal=true
     ;;
   *)
