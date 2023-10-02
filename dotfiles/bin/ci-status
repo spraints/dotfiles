@@ -324,7 +324,7 @@ query ($owner: String!, $repo: String!, $ref: String!, $checkRunCursor: String, 
         checkSuites(first: 100, after: $checkSuiteCursor) {
           pageInfo { hasNextPage endCursor }
           nodes {
-            app { name }
+            # app { name }
             workflowRun { workflow { name } }
             checkRuns(first: 100, after: $checkRunCursor) {
               pageInfo { hasNextPage endCursor }
