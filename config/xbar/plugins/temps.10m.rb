@@ -20,15 +20,15 @@ def main
     end
 
     temps = JSON.load(res.body).fetch("temps")
-    outdoors = temps.find { |t| t["location"] == "Outdoors" }.dig("value", "f").to_i
-    landing = temps.find { |t| t["location"] == "1 landing" }.dig("value", "f").to_i
+    outdoors = get_temp(temps, "Outdoors", "f")
+    landing = get_temp(temps, "1 landing", "f")
 
     now = Time.now
     temps.each do |t|
       t["hours_old"] = (now - Time.parse(t["updated_at"])) / 3600.0
     end
 
-    old, new = temps.partition { |t| t["hours_old"] > 1.5 }
+    old, new = temps.partition { |t| t["hours_old"] > 1.0 }
 
     puts "🌡️ #{outdoors} F (#{landing} F 🏠)"
     puts "---"
@@ -41,6 +41,14 @@ def main
         puts "#{t.dig("value", "f").to_i} F - #{t["location"]} (#{t["hours_old"].to_i} hours ago)"
       end
     end
+  end
+end
+
+def get_temp(temps, location, units)
+  if data = temps.find { |t| t["location"] == location }
+    data.dig("value", units).to_i
+  else
+    "??"
   end
 end
 
