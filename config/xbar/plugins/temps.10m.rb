@@ -21,7 +21,7 @@ def main
 
     temps = JSON.load(res.body).fetch("temps")
     outdoors = get_temp(temps, "Outdoors", "f")
-    landing = get_temp(temps, "1 landing", "f")
+    landing = get_temp(temps, /landing/, "f")
 
     now = Time.now
     temps.each do |t|
@@ -45,7 +45,7 @@ def main
 end
 
 def get_temp(temps, location, units)
-  if data = temps.find { |t| t["location"] == location }
+  if data = temps.find { |t| location === t["location"] }
     data.dig("value", units).to_i
   else
     "??"
