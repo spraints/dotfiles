@@ -29,24 +29,30 @@ def main(nwo:, token:)
     exit 0
   end
 
+  active_group_ids = mq.fetch("mergingEntries").fetch("edges").map { |edge| edge.fetch("node").fetch("id") }
+
   next_merge_time = mq.fetch("nextEntryEstimatedTimeToMerge")
   entries = mq.fetch("entries").fetch("edges")
-  if next_merge_time
-    puts "Merging in #{human_duration(next_merge_time)}:"
-  else
-    puts "Merging soon:"
-  end
-  entries.each do |edge|
-    entry = edge.fetch("node")
-    position = entry.fetch("position")
-    enqueued_by = entry.fetch("enqueuer").fetch("login")
-    state = entry.fetch("state")
-    pr_title = entry.fetch("pullRequest").fetch("title")
-    pr_number = entry.fetch("pullRequest").fetch("number")
-    pr_url = entry.fetch("pullRequest").fetch("url")
+  active_group, rest = entries.partition { |edge| active_group_ids.include?(edge.fetch("node").fetch("id")) }
+  [ [ "Merging", active_group ], [ "Queued", rest ] ].each do |label, group|
+    next if group.empty?
+    puts "#{label}:"
+    group.each do |edge|
+      entry = edge.fetch("node")
+      position = entry.fetch("position")
+      enqueued_by = entry.fetch("enqueuer").fetch("login")
+      state = entry.fetch("state")
+      pr_title = entry.fetch("pullRequest").fetch("title")
+      pr_number = entry.fetch("pullRequest").fetch("number")
+      pr_url = entry.fetch("pullRequest").fetch("url")
+      commit_url = entry.fetch("headCommit").fetch("url")
 
-    printf "%3d. %s @%s [%d] %s\n      %s\n",
-      position, pretty_state(state), enqueued_by, pr_number, pr_title, pr_url
+      printf "%3d. %s @%s [%d] %s\n      %s\n",
+        position, pretty_state(state), enqueued_by, pr_number, pr_title, pr_url
+      if state != "MERGEABLE"
+        printf "      %s\n", commit_url
+      end
+    end
   end
   if total > entries.size
     puts "... and #{total - entries.size} more..."
@@ -119,6 +125,7 @@ query ($owner: String!, $name: String!) {
 				totalCount
 				edges {
 					node {
+						id
 						position
 						enqueuer {
 							login
@@ -129,6 +136,16 @@ query ($owner: String!, $name: String!) {
 							number
 							url
 						}
+						headCommit {
+							url
+						}
+					}
+				}
+			}
+			mergingEntries(first: 50) {
+				edges {
+					node {
+						id
 					}
 				}
 			}
@@ -141,6 +158,7 @@ def query(req_data, token:)
   req = Net::HTTP::Post.new("https://api.github.com/graphql")
   req.basic_auth token, "x-oauth-basic"
   req["Accept"] = "application/vnd.github.antiope-preview+json"
+  req["GraphQL-Features"] = "merge_queue"
   req.body = JSON.dump(req_data)
 
   Timeout.timeout(30.0) do
