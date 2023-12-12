@@ -10,7 +10,7 @@ require "json"
 require "net/http"
 require "timeout"
 
-def main(nwo:, token:)
+def main(nwo:, token:, user: nil)
   data = query_mq(nwo: nwo, token: token)
   if errors = data["errors"]
     p errors
@@ -33,6 +33,10 @@ def main(nwo:, token:)
 
   next_merge_time = mq.fetch("nextEntryEstimatedTimeToMerge")
   entries = mq.fetch("entries").fetch("edges")
+  more = total - entries.size
+  if user
+    entries = entries.select { |edge| edge.fetch("node").fetch("enqueuer").fetch("login") == user }
+  end
   active_group, rest = entries.partition { |edge| active_group_ids.include?(edge.fetch("node").fetch("id")) }
   [ [ "Merging", active_group ], [ "Queued", rest ] ].each do |label, group|
     next if group.empty?
@@ -54,8 +58,8 @@ def main(nwo:, token:)
       end
     end
   end
-  if total > entries.size
-    puts "... and #{total - entries.size} more..."
+  if more > 0
+    puts "... and #{more} more..."
   end
 
 rescue JSON::ParserError => e
@@ -174,6 +178,8 @@ while arg = ARGV.shift
   case arg
   when /\A[^\/]+\/[^\/]+\z/
     opts[:nwo] = arg
+  when "--user"
+    opts[:user] = ARGV.shift
   else
     usage
   end
