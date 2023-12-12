@@ -1,0 +1,182 @@
+#!/bin/bash
+export RBENV_VERSION=system
+exec ruby "$0" "$@"
+#!ruby
+#/ Usage: merge-queue OWNER/REPO
+#/ Shows pretty merge queue for the given repository.
+
+require "date"
+require "json"
+require "net/http"
+require "timeout"
+
+def main(nwo:, token:)
+  data = query_mq(nwo: nwo, token: token)
+  if errors = data["errors"]
+    p errors
+    exit 1
+  end
+
+  mq = data.dig("data", "repository", "mergeQueue")
+  if mq.nil?
+    puts "No merge queue"
+    exit 1
+  end
+
+  total = mq.fetch("entries").fetch("totalCount")
+  if total == 0
+    puts "Merge queue for #{nwo} is empty."
+    exit 0
+  end
+
+  next_merge_time = mq.fetch("nextEntryEstimatedTimeToMerge")
+  entries = mq.fetch("entries").fetch("edges")
+  if next_merge_time
+    puts "Merging in #{human_duration(next_merge_time)}:"
+  else
+    puts "Merging soon:"
+  end
+  entries.each do |edge|
+    entry = edge.fetch("node")
+    position = entry.fetch("position")
+    enqueued_by = entry.fetch("enqueuer").fetch("login")
+    state = entry.fetch("state")
+    pr_title = entry.fetch("pullRequest").fetch("title")
+    pr_number = entry.fetch("pullRequest").fetch("number")
+    pr_url = entry.fetch("pullRequest").fetch("url")
+
+    printf "%3d. %s @%s [%d] %s\n      %s\n",
+      position, pretty_state(state), enqueued_by, pr_number, pr_title, pr_url
+  end
+  if total > entries.size
+    puts "... and #{total - entries.size} more..."
+  end
+
+rescue JSON::ParserError => e
+  $stderr.puts "#{e.class.name}: #{e}", raw_ci_status
+  exit 1
+end
+
+GRAY   = 30
+RED    = 31
+GREEN  = 32
+YELLOW = 33
+
+def pretty_state(state)
+  case state
+  when "QUEUED"
+    colorize("QU", YELLOW)
+  when "AWAITING_CHECKS"
+    colorize("CI", YELLOW)
+  when "MERGEABLE"
+    colorize("OK", GREEN)
+  when "UNMERGEABLE"
+    colorize("NG", RED)
+  when "LOCKED"
+    colorize("LK", GRAY)
+  else
+    "!!#{state}!!"
+  end
+end
+
+def colorize(str, color)
+  sprintf "\033[%dm%s\033[0m", color, str
+end
+
+def human_duration(seconds)
+  return "#{seconds} seconds" if seconds < 60
+  minutes = seconds / 60
+  return "#{minutes} minutes" if minutes < 60
+  hours = minutes / 60
+  return "#{hours} hours"
+end
+
+def query_mq(nwo:, token:)
+  owner, repo = nwo.split("/", 2)
+  res = JSON.parse(json = query({
+    "query" => MERGE_QUEUE_QUERY,
+    "variables" => {
+      "owner" => owner,
+      "name" => repo,
+    },
+  }, token: token))
+  #File.write("ci-status.json", json)
+  res
+end
+
+def usage
+  puts File.read(__FILE__).lines.grep(/^#\//).join.gsub(/^#\/ /, '')
+  exit 1
+end
+
+MERGE_QUEUE_QUERY = <<-GQL
+query ($owner: String!, $name: String!) {
+	repository(owner: $owner, name: $name) {
+		mergeQueue {
+			url
+			nextEntryEstimatedTimeToMerge
+			entries(first: 50) {
+				totalCount
+				edges {
+					node {
+						position
+						enqueuer {
+							login
+						}
+						state
+						pullRequest {
+							title
+							number
+							url
+						}
+					}
+				}
+			}
+		}
+	}
+}
+GQL
+
+def query(req_data, token:)
+  req = Net::HTTP::Post.new("https://api.github.com/graphql")
+  req.basic_auth token, "x-oauth-basic"
+  req["Accept"] = "application/vnd.github.antiope-preview+json"
+  req.body = JSON.dump(req_data)
+
+  Timeout.timeout(30.0) do
+    Net::HTTP.start("api.github.com", 443, use_ssl: true) do |http|
+      http.request(req).body
+    end
+  end
+end
+
+opts = {}
+
+while arg = ARGV.shift
+  case arg
+  when /\A[^\/]+\/[^\/]+\z/
+    opts[:nwo] = arg
+  else
+    usage
+  end
+end
+
+usage unless opts[:nwo]
+
+opts[:token] ||= ENV["GITHUB_TOKEN"]
+opts[:token] ||=
+  begin
+    token_file = File.read(File.join(ENV["HOME"], ".github-token"))
+    if token_file =~ /(^| )GITHUB_TOKEN=(\w+)/
+      $2
+    end
+  end
+
+rmaj, rmin, = RUBY_VERSION.split(".").map(&:to_i)
+if rmaj > 2 || (rmaj == 2 && rmin >= 7)
+  main(**opts)
+else
+  main opts
+end
+
+# vim: ft=ruby
