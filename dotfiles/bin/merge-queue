@@ -49,12 +49,12 @@ def main(nwo:, token:, user: nil)
       pr_title = entry.fetch("pullRequest").fetch("title")
       pr_number = entry.fetch("pullRequest").fetch("number")
       pr_url = entry.fetch("pullRequest").fetch("url")
-      commit_url = entry.fetch("headCommit").fetch("url")
+      commit_url = entry.dig("headCommit", "url")
 
       printf "%3d. %s @%s [%d] %s\n      %s\n",
         position, pretty_state(state), enqueued_by, pr_number, pr_title, pr_url
       if state != "MERGEABLE"
-        printf "      %s\n", commit_url
+        printf "      %s\n", commit_url || "(no commit URL)"
       end
     end
   end
