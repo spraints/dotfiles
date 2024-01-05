@@ -27,4 +27,4 @@ for f in *; do
 done
 
 echo Installing github-status-bar dependencies
-(cd github-status-bar && npm install >&/dev/null)
+(git submodule update --init --recursive . && cd github-status-bar && npm install >&/dev/null)

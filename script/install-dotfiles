@@ -12,7 +12,7 @@ if [ $# -eq 0 ]; then
 fi
 
 printf "Updating submodules...\n"
-git submodule update --init --recursive
+git submodule update --init --recursive dotfiles
 
 for dotfile; do
   base=$(basename $dotfile)
