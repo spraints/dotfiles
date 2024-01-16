@@ -31,6 +31,8 @@ def main(nwo:, token:, user: nil)
 
   active_group_ids = mq.fetch("mergingEntries").fetch("edges").map { |edge| edge.fetch("node").fetch("id") }
 
+  puts "**", "Also check out: https://heaven.githubapp.com/apps/#{File.basename(nwo)}", "**", ""
+
   next_merge_time = mq.fetch("nextEntryEstimatedTimeToMerge")
   entries = mq.fetch("entries").fetch("edges")
   more = total - entries.size
