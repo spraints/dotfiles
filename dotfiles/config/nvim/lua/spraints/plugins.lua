@@ -37,6 +37,10 @@ function M.setup()
         "williambowman/mason-lspconfig.nvim",
       },
     }
+
+    use {
+      "github/copilot.vim"
+    }
   end
 
   local packer = require("packer")
