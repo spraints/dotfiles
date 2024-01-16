@@ -20,8 +20,8 @@ def main
     end
 
     temps = JSON.load(res.body).fetch("temps")
-    outdoors = get_temp(temps, "Outdoors", "f")
-    landing = get_temp(temps, /landing/, "f")
+    outdoors = get_temp(temps, "Outdoors", "f") || "??"
+    landing = get_landing(temps, "f")
 
     now = Time.now
     temps.each do |t|
@@ -44,11 +44,31 @@ def main
   end
 end
 
+def get_landing(temps, units)
+  if landing = get_temp(temps, /landing/, units)
+    $stderr.puts "landing is landing"
+    landing
+  elsif cassandra = get_temp(temps, /cassandra/i, units)
+    if grownups = get_temp(temps, /grownups/i, units)
+      $stderr.puts "landing is average of cassandra and grownups"
+      (cassandra + grownups) / 2
+    else
+      $stderr.puts "landing is cassandra"
+      cassandra
+    end
+  elsif grownups = get_temp(temps, /grownups/i, units)
+    $stderr.puts "landing is grownups"
+    grownups
+  else
+    "??"
+  end
+end
+
 def get_temp(temps, location, units)
   if data = temps.find { |t| location === t["location"] }
     data.dig("value", units).to_i
   else
-    "??"
+    nil
   end
 end
 
