@@ -1,14 +1,22 @@
-#!/bin/sh
+#!/bin/bash
 
 set -e
+set -o nounset
+
+# on quad:
+# en0 is the wifi adapter
+# en8 is the usb hub
+iface=en0
 
 sec=10
-pcap=${TMPDIR}/tcp-hogs-$$.pcap
+
+t=${TMPDIR:-/tmp}
+pcap="${t}/tcp-hogs-$$.pcap"
 
 #trap "test -f ${pcap} && rm -f ${pcap}" EXIT
 
-echo "Capturing packets for ${sec} seconds..."
+echo "Capturing packets for ${sec} seconds into ${pcap}..."
 tcpdumpargs="-G ${sec} -W 1 -w ${pcap}"
-tcpdump -i en4 ${tcpdumpargs} || tcpdump -i en0 ${tcpdumpargs}
+tcpdump -i ${iface} ${tcpdumpargs}
 
 tcptrace -nb ${pcap}
