@@ -2,7 +2,7 @@
 export RBENV_VERSION=system
 exec ruby "$0" "$@"
 #!ruby
-#/ Usage: ci-status [--skip-green|--failed] [--urls] [--ids] [branch|PR-url]
+#/ Usage: ci-status [--sort=SORTBY] [--skip-green|--failed] [--urls] [--ids] [branch|PR-url]
 #/ Shows pretty ci status for the current repo and current branch (or the named branch).
 #/ Usage: ci-status --failures [branch|PR-url]
 #/ Summarizes failures based on annotations.
@@ -12,15 +12,28 @@ require "json"
 require "net/http"
 require "timeout"
 
-def main(branch:, nwo:, token:, filter: :all, force_urls: false, show_ids: false, summarize_failures: false)
+def main(branch:, nwo:, token:, filter: :all, force_urls: false, show_ids: false, summarize_failures: false, sort_keys: nil)
   if summarize_failures
     failures_main(branch: branch, nwo: nwo, token: token)
     return
   end
 
+  sort_keys ||= ["status", "name"]
+  sort_keys = sort_keys.map do |k|
+    case k
+    when "status"
+      StatusSortKey.new
+    when "name", "url"
+      SortKey.new(k.to_sym)
+    else
+      raise "unsupported sort key: #{k} (expected one of: status, name, url)"
+    end
+  end
+
   puts "Status for #{branch}:"
   to_show = []
   queries = [{}]
+  showing_progress = false
   while q = queries.shift
     raw_ci_status = run!({"GITHUB_TOKEN" => token}, "ci-status-raw", nwo, branch, q)
     ci_status = JSON.parse(raw_ci_status)
@@ -41,6 +54,14 @@ def main(branch:, nwo:, token:, filter: :all, force_urls: false, show_ids: false
 
     queries += check_suite_queries(commit, q)
     queries += check_run_queries(commit, q)
+    if queries.empty?
+      if showing_progress
+        puts ""
+      end
+    else
+      showing_progress = true
+      print "."
+    end
   end
 
   # De-duplicate.
@@ -56,6 +77,8 @@ def main(branch:, nwo:, token:, filter: :all, force_urls: false, show_ids: false
     to_show.select! { |status| status[:state] == :failure }
   end
 
+  to_show = to_show.sort_by { |status| sort_keys.map { |k| k.get(status) } }
+
   show_statuses(to_show, counts: counts, config: {force_urls: force_urls, show_ids: show_ids})
 
   exit 2 unless all_ok
@@ -63,6 +86,22 @@ def main(branch:, nwo:, token:, filter: :all, force_urls: false, show_ids: false
 rescue JSON::ParserError => e
   $stderr.puts "#{e.class.name}: #{e}", raw_ci_status
   exit 1
+end
+
+class SortKey
+  def initialize(field)
+    @field = field
+  end
+
+  def get(status)
+    status[@field]
+  end
+end
+
+class StatusSortKey
+  def get(status)
+    STATUS_SORT_ORDER.fetch(status[:state], 99)
+  end
 end
 
 def failures_main(branch:, nwo:, token:)
@@ -257,7 +296,7 @@ STATUS_SORT_ORDER = {
 }
 
 def show_statuses(status_data, counts:, config:)
-  status_data.sort_by { |status| [STATUS_SORT_ORDER.fetch(status[:state], 99), status[:name]] }.each do |status|
+  status_data.each do |status|
     show_status(config: config, **status)
   end
   show_counts(counts.sort_by { |c| STATUS_SORT_ORDER.fetch(c[:state], 99) })
@@ -427,6 +466,10 @@ while ARGV.first.to_s =~ /^-/
     opts[:show_ids] = true
   when "--failures"
     opts[:summarize_failures] = true
+  when /^--sort=(.*)/
+    opts[:sort_keys] = $1.split(",")
+  when "--sort"
+    opts[:sort_keys] = ARGV.shift.split(",")
   else
     usage
   end
