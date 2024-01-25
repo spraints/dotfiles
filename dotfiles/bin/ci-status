@@ -21,10 +21,12 @@ def main(branch:, nwo:, token:, filter: :all, force_urls: false, show_ids: false
   sort_keys ||= ["status", "name"]
   sort_keys = sort_keys.map do |k|
     case k
-    when "status"
-      StatusSortKey.new
     when "name", "url"
       SortKey.new(k.to_sym)
+    when "status"
+      StatusSortKey.new
+    when "elapsed"
+      ElapsedSortKey.new
     else
       raise "unsupported sort key: #{k} (expected one of: status, name, url)"
     end
@@ -101,6 +103,20 @@ end
 class StatusSortKey
   def get(status)
     STATUS_SORT_ORDER.fetch(status[:state], 99)
+  end
+end
+
+class ElapsedSortKey
+  def get(status)
+    # Parse the output of #check_elapsed.
+    case status[:elapsed]
+    when /in (\d+) seconds/
+      $1.to_i
+    when /for (\d+) seconds/
+      $1.to_i
+    else
+      0
+    end
   end
 end
 
