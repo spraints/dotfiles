@@ -10,18 +10,6 @@ if [ ! -d "$PLUGIN_DIR" ]; then
   exit 0
 fi
 
-# Only run this plugin at home so that I don't make carbonblack go crazy in
-# case I'm tethering.
-case "$(ipconfig getifaddr en0)" in
-  # too many secrets | too many satellites
-  192.168.164.128|192.168.1.27)
-    ;;
-  *)
-    printf '💼\n---\n(github status not available away from home)\n'
-    exit 0
-    ;;
-esac
-
 export PATH='/usr/local/bin:$PATH'
 
 cd "$PLUGIN_DIR"
