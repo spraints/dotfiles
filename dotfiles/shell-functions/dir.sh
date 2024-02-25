@@ -10,7 +10,14 @@ dir() {
           return ;;
       esac
 
-      for d in "${arg}" "${HOME}/${arg}" "${HOME}/src/${arg}" "${HOME}/src/github.com/${arg}" "${HOME}/src/github.com/github/${arg}" "${HOME}/src/github.com/spraints/${arg}"; do
+      for d in \
+        "${arg}" \
+        "${HOME}/${arg}" \
+        "${HOME}/src/${arg}" \
+        "${HOME}/src/github.com/${arg}" \
+        "${HOME}/src/github.com/github/${arg}" \
+        "${HOME}/src/github.com/spraints/${arg}"
+      do
         if [ -d "$d" ]; then
           echo ">> cd $d"
           cd "$d"
