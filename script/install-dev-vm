@@ -1,0 +1,26 @@
+#!/bin/bash
+
+set -e
+
+script/install-dotfiles
+
+sudo apt-get install -y \
+  docker-compose \
+  docker.io \
+  golang-1.21 \
+  silversearcher-ag \
+  tmux
+
+script/install-config config/gh
+script/install-config config/nvim
+script/install-config config/neovim-packer
+
+sudo timedatectl set-timezone America/Indiana/Indianapolis
+sudo usermod -a -G docker $USER
+
+cat > ~/.gitconfig.local <<GITCONFIG
+[url "git@github.com:"]
+	insteadOf = https://github.com/
+[url "git@ghe.io:"]
+	insteadOf = https://ghe.io/
+GITCONFIG
