@@ -5,7 +5,7 @@ set -e
 script/install-dotfiles
 
 sudo apt-get install -y \
-  docker-compose \
+  docker-compose-v2 \
   docker.io \
   golang-1.21 \
   silversearcher-ag \
