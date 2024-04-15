@@ -492,4 +492,9 @@ unless opts[:token] = ENV["GITHUB_TOKEN"]
   end
 end
 
-main(opts)
+rmaj, rmin, = RUBY_VERSION.split(".").map(&:to_i)
+if rmaj > 2 || (rmaj == 2 && rmin >= 7)
+  main(**opts)
+else
+  main opts
+end
