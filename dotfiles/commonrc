@@ -5,8 +5,11 @@ export PATH=$PATH:${HOME}/dev/private/localbin
 export PATH=$PATH:${HOME}/go/bin
 export PATH=${HOME}/.bin:$PATH
 
-which rbenv >/dev/null 2>/dev/null &&
+if which rbenv >/dev/null 2>/dev/null; then
   eval "$(rbenv init -)"
+elif [ -x "${HOME}/.rbenv/bin/rbenv" ]; then
+  eval "$(${HOME}/.rbenv/bin/rbenv init -)"
+fi
 
 which nodenv >/dev/null 2>/dev/null &&
   eval "$(nodenv init -)"
