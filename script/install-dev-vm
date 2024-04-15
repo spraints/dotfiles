@@ -14,6 +14,7 @@ sudo apt-get install -y \
 script/install-config config/gh
 script/install-config config/nvim
 script/install-config config/neovim-packer
+script/install-config config/sudoers-dev-vm
 
 sudo timedatectl set-timezone America/Indiana/Indianapolis
 sudo usermod -a -G docker $USER
