@@ -4,6 +4,21 @@
 set -e
 set -o nounset
 
+work=false
+personal=false
+case "${1:-}" in
+  --work)
+    work=true
+    ;;
+  --personal)
+    personal=true
+    ;;
+  *)
+    cat "$0" | grep ^#/ | cut -c4-
+    exit 1 ;;
+esac
+
+
 cd $(dirname "$0")/..
 set -x
 script/install-dotfiles
@@ -16,5 +31,6 @@ script/install-config config/neovim-packer
 script/install-config config/macos
 
 if $work; then
+  # todo - install xbar for personal, too, except 't'.
   script/install-config config/xbar
 fi
