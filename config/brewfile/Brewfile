@@ -7,29 +7,26 @@ tap "homebrew/cask-fonts"
 
 # useful stuff for my programming hobby
 brew "gh"
-brew "graphviz"
-brew "imagemagick"
 brew "jq"
 brew "moreutils" # particularly for the `ts` command
 brew "mtr"
 brew "neovim"
-brew "node"
 brew "pstree"
 brew "rbenv"
-brew "reattach-to-user-namespace"
 brew "ruby-build"
 brew "rustup-init"
-brew "starship"
 brew "tcptrace"
 brew "the_silver_searcher" # ag, ack replacement
 brew "tmux"
 brew "watch"
 
-# other apps that I use
+cask "iterm2"
+cask "xbar"
+
+# personal apps that I use (comment these out on work computer)
 brew "gnucash"
 brew "handbrake"
 brew "keepassxc"
-brew "iterm2"
 brew "ledger"
 brew "yt-dlp"
 
@@ -41,10 +38,6 @@ brew "yt-dlp"
 #cask "virtualbox"
 #cask "viscosity"
 #cask "visual-studio-code"
-
-#wip - trying to get gpg commit signing set up again :(
-#brew "gnupg"
-#brew "pinentry-mac"
 
 # fonts
 cask "font-fira-mono-nerd-font"

@@ -4,16 +4,13 @@
 set -e
 set -o nounset
 
-strap_url=
 work=false
 personal=false
 case "${1:-}" in
   --work)
-    strap_url=https://strap.githubapp.com/
     work=true
     ;;
   --personal)
-    strap_url=https://strap.mikemcquaid.com/
     personal=true
     ;;
   *)
@@ -21,14 +18,11 @@ case "${1:-}" in
     exit 1 ;;
 esac
 
-if ! which brew >&/dev/null || brew tap-info homebrew/services | grep 'Not installed' >&/dev/null; then
-  echo "Run the script from $strap_url and then press Enter."
-  read _
-fi
 
 cd $(dirname "$0")/..
 set -x
 script/install-dotfiles
+script/install-config config/strap-like # needs to go before brewfile, maybe also sudoers
 script/install-config config/sudoers
 script/install-config config/gnupg
 script/install-config config/ssh
@@ -37,5 +31,7 @@ script/install-config config/neovim-packer
 script/install-config config/macos
 
 if $work; then
+  # todo - install xbar for personal, too, except 't'.
+  # todo - make this work on a fresh machine. currently it fails because of cloning a private github repo.
   script/install-config config/xbar
 fi

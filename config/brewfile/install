@@ -10,6 +10,16 @@ if [ "$(uname -s)" != "Darwin" ]; then
   exit
 fi
 
+if ! which brew >&/dev/null; then
+  if [ -x /opt/homebrew/bin/brew ]; then
+    echo use homebrew in /opt/homebrew
+    export PATH=$PATH:/opt/homebrew/bin
+  elif [ -x /usr/local/bin/brew ]; then
+    echo use homebrew in /usr/local
+    export PATH=$PATH:/usr/local/bin
+  fi
+fi
+
 set -x
 cd $packages_root
 brew bundle

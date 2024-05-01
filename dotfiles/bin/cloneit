@@ -1,0 +1,31 @@
+#!/bin/bash
+
+set -e
+set -o nounset
+
+if [ "$#" -ne 1 ]; then
+  echo "Usage: cloneit URL"
+  exit 1
+fi
+
+case "$1" in
+  https://*)
+    url="$1"
+    hostpath="$(echo "$1" | cut -c 9-)"
+    ;;
+  *@*:*)
+    url="$1"
+    hostpath="$(echo "$1" | cut -d @ -f 2- | tr : /)"
+    ;;
+  */*)
+    url="git@github.com:$1"
+    hostpath="github.com/$1"
+    ;;
+  *)
+    echo "unrecognized URL: $1"
+    exit 1
+    ;;
+esac
+
+set -x
+git clone "$url" "${HOME}/src/${hostpath}"
