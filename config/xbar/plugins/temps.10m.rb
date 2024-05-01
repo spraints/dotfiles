@@ -30,6 +30,14 @@ def main
 
     old, new = temps.partition { |t| t["hours_old"] > 1.0 }
 
+    if landing.to_i > 70
+      puts "🥵"
+    elsif landing.to_i < 60
+      puts "🥶"
+    else
+      puts "🌡️"
+    end
+    puts "---"
     puts "🌡️ #{outdoors} F (#{landing} F 🏠)"
     puts "---"
     new.each do |t|
