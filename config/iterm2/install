@@ -3,6 +3,6 @@
 
 echo Use 
 set -x
-defaults write com.googlecode.iterm2.plist PrefsCustomFolder -string "~/dotfiles/config/iterm2/prefs"
+defaults write com.googlecode.iterm2.plist PrefsCustomFolder -string "${HOME}/.dotfiles/config/iterm2/prefs"
 defaults write com.googlecode.iterm2.plist LoadPrefsFromCustomFolder -bool true
 defaults write com.googlecode.iterm2.plist NoSyncNeverRemindPrefsChangesLostForFile_selection -int 2
