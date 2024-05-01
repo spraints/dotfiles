@@ -10,7 +10,7 @@ if [ ! -d "$PLUGIN_DIR" ]; then
   exit 0
 fi
 
-export PATH='/usr/local/bin:$PATH'
+export PATH='/opt/homebrew/bin:/usr/local/bin:$PATH'
 
 cd "$PLUGIN_DIR"
 node plugins/status.js
