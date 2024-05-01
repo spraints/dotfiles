@@ -22,4 +22,4 @@ fi
 
 set -x
 cd $packages_root
-brew bundle
+brew bundle --no-lock
