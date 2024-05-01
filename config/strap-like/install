@@ -67,7 +67,7 @@ set_up_homebrew() {
   )
 
   [ -d "$HOMEBREW_REPOSITORY" ] || sudo mkdir -p "$HOMEBREW_REPOSITORY"
-  sudo_askpass chown -R "$USER:admin" "$HOMEBREW_REPOSITORY"
+  sudo chown -R "$USER:admin" "$HOMEBREW_REPOSITORY"
 
   if [ $HOMEBREW_PREFIX != $HOMEBREW_REPOSITORY ]; then
     ln -sf "$HOMEBREW_REPOSITORY/bin/brew" "$HOMEBREW_PREFIX/bin/brew"
@@ -92,7 +92,7 @@ set_up_homebrew() {
 }
 
 step() {
-  printf -- '--> %s\n' "%*"
+  printf -- '--> %s\n' "$*"
 }
 
 abort() {

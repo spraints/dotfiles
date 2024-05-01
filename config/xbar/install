@@ -11,6 +11,9 @@ linkup() {
   local src="${root}/plugins/${f}"
   local dst="${HOME}/Library/Application Support/xbar/plugins/${f}"
   if [ ! -e "$dst" ]; then
+    if [ ! -e "$(dirname "$dst")" ]; then
+      mkdir -p "$(dirname "$dst")"
+    fi
     (set -x; ln -s "$src" "$dst")
   elif [ "$(readlink "$dst")" != "$src" ]; then
     (set -x; mv "$dst" "$dst.bak.$ts"; ln -s "$src" "$dst")
