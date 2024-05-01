@@ -7,7 +7,6 @@ tap "homebrew/cask-fonts"
 
 # useful stuff for my programming hobby
 brew "gh"
-brew "iterm2"
 brew "jq"
 brew "moreutils" # particularly for the `ts` command
 brew "mtr"
@@ -20,6 +19,9 @@ brew "tcptrace"
 brew "the_silver_searcher" # ag, ack replacement
 brew "tmux"
 brew "watch"
+
+cask "iterm2"
+cask "xbar"
 
 # personal apps that I use (comment these out on work computer)
 brew "gnucash"
