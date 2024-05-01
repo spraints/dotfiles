@@ -1,3 +1,16 @@
+__dir_usage() {
+  cat <<USAGE
+Usage: dir DIR
+where DIR is one of:
+  - a directory in the current directory
+  - a directory in HOME
+  - a directory in src/
+  - a directory in src/github.com/
+  - a directory in src/github.com/github/
+  - a directory in src/github.com/spraints/
+USAGE
+}
+
 dir() {
   case "$#" in
     1)
@@ -22,7 +35,7 @@ dir() {
         if [ -d "$d" ]; then
           echo ">> cd $d"
           cd "$d"
-          sync-tmux-window-name
+          sync-tmux-window-name >&/dev/null
           return
         fi
       done
@@ -35,15 +48,4 @@ dir() {
   esac
 }
 
-__dir_usage() {
-  cat <<USAGE
-Usage: dir DIR
-where DIR is one of:
-  - a directory in the current directory
-  - a directory in HOME
-  - a directory in src/
-  - a directory in src/github.com/
-  - a directory in src/github.com/github/
-  - a directory in src/github.com/spraints/
-USAGE
-}
+# ok: zsh

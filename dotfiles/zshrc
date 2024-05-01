@@ -1,6 +1,13 @@
 PROMPT='%m %F{yellow}%*%f (%F{magenta}%j%f) >>> '
 
-. ~/.commonrc
+source ~/.commonrc
+
+for fun in ~/.shell-functions/*; do
+  # Look for a line like "# ok: zsh"
+  if grep -Eq '^# ok:.* zsh($| )' $fun; then
+    source $fun
+  fi
+done
 
 # brew install starship
 if which starship >/dev/null 2>/dev/null; then
