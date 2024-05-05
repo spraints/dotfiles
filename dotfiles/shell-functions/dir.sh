@@ -30,6 +30,7 @@ dir() {
         "${HOME}/src/github.com/${arg}" \
         "${HOME}/src/github.com/github/${arg}" \
         "${HOME}/src/github.com/spraints/${arg}" \
+        "${HOME}/src/github.com/farmingengineers/${arg}" \
         "${HOME}/src/experiments/${arg}"
       do
         if [ -d "$d" ]; then
