@@ -1,0 +1,105 @@
+#!/bin/bash
+
+set -e
+set -o nounset
+
+# set this to false to actually run the commands.
+DRYRUN=true
+
+TODAY="$(date +%Y-%m-%d)"
+ARCHIVE_DIR="${HOME}/archive-${TODAY}"
+
+echo "Making archives in ${ARCHIVE_DIR}"
+
+backup() {
+  local dir="$1"; shift
+  local dest="${ARCHIVE_DIR}/${dir}.tar.bz2"
+  mkdir -p "$(dirname "$dest")"
+  if [ -e "${dir}/.archive-quad-excludes" ]; then
+    set -- "$@" --exclude-from "${dir}/.archive-quad-excludes"
+  fi
+  set -- "$@" --exclude "target"
+  set -- "$@" --exclude "build"
+  set -- "$@" --exclude "node_modules"
+  set -- "$@" --exclude ".bundle"
+  set -- "$@" --exclude "vendor/cache"
+  btar "$dir" "$dest" "$@"
+}
+
+backup_home() {
+  local dir="$1"; shift
+  local dest="${ARCHIVE_DIR}/homes/${dir}.tar.bz2"
+  mkdir -p "$(dirname "$dest")"
+  btar --sudo "$dir" "$dest" "$@"
+}
+
+btar() {
+  local dir="$1"; shift
+  local sudo=
+  if [ "$dir" = "--sudo" ]; then
+    sudo=sudo
+    dir="$1"; shift
+  fi
+  local dst="$1"; shift
+
+  if [ -f "$dst" ]; then
+    ls -l "$dst"
+  elif $DRYRUN; then
+    echo $sudo tar "$@" -cjf "$dst" "$dir"
+  else
+    rm -f "$ARCHIVE_DIR/.tmp"
+    (set -x; $sudo tar "$@" -cjf "$ARCHIVE_DIR/.tmp" "$dir")
+    mv "$ARCHIVE_DIR/.tmp" "$dst"
+    ls -l "$dst"
+  fi
+}
+
+cd "${HOME}"
+
+backup Desktop
+
+backup Documents --exclude Documents/VOI
+backup Documents/VOI
+
+backup Movies
+
+backup Music/Sonic\ Pi
+
+for d in src/*; do
+  case "$(basename "$d")" in
+    github.com|ghe.io|github.ghe.com)
+      for dd in $d/*/*; do
+        case "$(basename "$dd")" in
+          enterprise2|github|github-bare|heaven|puppet|thehub|zoom)
+            ;; #skip
+          *)
+            backup "$dd"
+            ;;
+        esac
+      done
+      ;;
+    experiments|gist*)
+      for dd in $d/*; do
+        backup "$dd"
+      done
+      ;;
+    *)
+      backup "$d"
+      ;;
+  esac
+done
+
+for d in dev/*; do
+  if [ "$d" != "dev/machines.bak" ]; then
+    backup "$d"
+  fi
+done
+
+for d in Xcode/*; do
+  backup "$d"
+done
+
+cd ..
+backup_home cassandra
+backup_home oliver
+backup_home goldenpandas
