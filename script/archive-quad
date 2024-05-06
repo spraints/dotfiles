@@ -3,8 +3,8 @@
 set -e
 set -o nounset
 
-# set this to false to actually run the commands.
-DRYRUN=true
+# "DRYRUN=false script/archive-quad" to actually run the commands.
+DRYRUN="${DRYRUN:-true}"
 
 TODAY="$(date +%Y-%m-%d)"
 ARCHIVE_DIR="${HOME}/archive-${TODAY}"
