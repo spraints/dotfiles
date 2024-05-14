@@ -66,3 +66,5 @@ newbranch() {
   git checkout --no-track -b "$branch_name" "$base"
   )
 }
+
+# ok: zsh

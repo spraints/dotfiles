@@ -9,3 +9,5 @@ cs-keepalive() {
     echo pinging codespace "$1" ...
   done
 }
+
+# ok: zsh
