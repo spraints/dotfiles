@@ -10,6 +10,9 @@ private.yml
 /dotfiles/netrc
 /dotfiles/ssh/config
 
+# Files that are cross-linked
+/dotfiles/shell-functions/goproxy-env.sh
+
 # Other
 /dotfiles/atom/storage
 /dotfiles/atom/.apm
