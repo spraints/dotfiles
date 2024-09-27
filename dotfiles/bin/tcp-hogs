@@ -1,19 +1,34 @@
 #!/bin/bash
+#/ Usage: tcp-hogs [-n SECONDS] [-i IFACE]
+#/ SECONDS defaults to 10.
+#/ IFACE defaults to en0.
+#/   en0 = wifi on mac laptops.
+#/   en8 = usb hub on work laptop.
 
 set -e
 set -o nounset
 
-# on quad:
-# en0 is the wifi adapter
-# en8 is the usb hub
 iface=en0
-
 sec=10
+
+while [ $# -gt 0 ]; do
+  case "$1" in
+    -n)
+      sec="$2"
+      shift; shift;;
+    -i)
+      iface="$2"
+      shift; shift;;
+    *)
+      cat "$0" | grep "^#/" | cut -c4-
+      exit 1;;
+  esac
+done
 
 t=${TMPDIR:-/tmp}
 pcap="${t}/tcp-hogs-$$.pcap"
 
-#trap "test -f ${pcap} && rm -f ${pcap}" EXIT
+trap "test -f ${pcap} && (set -x; rm -f ${pcap})" EXIT
 
 echo "Capturing packets for ${sec} seconds into ${pcap}..."
 tcpdumpargs="-G ${sec} -W 1 -w ${pcap}"

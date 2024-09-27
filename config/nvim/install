@@ -22,6 +22,8 @@ start_dir="$(pwd -P)"
 curl -LO https://github.com/neovim/neovim/releases/latest/download/nvim.appimage
 chmod u+x nvim.appimage
 
+# Instead of extracting it, maybe just install fuse?
+# https://github.com/AppImage/docs.appimage.org/blob/master/source/user-guide/troubleshooting/fuse.rst#how-to-install-fuse
 cd /
 sudo "${start_dir}/nvim.appimage" --appimage-extract
 rm -f "${start_dir}/nvim.appimage"
