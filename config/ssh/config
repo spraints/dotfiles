@@ -29,10 +29,13 @@ Host tiny
   HostName tiny.pickardayune.com
   User spraints
 
-Host mcplay
-  HostName mcplay.pickardayune.com
+Host tiny2
+  HostName app-vm-1.pickardayune.com
   User spraints
-  ForwardAgent yes
+
+Host app-vm-1
+  HostName app-vm-1.pickardayune.com
+  User spraints
 
 Host appadmin
   HostName meow.pickardayune.com
