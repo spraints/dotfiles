@@ -481,6 +481,12 @@ class Failed
   end
 end
 
+class NoSkipped
+  def show?(status)
+    status[:state_string] != "SKIPPED"
+  end
+end
+
 opts = {
   filters: [ShowAll.new],
 }
@@ -491,6 +497,8 @@ while ARGV.first.to_s =~ /^-/
     opts[:filters] << SkipGreen.new
   when "--failed", "--fail"
     opts[:filters] << Failed.new
+  when "--skip-skipped", "--no-skipped", "--no-skips", "--skip-skips"
+    opts[:filters] << NoSkipped.new
   when "--urls"
     opts[:force_urls] = true
   when "--ids"
