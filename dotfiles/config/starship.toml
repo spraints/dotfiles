@@ -1,3 +1,5 @@
+command_timeout = 100
+
 [[battery.display]]
 threshold = 30
 
