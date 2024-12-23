@@ -13,3 +13,5 @@ vpn() {
       echo 'Usage: vpn iad|dev' ;;
   esac
 }
+
+# ok: zsh

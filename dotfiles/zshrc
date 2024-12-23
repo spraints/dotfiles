@@ -1,5 +1,3 @@
-PROMPT='%m %F{yellow}%*%f (%F{magenta}%j%f) >>> '
-
 source ~/.commonrc
 
 for fun in ~/.shell-functions/*; do
@@ -8,6 +6,14 @@ for fun in ~/.shell-functions/*; do
     source $fun
   fi
 done
+
+PROMPT='%m %F{yellow}%*%f (%F{magenta}%j%f) >>> '
+#PROMPT=jkjk
+#PS1='[$$] '$(hostname | cut -d . -f 1)' \[\e[33;1m\]\t \[\e[0m\](\[\e[35;1m\]\j\[\e[0m\])$(parse_git_branch)$(audible_ps1) >>> '
+# see https://github.com/starship/starship/blob/master/src/init/starship.zsh
+
+# Use ^A for beginning of line, etc.
+bindkey -e
 
 # brew install starship
 if which starship >/dev/null 2>/dev/null; then
@@ -23,5 +29,3 @@ if type brew >&/dev/null; then
 fi
 
 [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
-
-bindkey -e

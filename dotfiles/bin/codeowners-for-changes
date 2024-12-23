@@ -1,0 +1,37 @@
+#!/bin/bash
+#/ Usage: codeowners-for-changes [--files] [--base origin/HEAD]
+#/ Lists codeowners for changes made on this branch.
+#/
+#/ By default, only the distinct codeowners are listed.
+#/ --files changes the output so that each file's owners are shown.
+#/
+#/ This requires https://github.com/hmarr/codeowners to be installed.
+
+set -e
+set -o nounset
+
+base=origin/HEAD
+show_files=false
+while [ $# -gt 0 ]; do
+  case "$1" in
+    --files)
+      show_files=true
+      shift ;;
+    --base)
+      base="$2"
+      shift; shift ;;
+    *)
+      cat "$0" | grep "^#/" | cut -c4-
+      exit 1 ;;
+  esac
+done
+
+co() {
+  git diff --stat --name-only "${base}...HEAD" | xargs codeowners
+}
+
+if $show_files; then
+  co
+else
+  co | awk '{print $2}' | sort -u
+fi

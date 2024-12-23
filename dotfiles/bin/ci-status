@@ -12,7 +12,7 @@ require "json"
 require "net/http"
 require "timeout"
 
-def main(branch:, nwo:, token:, filter: :all, force_urls: false, show_ids: false, summarize_failures: false, sort_keys: nil)
+def main(branch:, nwo:, token:, filters:, force_urls: false, show_ids: false, summarize_failures: false, sort_keys: nil)
   if summarize_failures
     failures_main(branch: branch, nwo: nwo, token: token)
     return
@@ -72,14 +72,9 @@ def main(branch:, nwo:, token:, filter: :all, force_urls: false, show_ids: false
   all_ok = !to_show.empty? && to_show.all? { |status| status[:state] == :success }
   counts = to_show.group_by { |status| status[:state] }.map { |k, v| {state: k, count: v.size} }
 
-  case filter
-  when :skip_green
-    to_show.reject! { |status| status[:state] == :success }
-  when :failed
-    to_show.select! { |status| status[:state] == :failure }
-  end
+  to_show.select! { |status| filters.all? { |f| f.show?(status) } }
 
-  to_show = to_show.sort_by { |status| sort_keys.map { |k| k.get(status) } }
+  to_show.sort_by! { |status| sort_keys.map { |k| k.get(status) } }
 
   show_statuses(to_show, counts: counts, config: {force_urls: force_urls, show_ids: show_ids})
 
@@ -468,14 +463,42 @@ def query(req_data, token:)
   end
 end
 
-opts = {}
+class ShowAll
+  def show?(status)
+    true
+  end
+end
+
+class SkipGreen
+  def show?(status)
+    status[:state] != :success
+  end
+end
+
+class Failed
+  def show?(status)
+    status[:state] == :failure
+  end
+end
+
+class NoSkipped
+  def show?(status)
+    status[:state_string] != "SKIPPED"
+  end
+end
+
+opts = {
+  filters: [ShowAll.new],
+}
 
 while ARGV.first.to_s =~ /^-/
   case ARGV.shift
   when "--skip-green"
-    opts[:filter] = :skip_green
+    opts[:filters] << SkipGreen.new
   when "--failed", "--fail"
-    opts[:filter] = :failed
+    opts[:filters] << Failed.new
+  when "--skip-skipped", "--no-skipped", "--no-skips", "--skip-skips"
+    opts[:filters] << NoSkipped.new
   when "--urls"
     opts[:force_urls] = true
   when "--ids"

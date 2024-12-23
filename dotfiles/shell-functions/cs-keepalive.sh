@@ -4,7 +4,7 @@ cs-keepalive() {
     gh cs list
     return
   fi
-  while gh cs ssh -c "$1" date; do
+  while echo date | gh cs ssh -c "$1"; do
     sleep 120
     echo pinging codespace "$1" ...
   done
