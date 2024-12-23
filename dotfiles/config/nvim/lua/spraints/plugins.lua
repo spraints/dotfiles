@@ -41,6 +41,10 @@ function M.setup()
     use {
       "github/copilot.vim"
     }
+
+    use {
+      "panozzaj/vim-copilot-ignore",
+    }
   end
 
   local packer = require("packer")
