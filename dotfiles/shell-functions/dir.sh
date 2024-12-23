@@ -40,6 +40,14 @@ dir() {
           return
         fi
       done
+      for d in "${HOME}/src/github.com/"*; do
+        if [ -d "${d}/${arg}" ]; then
+          echo ">> cd $d/${arg}"
+          cd "$d/${arg}"
+          sync-tmux-window-name >&/dev/null
+          return
+        fi
+      done
       echo "$1: no match"
       ;;
 

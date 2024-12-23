@@ -20,7 +20,7 @@ function M.setup()
       "dockerls",
       "gopls",
       "rust_analyzer",
-      "tsserver",
+      "ts_ls",
     },
 
     handlers = {

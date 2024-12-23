@@ -10,6 +10,14 @@ Host tiny
   HostName tiny.pickardayune.com
   User spraints
 
+Host tiny2
+  HostName app-vm-1.pickardayune.com
+  User spraints
+
+Host app-vm-1
+  HostName app-vm-1.pickardayune.com
+  User spraints
+
 Host appadmin
   HostName meow.pickardayune.com
   User appadmin
@@ -19,5 +27,5 @@ Host apps
   User spraints
 
 Host matty-pi
-  HostName 192.168.164.110
+  HostName 192.168.1.240
   User dietpi

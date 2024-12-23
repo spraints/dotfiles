@@ -20,6 +20,8 @@ local function keymappings(client, bufnr)
   buf_keymap(bufnr, "n", "rn", "<cmd>lua vim.lsp.buf.rename()<CR>", opts)
   -- code_action pops up a choice of automatic fixes for the current problem.
   buf_keymap(bufnr, "n", "ga", "<cmd>lua vim.lsp.buf.code_action()<CR>", opts)
+  -- show hover info
+  buf_keymap(bufnr, "n", "g?", "<cmd>lua vim.lsp.buf.hover()<CR>", opts)
 end
 
 function M.setup(client, bufnr)
