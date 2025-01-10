@@ -1,4 +1,12 @@
 [gpg]
 	format = ssh
 [user]
-	signingkey = /Users/spraints/.ssh/id_ed25519.pub
+	signingkey = /Users/spraints/.ssh/id_rsa.pub
+[commit]
+	gpgsign = true
+[url "git@github.com:"]
+       insteadOf = https://github.com/
+#[url "git@ghe.io:"]
+#       insteadOf = https://ghe.io/
+[maintenance]
+	repo = /Users/spraints/src/github.com/github/spokesd

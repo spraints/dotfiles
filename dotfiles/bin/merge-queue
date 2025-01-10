@@ -2,7 +2,7 @@
 export RBENV_VERSION=system
 exec ruby "$0" "$@"
 #!ruby
-#/ Usage: merge-queue OWNER/REPO
+#/ Usage: merge-queue [--oneline] OWNER/REPO
 #/ Shows pretty merge queue for the given repository.
 
 require "date"
@@ -10,7 +10,7 @@ require "json"
 require "net/http"
 require "timeout"
 
-def main(nwo:, token:, user: nil)
+def main(nwo:, token:, user: nil, oneline: false)
   data = query_mq(nwo: nwo, token: token)
   if errors = data["errors"]
     p errors
@@ -31,7 +31,9 @@ def main(nwo:, token:, user: nil)
 
   active_group_ids = mq.fetch("mergingEntries").fetch("edges").map { |edge| edge.fetch("node").fetch("id") }
 
-  puts "**", "Also check out: https://heaven.githubapp.com/apps/#{File.basename(nwo)}", "**", ""
+  unless oneline
+    puts "**", "Also check out: https://heaven.githubapp.com/apps/#{File.basename(nwo)}", "**", ""
+  end
 
   next_merge_time = mq.fetch("nextEntryEstimatedTimeToMerge")
   entries = mq.fetch("entries").fetch("edges")
@@ -53,9 +55,10 @@ def main(nwo:, token:, user: nil)
       pr_url = entry.fetch("pullRequest").fetch("url")
       commit_url = entry.dig("headCommit", "url")
 
-      printf "%3d. %s @%s [%d] %s\n      %s\n",
-        position, pretty_state(state), enqueued_by, pr_number, pr_title, pr_url
-      if state != "MERGEABLE"
+      printf "%3d. %s @%s [%d] %s\n",
+        position, pretty_state(state), enqueued_by, pr_number, pr_title
+      unless oneline
+        printf "      %s\n", pr_url
         printf "      %s\n", commit_url || "(no commit URL)"
       end
     end
@@ -182,6 +185,8 @@ while arg = ARGV.shift
     opts[:nwo] = arg
   when "--user"
     opts[:user] = ARGV.shift
+  when "--oneline"
+    opts[:oneline] = true
   else
     usage
   end
