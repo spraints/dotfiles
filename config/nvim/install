@@ -15,6 +15,7 @@ if which nvim >/dev/null; then
   if [ "$maj" -gt 0 ] || [ "$min" -gt 9 ]; then
     echo 'Neovim is already installed, not going to install it again.'
     nvim --version | head -n 1
+    exit 0
   fi
 fi
 
