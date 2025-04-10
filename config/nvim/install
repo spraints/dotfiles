@@ -19,7 +19,12 @@ if which nvim >/dev/null; then
 fi
 
 start_dir="$(pwd -P)"
-curl -LO https://github.com/neovim/neovim/releases/latest/download/nvim.appimage
+echo $start_dir
+curl -LO https://github.com/neovim/neovim/releases/download/v0.11.0/nvim-linux-x86_64.appimage
+sha256sum -c <<X
+ca44cd43fe8d55418414496e8ec7bac83f611705ece167f4ccb93cbf46fec6c0  nvim-linux-x86_64.appimage
+X
+mv nvim-linux-x86_64.appimage nvim.appimage
 chmod u+x nvim.appimage
 
 cd /
