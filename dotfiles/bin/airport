@@ -1,38 +1,16 @@
 #!/bin/sh
 #/ Usage: ~/.bin/airport
 #/   shows the current network
-#/ Usage: ~/.bin/airport list
-#/   lists available networks
-#/ Usage: ~/.bin/airport join SSID [PASSWORD]
-#/   joins the given network
 
 IF=en0
 
 main() {
-  case "$1" in
-    -*|h*)
-      cat "$0" | grep ^#/ | cut -c4-
-      exit ;;
-    join)
-      shift
-      join "$@" ;;
-    list)
-      list ;;
-    *)
-      current ;;
-  esac
-}
+  if [ $# -gt 0 ]; then
+    cat "$0" | grep "^#/" | cut -c4-
+    exit 1
+  fi
 
-join() {
-  networksetup -setairportnetwork $IF "$@"
-}
-
-list() {
-  /System/Library/PrivateFrameworks/Apple80211.framework/Versions/A/Resources/airport scan
-}
-
-current() {
-  networksetup -getairportnetwork $IF | cut -d : -f 2- | cut -c2-
+  ipconfig getsummary "$IF" | grep SSID | cut -d : -f 2- | cut -c2-
 }
 
 main "$@"

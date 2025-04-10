@@ -14,7 +14,6 @@ brew "neovim"
 brew "pstree"
 brew "rbenv"
 brew "ruby-build"
-brew "rustup-init"
 brew "tcptrace"
 brew "the_silver_searcher" # ag, ack replacement
 brew "tmux"

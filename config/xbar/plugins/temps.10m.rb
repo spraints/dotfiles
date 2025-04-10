@@ -30,9 +30,9 @@ def main
 
     old, new = temps.partition { |t| t["hours_old"] > 1.0 }
 
-    if landing.to_i > 70
+    if landing.to_i > 73
       puts "🥵"
-    elsif landing.to_i < 60
+    elsif landing.to_i < 65
       puts "🥶"
     else
       puts "🌡️"

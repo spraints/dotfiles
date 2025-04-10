@@ -6,33 +6,17 @@ Host github.com
   UpdateHostKeys ask
   CheckHostIP no
 
-# From vagrant guest to the host.
-Host laptop
-  User spraints
-  HostName 10.0.2.2
-
-# From host to vagrant guest.
-Host vagrant
-  User vagrant
-  HostName 127.0.0.1
-  Port 2221
-  AddKeysToAgent no
-  IdentityFile ~/dev/machines/.vagrant/machines/default/virtualbox/private_key
-  ForwardAgent yes
-  StrictHostKeyChecking no
-  UserKnownHostsFile /dev/null
-  Compression yes
-  DSAAuthentication yes
-  ConnectTimeout 2
-
 Host tiny
   HostName tiny.pickardayune.com
   User spraints
 
-Host mcplay
-  HostName mcplay.pickardayune.com
+Host tiny2
+  HostName app-vm-1.pickardayune.com
   User spraints
-  ForwardAgent yes
+
+Host app-vm-1
+  HostName app-vm-1.pickardayune.com
+  User spraints
 
 Host appadmin
   HostName meow.pickardayune.com
@@ -42,10 +26,6 @@ Host apps
   HostName meow.pickardayune.com
   User spraints
 
-Host nachos
-  HostName nachos.cloud.pickardayune.com
-  User spraints
-
 Host matty-pi
-  HostName 192.168.164.110
+  HostName 192.168.1.240
   User dietpi

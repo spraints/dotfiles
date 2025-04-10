@@ -5,3 +5,5 @@ paste-crash-dump() {
     pbpaste > $dest
   )
 }
+
+# ok: zsh

@@ -1,0 +1,61 @@
+#!/usr/bin/env ruby
+#/ Usage: devvm [-n] [-v] [-l | -j]
+#/ -n enables verbose output but doesn't connect.
+#/ -v enables more verbose output.
+#/ -l (or --local) forces the connection to be direct to devvm.
+#/ -j (or --jump) forces the connection to use the devvmz jump config.
+#
+# This config is assumed to be in .ssh/config:
+#   Host devvm
+#     Hostname (local IP or hostname of devvm)
+#     ForwardAgent yes
+#   Host devvmz
+#     Hostname (tunnel IP or hostname of devvm)
+#     ProxyJump (jump host name)
+#     ForwardAgent yes
+
+require "shellwords"
+
+def main(verbose: false, force: nil, noop: false)
+  host, connect_timeout = use_local?(force: force) ? ["devvm", "1s"] : ["devvmz", "15s"]
+
+  cmd = [ "ssh",
+    "-t",
+    "-o", "ConnectTimeout #{connect_timeout}",
+    host,
+    "tmux", "new-session", "-A"
+  ]
+
+  puts "Attach to tmux running on #{host}..."
+  puts "$ #{Shellwords.join(cmd)}" if verbose || noop
+  exec(*cmd) unless noop
+end
+
+def use_local?(force:)
+  case force
+  when :local
+    true
+  when :jump
+    false
+  else
+    at_home?
+  end
+end
+
+def at_home?
+  info = `ipconfig getsummary en0 2>/dev/null`
+  return false unless $?.success?
+  return true if info =~ /SSID : (MERRY XMAS|too many secrets)/
+  false
+end
+
+opts = {}
+opts[:noop] = true if ARGV.delete("-n")
+opts[:verbose] = true if ARGV.delete("-v") || ARGV.delete("--verbose")
+opts[:force] = :local if ARGV.delete("-l") || ARGV.delete("--local")
+opts[:force] = :jump if ARGV.delete("-j") || ARGV.delete("--jump")
+if !ARGV.empty?
+  system "cat #{Shellwords.escape($0)} | grep ^#/ | cut -c4-"
+  exit 1
+end
+main(**opts)

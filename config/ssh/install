@@ -23,3 +23,7 @@ linkup authorized_keys
 linkup config
 touch ${root}/config.local
 linkup config.local
+
+echo set up .ssh/sockets
+mkdir -p "${HOME}/.ssh/sockets"
+chmod 700 "${HOME}/.ssh/sockets"

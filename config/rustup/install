@@ -1,0 +1,3 @@
+#!/bin/bash
+
+exec sh "$(dirname "$0")/rustup-install"

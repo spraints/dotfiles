@@ -30,11 +30,20 @@ dir() {
         "${HOME}/src/github.com/${arg}" \
         "${HOME}/src/github.com/github/${arg}" \
         "${HOME}/src/github.com/spraints/${arg}" \
+        "${HOME}/src/github.com/farmingengineers/${arg}" \
         "${HOME}/src/experiments/${arg}"
       do
         if [ -d "$d" ]; then
           echo ">> cd $d"
           cd "$d"
+          sync-tmux-window-name >&/dev/null
+          return
+        fi
+      done
+      for d in "${HOME}/src/github.com/"*; do
+        if [ -d "${d}/${arg}" ]; then
+          echo ">> cd $d/${arg}"
+          cd "$d/${arg}"
           sync-tmux-window-name >&/dev/null
           return
         fi

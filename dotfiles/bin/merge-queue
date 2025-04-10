@@ -29,8 +29,6 @@ def main(nwo:, token:, user: nil)
     exit 0
   end
 
-  active_group_ids = mq.fetch("mergingEntries").fetch("edges").map { |edge| edge.fetch("node").fetch("id") }
-
   puts "Merge queue for #{nwo} (#{mq.fetch("url")})"
   if nwo.start_with?("github/")
     puts "Deploys: https://heaven.githubapp.com/apps/#{File.basename(nwo)}"
@@ -43,7 +41,7 @@ def main(nwo:, token:, user: nil)
   if user
     entries = entries.select { |edge| edge.fetch("node").fetch("enqueuer").fetch("login") == user }
   end
-  active_group, rest = entries.partition { |edge| active_group_ids.include?(edge.fetch("node").fetch("id")) }
+  active_group, rest = entries.partition { |edge| edge.fetch("node").fetch("locked") }
   [ [ "Merging", active_group ], [ "Queued", rest ] ].each do |label, group|
     next if group.empty?
     puts "#{label}:"
@@ -131,12 +129,13 @@ query ($owner: String!, $name: String!) {
 		mergeQueue {
 			url
 			nextEntryEstimatedTimeToMerge
-			entries(first: 50) {
+			entries(first: 100) {
 				totalCount
 				edges {
 					node {
 						id
 						position
+						locked
 						enqueuer {
 							login
 						}
@@ -149,13 +148,6 @@ query ($owner: String!, $name: String!) {
 						headCommit {
 							url
 						}
-					}
-				}
-			}
-			mergingEntries(first: 50) {
-				edges {
-					node {
-						id
 					}
 				}
 			}
