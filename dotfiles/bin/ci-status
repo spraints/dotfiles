@@ -487,10 +487,25 @@ class NoSkipped
   end
 end
 
+class OnlyBuilds
+  def initialize
+    @builds = []
+  end
+
+  def <<(build)
+    @builds << build
+  end
+
+  def show?(status)
+    @builds.any? { |b| status[:name].include?(b) }
+  end
+end
+
 opts = {
   filters: [ShowAll.new],
 }
 
+build_filter = nil
 while ARGV.first.to_s =~ /^-/
   case ARGV.shift
   when "--skip-green"
@@ -509,6 +524,12 @@ while ARGV.first.to_s =~ /^-/
     opts[:sort_keys] = $1.split(",")
   when "--sort"
     opts[:sort_keys] = ARGV.shift.split(",")
+  when "--build"
+    if build_filter.nil?
+      build_filter = OnlyBuilds.new
+      opts[:filters] << build_filter
+    end
+    build_filter << ARGV.shift
   else
     usage
   end
