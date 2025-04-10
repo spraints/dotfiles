@@ -181,6 +181,16 @@ while arg = ARGV.shift
   end
 end
 
+if ! opts[:nwo]
+  remote_url = `git config remote.origin.url`.strip
+  case remote_url
+  when %r{\Agit@.*?:(.*?)(\.git)?\z}
+    opts[:nwo] = $1
+  when %r{\Ahttps?://[^/]+/(.*?)(\.git)?\z}
+    opts[:nwo] = $1
+  end
+end
+
 usage unless opts[:nwo]
 
 opts[:token] ||= ENV["GITHUB_TOKEN"]
