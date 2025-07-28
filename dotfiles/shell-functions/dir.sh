@@ -18,6 +18,8 @@ dir() {
       case "$arg" in
         gh|github)
           arg="github/github";;
+        dotfiles)
+          arg="${HOME}/.dotfiles";;
         .|..)
           __dir_usage
           return ;;
