@@ -9,6 +9,8 @@ let g:rustfmt_autosave=1
 
 let g:ackprg="ag --nocolor --nogroup --column"
 
+" By default, leader is "\", so you can toggle wrapping with "\w"
+" Check the leader key with ":let mapleader".
 noremap <silent> <Leader>w :call ToggleWrap()<CR>
 function ToggleWrap()
   if &wrap

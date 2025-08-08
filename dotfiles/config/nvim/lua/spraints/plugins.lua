@@ -16,34 +16,25 @@ function M.setup()
     }
 
     use {
-      "williamboman/mason.nvim",
-    }
-
-    use {
-      "williamboman/mason-lspconfig.nvim",
-      requires = {
-        "williamboman/mason.nvim",
-        "ray-x/lsp_signature.nvim",
-      },
+      "mason-org/mason.nvim",
       config = function()
-        require("spraints.lsp").setup()
+        require("mason").setup()
       end,
     }
 
     use {
       "neovim/nvim-lspconfig",
       requires = {
-        "william-bowman/mason.nvim",
-        "williambowman/mason-lspconfig.nvim",
+        "mason-org/mason.nvim",
       },
-    }
-
-    use {
-      "github/copilot.vim"
-    }
-
-    use {
-      "panozzaj/vim-copilot-ignore",
+      config = function()
+        -- See https://vonheikemen.github.io/learn-nvim/feature/lsp-setup.html#lsp-defaults
+        -- for keymaps.
+        vim.lsp.enable("dockerls")
+        vim.lsp.enable("gopls")
+        vim.lsp.enable("rust_analyzer")
+        vim.lsp.enable("ts_ls")
+      end,
     }
   end
 

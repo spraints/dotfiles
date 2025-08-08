@@ -12,7 +12,7 @@ if which nvim >/dev/null; then
   v="$(nvim --version | head -n 1 | cut -d v -f 2)"
   maj="$(echo "$v" | cut -d . -f 1)"
   min="$(echo "$v" | cut -d . -f 2)"
-  if [ "$maj" -gt 0 ] || [ "$min" -gt 9 ]; then
+  if [ "$maj" -gt 0 ] || [ "$min" -gt 10 ]; then
     echo 'Neovim is already installed, not going to install it again.'
     nvim --version | head -n 1
   fi
