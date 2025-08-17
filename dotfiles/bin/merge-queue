@@ -29,9 +29,11 @@ def main(nwo:, token:, user: nil)
     exit 0
   end
 
-  active_group_ids = mq.fetch("mergingEntries").fetch("edges").map { |edge| edge.fetch("node").fetch("id") }
-
-  puts "**", "Also check out: https://heaven.githubapp.com/apps/#{File.basename(nwo)}", "**", ""
+  puts "Merge queue for #{nwo} (#{mq.fetch("url")})"
+  if nwo.start_with?("github/")
+    puts "Deploys: https://heaven.githubapp.com/apps/#{File.basename(nwo)}"
+  end
+  puts ""
 
   next_merge_time = mq.fetch("nextEntryEstimatedTimeToMerge")
   entries = mq.fetch("entries").fetch("edges")
@@ -39,7 +41,7 @@ def main(nwo:, token:, user: nil)
   if user
     entries = entries.select { |edge| edge.fetch("node").fetch("enqueuer").fetch("login") == user }
   end
-  active_group, rest = entries.partition { |edge| active_group_ids.include?(edge.fetch("node").fetch("id")) }
+  active_group, rest = entries.partition { |edge| edge.fetch("node").fetch("locked") }
   [ [ "Merging", active_group ], [ "Queued", rest ] ].each do |label, group|
     next if group.empty?
     puts "#{label}:"
@@ -55,9 +57,7 @@ def main(nwo:, token:, user: nil)
 
       printf "%3d. %s @%s [%d] %s\n      %s\n",
         position, pretty_state(state), enqueued_by, pr_number, pr_title, pr_url
-      if state != "MERGEABLE"
-        printf "      %s\n", commit_url || "(no commit URL)"
-      end
+      printf "      %s\n", commit_url || "(no commit URL)"
     end
   end
   if more > 0
@@ -127,12 +127,13 @@ query ($owner: String!, $name: String!) {
 		mergeQueue {
 			url
 			nextEntryEstimatedTimeToMerge
-			entries(first: 50) {
+			entries(first: 100) {
 				totalCount
 				edges {
 					node {
 						id
 						position
+						locked
 						enqueuer {
 							login
 						}
@@ -145,13 +146,6 @@ query ($owner: String!, $name: String!) {
 						headCommit {
 							url
 						}
-					}
-				}
-			}
-			mergingEntries(first: 50) {
-				edges {
-					node {
-						id
 					}
 				}
 			}
@@ -184,6 +178,16 @@ while arg = ARGV.shift
     opts[:user] = ARGV.shift
   else
     usage
+  end
+end
+
+if ! opts[:nwo]
+  remote_url = `git config remote.origin.url`.strip
+  case remote_url
+  when %r{\Agit@.*?:(.*?)(\.git)?\z}
+    opts[:nwo] = $1
+  when %r{\Ahttps?://[^/]+/(.*?)(\.git)?\z}
+    opts[:nwo] = $1
   end
 end
 

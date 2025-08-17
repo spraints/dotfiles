@@ -15,11 +15,17 @@ if which nvim >/dev/null; then
   if [ "$maj" -gt 0 ] || [ "$min" -gt 10 ]; then
     echo 'Neovim is already installed, not going to install it again.'
     nvim --version | head -n 1
+    exit 0
   fi
 fi
 
 start_dir="$(pwd -P)"
-curl -LO https://github.com/neovim/neovim/releases/latest/download/nvim.appimage
+echo $start_dir
+curl -LO https://github.com/neovim/neovim/releases/download/v0.10.4/nvim-linux-x86_64.appimage
+sha256sum -c <<X
+d1b1488ef6a970dc3a2826b788d31d81b2f308ad42ef70ed62d35d0bf6189336  nvim-linux-x86_64.appimage
+X
+mv nvim-linux-x86_64.appimage nvim.appimage
 chmod u+x nvim.appimage
 
 cd /

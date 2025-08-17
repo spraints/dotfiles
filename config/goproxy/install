@@ -1,0 +1,41 @@
+#!/bin/bash
+
+set -e
+set -o nounset
+
+# Set up initializers for the things from
+# https://github.com/github/goproxy/blob/main/doc/user.md#janky
+
+root="$(cd "$(dirname $0)"; pwd -P)"
+ts=$(date +%s)
+
+linkup() {
+  local src="$1"
+  local dst="$2"
+  local f="$1"
+  if [ ! -e "$dst" ]; then
+    (set -x; ln -s "$src" "$dst")
+  elif [ "$(readlink "$dst")" != "$src" ]; then
+    (set -x; mv "$dst" "$dst.bak.$ts"; ln -s "$src" "$dst")
+  else
+    echo $dst already exists
+  fi
+}
+
+# This relies on the normal dotfile installation.
+linkup "${root}/env.sh" "${root}/../../dotfiles/shell-functions/goproxy-env.sh"
+
+if [ -z "${GITHUB_TOKEN:-}" ]; then
+  echo GITHUB_TOKEN is not set, skipping .netrc.
+else
+  echo Add goproxy.githubapp.com to ~/.netrc.
+  netrc_tmp="${HOME}/.netrc.tmp.dotfiles"
+  rm -f "${netrc_tmp}"
+  (
+    if [ -f "${HOME}/.netrc" ]; then
+      grep -v goproxy.githubapp.com "${HOME}/.netrc"
+    fi
+    printf 'machine goproxy.githubapp.com login nobody password %s' "$GITHUB_TOKEN"
+  ) > "$netrc_tmp"
+  mv -f "$netrc_tmp" ${HOME}/.netrc
+fi
