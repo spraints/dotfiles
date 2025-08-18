@@ -37,9 +37,6 @@
 [submodule "vim/bundle/editorconfig-vim"]
 	path = dotfiles/vim/bundle/editorconfig-vim
 	url = https://github.com/editorconfig/editorconfig-vim
-[submodule "config/xbar/plugins/github-status-bar"]
-	path = config/xbar/plugins/github-status-bar
-	url = https://github.com/github/github-status-bar
 [submodule "config/xbar/plugins/up-or-not"]
 	path = config/xbar/plugins/up-or-not
 	url = https://github.com/spraints/up-or-not
