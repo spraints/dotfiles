@@ -21,11 +21,11 @@ cask "iterm2"
 cask "xbar"
 
 # personal apps that I use (comment these out on work computer)
-brew "gnucash"
-brew "handbrake"
-brew "keepassxc"
-brew "ledger"
-brew "yt-dlp"
+#brew "gnucash"
+#brew "handbrake"
+#brew "keepassxc"
+#brew "ledger"
+#brew "yt-dlp"
 
 # Things I might want to use homebrew to install, but might not.
 #cask "firefox"
