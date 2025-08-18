@@ -24,7 +24,6 @@ set -x
 script/install-dotfiles
 script/install-config config/strap-like # needs to go before brewfile, maybe also sudoers
 script/install-config config/sudoers
-script/install-config config/gnupg
 script/install-config config/ssh
 script/install-config config/brewfile
 script/install-config config/neovim-packer
