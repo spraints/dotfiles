@@ -1,0 +1,6 @@
+#!/bin/bash
+# I like my PS1 ok, but starship is fun too. Generally I install starship only
+# on my laptops, and use the other PS1 on remote machines so that they are more
+# obviously different.
+
+brew install starship
