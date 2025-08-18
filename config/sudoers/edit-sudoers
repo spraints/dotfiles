@@ -3,6 +3,9 @@
 set -e
 set -o nounset
 
+# Search in homebrew's bin dir, too, in case PATH doesn't already include this.
+export PATH=$PATH:/opt/homebrew/bin:/opt/homebrew/sbin:/usr/local/Homebrew/bin:/usr/local/Homebrew/sbin
+
 mtr=$(which mtr)
 if [ -z "${mtr}" ]; then
   exit 1
