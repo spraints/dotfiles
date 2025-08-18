@@ -5,6 +5,8 @@ export PATH=$PATH:${HOME}/dev/private/localbin
 export PATH=$PATH:${HOME}/go/bin
 export PATH=${HOME}/.bin:$PATH
 
+export T_DATA_FILE=${HOME}/.data/t.csv
+
 if which rbenv >/dev/null 2>/dev/null; then
   eval "$(rbenv init -)"
 elif [ -x "${HOME}/.rbenv/bin/rbenv" ]; then

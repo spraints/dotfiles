@@ -35,4 +35,5 @@ if $work; then
   # todo - install xbar for personal, too, except 't'.
   # todo - make this work on a fresh machine. currently it fails because of cloning a private github repo.
   script/install-config config/xbar
+  script/install-config config/t
 fi
