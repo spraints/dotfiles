@@ -3,8 +3,6 @@
 # Then, you can cd here and do this:
 #    brew bundle
 
-tap "homebrew/cask-fonts"
-
 # useful stuff for my programming hobby
 brew "gh"
 brew "jq"
