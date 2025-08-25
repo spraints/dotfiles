@@ -35,6 +35,7 @@ function M.setup()
         -- https://github.com/mjlbach/starter.nvim/blob/6a8329eb0874014bcde92e7f78fe3176595e5a45/init.lua#L225
         -- for more keymap ideas.
         vim.lsp.enable("gopls")
+        vim.lsp.enable("protols")
         vim.lsp.enable("rust_analyzer")
         vim.lsp.enable("ts_ls")
       end,
