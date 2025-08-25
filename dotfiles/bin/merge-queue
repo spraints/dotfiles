@@ -10,7 +10,7 @@ require "json"
 require "net/http"
 require "timeout"
 
-def main(nwo:, token:, user: nil)
+def main(nwo:, token:, user: nil, branch: nil)
   data = query_mq(nwo: nwo, token: token)
   if errors = data["errors"]
     p errors
@@ -23,13 +23,15 @@ def main(nwo:, token:, user: nil)
     exit 1
   end
 
+  branch_desc = branch ? "(#{branch.inspect} branch)" : "(default branch)"
+
   total = mq.fetch("entries").fetch("totalCount")
   if total == 0
-    puts "Merge queue for #{nwo} is empty."
+    puts "Merge queue for #{nwo} #{branch_desc} is empty."
     exit 0
   end
 
-  puts "Merge queue for #{nwo} (#{mq.fetch("url")})"
+  puts "Merge queue for #{nwo} (#{mq.fetch("url")}) #{branch_desc}"
   if nwo.start_with?("github/")
     puts "Deploys: https://heaven.githubapp.com/apps/#{File.basename(nwo)}"
   end
@@ -41,7 +43,7 @@ def main(nwo:, token:, user: nil)
   if user
     entries = entries.select { |edge| edge.fetch("node").fetch("enqueuer").fetch("login") == user }
   end
-  active_group, rest = entries.partition { |edge| edge.fetch("node").fetch("locked") }
+  active_group, rest = entries.partition { |edge| false }
   [ [ "Merging", active_group ], [ "Queued", rest ] ].each do |label, group|
     next if group.empty?
     puts "#{label}:"
@@ -103,14 +105,16 @@ def human_duration(seconds)
   return "#{hours} hours"
 end
 
-def query_mq(nwo:, token:)
+def query_mq(nwo:, token:, branch: nil)
   owner, repo = nwo.split("/", 2)
+  vars = {
+    "owner" => owner,
+    "name" => repo,
+  }
+  vars["branch"] = branch if branch
   res = JSON.parse(json = query({
     "query" => MERGE_QUEUE_QUERY,
-    "variables" => {
-      "owner" => owner,
-      "name" => repo,
-    },
+    "variables" => vars,
   }, token: token))
   #File.write("ci-status.json", json)
   res
@@ -122,9 +126,9 @@ def usage
 end
 
 MERGE_QUEUE_QUERY = <<-GQL
-query ($owner: String!, $name: String!) {
+query ($owner: String!, $name: String!, $branch: String) {
 	repository(owner: $owner, name: $name) {
-		mergeQueue {
+		mergeQueue(branch: $branch) {
 			url
 			nextEntryEstimatedTimeToMerge
 			entries(first: 100) {
@@ -133,7 +137,6 @@ query ($owner: String!, $name: String!) {
 					node {
 						id
 						position
-						locked
 						enqueuer {
 							login
 						}
@@ -176,6 +179,8 @@ while arg = ARGV.shift
     opts[:nwo] = arg
   when "--user"
     opts[:user] = ARGV.shift
+  when "--branch"
+    opts[:branch] = ARGV.shift
   else
     usage
   end
