@@ -1,0 +1,31 @@
+#!/bin/bash
+
+set -e
+
+if ! which cargo >&/dev/null; then
+  source "$HOME/.cargo/env"
+fi
+
+echo Install t ...
+
+T_URL=https://github.com/spraints/t
+T_LOCAL=${HOME}/src/github.com/spraints/t
+
+if [[ ! -d "${T_LOCAL}" ]]; then
+  git clone "$T_URL" "$T_LOCAL"
+fi
+
+cd "$T_LOCAL"
+make install
+
+echo Install jt ...
+
+JT_URL=https://github.com/spraints/jt
+JT_LOCAL=${HOME}/src/github.com/spraints/jt
+
+if [[ ! -d "${JT_LOCAL}" ]]; then
+  git clone "$JT_URL" "$JT_LOCAL"
+fi
+
+cd "$JT_LOCAL"
+make install

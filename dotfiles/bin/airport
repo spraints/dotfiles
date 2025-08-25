@@ -1,16 +1,57 @@
-#!/bin/sh
+#!/usr/bin/env ruby
 #/ Usage: ~/.bin/airport
 #/   shows the current network
 
-IF=en0
+require "shellwords"
 
-main() {
-  if [ $# -gt 0 ]; then
-    cat "$0" | grep "^#/" | cut -c4-
+IF = ENV["IF"] || "en0"
+
+def main
+  unless ARGV.empty?
+    puts File.readlines(__FILE__).grep(/^#\//).map { |s| s[3..] }
     exit 1
-  fi
+  end
 
-  ipconfig getsummary "$IF" | grep SSID | cut -d : -f 2- | cut -c2-
-}
+  stat = `ipconfig getsummary #{Shellwords.escape(IF)}`
+  ssid = nil
+  if stat =~ / SSID : (.*)/
+    ssid = $1.strip
+  end
+  if ssid.nil? || ssid == "<redacted>"
+    if ip = gw_ip(stat)
+      # Try to detect home network a different way.
+      case m = mac_for_ip(ip)
+      when "74:24:9f:b1:7c:b"
+        ssid = "(home wifi)"
+      when NilClass
+        ssid = "gw=#{ip}"
+      else
+        ssid = "gw=#{ip} (#{m})"
+      end
+    end
+  end
+  puts ssid
+end
 
-main "$@"
+def gw_ip(stat)
+  case stat
+  when /^router.*: \{([0-9.]+)/
+    $1
+  when /^giaddr = (.*)/
+    $1
+  else
+    nil
+  end
+end
+
+def mac_for_ip(ip)
+  return nil if ip.nil?
+  arp = `arp -n #{Shellwords.escape(ip)}`
+  if arp =~ /at (\S+)/
+    $1
+  else
+    nil
+  end
+end
+
+main

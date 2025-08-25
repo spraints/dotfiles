@@ -19,6 +19,10 @@ private.yml
 /dotfiles/atom/.node-gyp
 /dotfiles/atom/compile-cache
 
+# Installed by running 'make install' from a spraints/<x> work dir.
+/dotfiles/bin/jt
+/dotfiles/bin/t
+
 # git add -f anything that should be versioned in this dir.
 /dotfiles/config
 

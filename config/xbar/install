@@ -28,6 +28,3 @@ for f in *; do
     linkup $f
   fi
 done
-
-echo Installing github-status-bar dependencies
-(git submodule update --init --recursive . && cd github-status-bar && npm install >&/dev/null)

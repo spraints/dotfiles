@@ -22,6 +22,4 @@ sudo usermod -a -G docker $USER
 cat > ~/.gitconfig.local <<GITCONFIG
 [url "git@github.com:"]
 	insteadOf = https://github.com/
-[url "git@ghe.io:"]
-	insteadOf = https://ghe.io/
 GITCONFIG
