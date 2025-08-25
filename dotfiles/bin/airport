@@ -13,8 +13,45 @@ def main
   end
 
   stat = `ipconfig getsummary #{Shellwords.escape(IF)}`
-  ssid = stat.lines.grep(/ SSID /).map { |s| s.split(":", 2).last.strip }.first
+  ssid = nil
+  if stat =~ / SSID : (.*)/
+    ssid = $1.strip
+  end
+  if ssid.nil? || ssid == "<redacted>"
+    if ip = gw_ip(stat)
+      # Try to detect home network a different way.
+      case m = mac_for_ip(ip)
+      when "74:24:9f:b1:7c:b"
+        ssid = "(home wifi)"
+      when NilClass
+        ssid = "gw=#{ip}"
+      else
+        ssid = "gw=#{ip} (#{m})"
+      end
+    end
+  end
   puts ssid
+end
+
+def gw_ip(stat)
+  case stat
+  when /^router.*: \{([0-9.]+)/
+    $1
+  when /^giaddr = (.*)/
+    $1
+  else
+    nil
+  end
+end
+
+def mac_for_ip(ip)
+  return nil if ip.nil?
+  arp = `arp -n #{Shellwords.escape(ip)}`
+  if arp =~ /at (\S+)/
+    $1
+  else
+    nil
+  end
 end
 
 main
