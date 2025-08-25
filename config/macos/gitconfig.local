@@ -2,5 +2,5 @@
 	format = ssh
 [user]
 	signingkey = /Users/spraints/.ssh/id_ed25519.pub
-[url "git@github.com:"]
-        insteadOf = https://github.com/
+[url "git@github.com:planetscale/"]
+        insteadOf = https://github.com/planetscale/
