@@ -1,0 +1,55 @@
+#!/usr/bin/env ruby
+
+require "json"
+
+WEBCAM_VID = "0x046d"
+WEBCAM_PID = "0x0919"
+
+MIC_VID = "0x0fd9"
+MIC_PID = "0x0070"
+
+def main
+  data = JSON.parse(`system_profiler -json SPUSBDataType`)
+  items = data.fetch("SPUSBDataType")
+  debug(items) if ARGV.include?("--debug")
+  webcam = find_device items, vid: WEBCAM_VID, pid: WEBCAM_PID
+  mic    = find_device items, vid: MIC_VID, pid: MIC_PID
+  puts "🎥#{ok_emoji(webcam)}/🎙️#{ok_emoji(mic)}"
+end
+
+def ok_emoji(item)
+  if item.nil?
+    "🚫"
+  else
+    "✅"
+  end
+end
+
+def find_device(items, vid:, pid:)
+  return nil if items.nil?
+  items.each do |i|
+    item_vid = i.fetch("vendor_id", "")
+    item_pid = i.fetch("product_id", "")
+    if item_vid.split.first == vid && item_pid.split.first == pid
+      return i
+    end
+    if ch = find_device(i["_items"], vid: vid, pid: pid)
+      return ch
+    end
+  end
+end
+
+def debug(items, prefix: "")
+  items.each do |i|
+    $stderr.puts describe(i, prefix: prefix)
+    if children = i["_items"]
+      debug(children, prefix: "#{prefix}#{i["_name"]}//")
+    end
+  end
+end
+
+def describe(item, prefix:)
+  "#{prefix}#{item["_name"]}: pid=#{item["product_id"]} vid=#{item["vendor_id"]} bcd=#{item["bcd_device"]}"
+end
+
+main
