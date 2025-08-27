@@ -1,6 +1,0 @@
-viconflicts() {
-  local conflicts="$(git status --porcelain | grep ^UU | awk '{print $2}')"
-  test -n "$conflicts" && nvim $conflicts
-}
-
-# ok: zsh

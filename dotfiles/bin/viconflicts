@@ -1,0 +1,11 @@
+#!/usr/bin/env ruby
+
+status = `git status --porcelain -z`
+entries = status.split("\0").map { |l| [l[0], l[1], l[3..]] }
+conflicts = entries.select { |x, y, _| x == "U" && y == "U" }.map { |_, _, fn| fn }
+if conflicts.empty?
+  puts "no conflicts!"
+  exit 0
+end
+puts "found conflicts, editing these files:", conflicts.map { |fn| "- #{fn}" }
+exec "nvim", *conflicts unless conflicts.empty?
