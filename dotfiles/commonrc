@@ -58,7 +58,8 @@ then
   export EC2_CERT="$(/bin/ls $HOME/.ec2/cert-*.pem)"
 fi
 
-alias glg="git log --pretty=format:'%Cred%h %Cblue%t%Creset -%C(yellow)%d%Creset %s %Cgreen(%ad, %an)%Creset' --date=relative --graph"
+# G=good, B=bad, U=good but unknown, X=expired, Y=expired, R=revoked, E=missing key, N=no sig
+alias glg="git log --pretty=format:'%Cred%h %Cblue%t%Creset -%C(yellow)%d%Creset %s %Cgreen(%ad, %an, sig=%G?)%Creset' --date=relative --graph"
 alias gst='git status'
 alias gc='git commit -v'
 alias gco='git checkout'
