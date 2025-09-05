@@ -1,2 +1,4 @@
 .*.swp
 /.bundle
+
+**/.claude/settings.local.json
