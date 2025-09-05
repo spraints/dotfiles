@@ -1,6 +1,7 @@
 #!/usr/bin/env ruby
 
 require "json"
+require "pp"
 
 WEBCAM_VID = "0x046d"
 WEBCAM_PID = "0x0919"
@@ -8,12 +9,16 @@ WEBCAM_PID = "0x0919"
 MIC_VID = "0x0fd9"
 MIC_PID = "0x0070"
 
-def main
+def main(verbose: false)
   data = JSON.parse(`system_profiler -json SPUSBDataType`)
   items = data.fetch("SPUSBDataType")
   debug(items) if ARGV.include?("--debug")
   webcam = find_device items, vid: WEBCAM_VID, pid: WEBCAM_PID
   mic    = find_device items, vid: MIC_VID, pid: MIC_PID
+  if verbose
+    pp webcam: webcam
+    pp mic: mic
+  end
   puts "🎥#{ok_emoji(webcam)}/🎙️#{ok_emoji(mic)}"
 end
 
@@ -37,6 +42,7 @@ def find_device(items, vid:, pid:)
       return ch
     end
   end
+  nil
 end
 
 def debug(items, prefix: "")
@@ -52,4 +58,5 @@ def describe(item, prefix:)
   "#{prefix}#{item["_name"]}: pid=#{item["product_id"]} vid=#{item["vendor_id"]} bcd=#{item["bcd_device"]}"
 end
 
-main
+main \
+  verbose: ARGV.include?("--verbose")
