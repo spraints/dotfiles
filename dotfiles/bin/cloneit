@@ -18,7 +18,7 @@ case "$1" in
     hostpath="$(echo "$1" | cut -d @ -f 2- | tr : /)"
     ;;
   */*)
-    url="git@github.com:$1"
+    url="https://github.com/$1"
     hostpath="github.com/$1"
     ;;
   *)
