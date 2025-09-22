@@ -27,6 +27,10 @@ Host appadmin
   HostName meow.pickardayune.com
   User appadmin
 
+Host appadmin2
+  HostName garfield.cloud.pickardayune.com
+  User appadmin
+
 Host apps
   HostName meow.pickardayune.com
   User spraints
@@ -34,3 +38,7 @@ Host apps
 Host matty-pi
   HostName 192.168.1.240
   User dietpi
+
+Host ocmc
+  HostName 192.168.1.171
+  User mc
