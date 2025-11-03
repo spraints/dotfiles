@@ -1,29 +1,25 @@
+format='$time$shell$env_var$jobs$battery$git_branch$git_state$line_break$directory$character'
+
 [[battery.display]]
-threshold = 30
+threshold = 50
+
+[character]
+success_symbol = '[\$](bold green)'
+error_symbol = '[\$](bold red)'
+vimcmd_symbol = '[\$](bold green)'
+vimcmd_visual_symbol = '[\$](bold yellow)'
+vimcmd_replace_symbol = '[\$](bold purple)'
+vimcmd_replace_one_symbol = '[\$](bold purple)'
 
 [env_var]
 variable = "STARSHIP_THIS_PID"
-format = "sid [$env_value]($style) "
+format = '[$env_value]($style) '
 default = "unknown"
 
 [time]
 disabled = false
+format = '\[[$time]($style)\] '
 
-# 'cc --version' is super slow, so don't.
-[c]
-disabled = true
-
-[golang]
-disabled = true
-
-[ruby]
-disabled = true
-
-[aws]
-disabled = true
-
-[gcloud]
-disabled = true
-
-[docker_context]
-disabled = true
+[shell]
+format = "$indicator:"
+disabled = false
