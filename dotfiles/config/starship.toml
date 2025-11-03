@@ -12,3 +12,18 @@ disabled = false
 # 'cc --version' is super slow, so don't.
 [c]
 disabled = true
+
+[golang]
+disabled = true
+
+[ruby]
+disabled = true
+
+[aws]
+disabled = true
+
+[gcloud]
+disabled = true
+
+[docker_context]
+disabled = true
