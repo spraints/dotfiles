@@ -12,48 +12,29 @@ USAGE
 }
 
 dir() {
-  case "$#" in
-    1)
-      local arg="$1"
-      case "$arg" in
-        gh|github)
-          arg="github/github";;
-        .|..)
-          __dir_usage
-          return ;;
-      esac
+  local dest="$(_choose_dir_dest "$@")"
+  if [ -n "$dest" ]; then
+    echo ">> cd $dest"
+    cd "$dest"
+    sync-tmux-window-name >&/dev/null
+  else
+    __dir_usage
+    return 1
+  fi
+}
 
-      for d in \
-        "${arg}" \
-        "${HOME}/${arg}" \
-        "${HOME}/src/${arg}" \
-        "${HOME}/src/github.com/${arg}" \
-        "${HOME}/src/github.com/github/${arg}" \
-        "${HOME}/src/github.com/spraints/${arg}" \
-        "${HOME}/src/github.com/farmingengineers/${arg}" \
-        "${HOME}/src/experiments/${arg}"
-      do
-        if [ -d "$d" ]; then
-          echo ">> cd $d"
-          cd "$d"
-          sync-tmux-window-name >&/dev/null
-          return
-        fi
-      done
-      for d in "${HOME}/src/github.com/"*; do
-        if [ -d "${d}/${arg}" ]; then
-          echo ">> cd $d/${arg}"
-          cd "$d/${arg}"
-          sync-tmux-window-name >&/dev/null
-          return
-        fi
-      done
-      echo "$1: no match"
-      ;;
+_choose_dir_dest() {
+  if [ "$#" -ne 1 ]; then
+    return 1
+  fi
 
+  case "$1" in
+    .dotfiles)
+      echo ${HOME}/.dotfiles ;;
+    .|..)
+      return 1 ;;
     *)
-      __dir_usage
-      ;;
+      fd --type dir --max-depth 3 "$1" ${HOME}/src | sort -r | head -n 1 ;;
   esac
 }
 
