@@ -248,6 +248,8 @@ def prepare_checks(checks)
           state = :success
         elsif run["conclusion"] == "NEUTRAL"
           state = :neutral
+        elsif run["conclusion"] == "SKIPPED"
+          state = :neutral
         else
           state = :failure
         end
