@@ -10,9 +10,16 @@ export PATH=/usr/local/bin:$PATH
 export PATH=$PATH:/usr/local/sbin
 export PATH=$PATH:${HOME}/dev/private/localbin
 export PATH=$PATH:${HOME}/go/bin
+export PATH=${HOME}/.ps-toolbox/bin:${PATH}
 export PATH=${HOME}/.bin:$PATH
+export PATH=${HOME}/src/experiments/dev-utils:$PATH
+export PATH="$PATH:/Applications/Tailscale.app/Contents/MacOS"
 
 export T_DATA_FILE=${HOME}/.data/t.csv
+
+export PSKUBE_WATCH_ARGS="--color"
+
+export GONOSUMDB='github.com/planetscale/*'
 
 __commonrc_step COMMONRCRBENVSTART
 setup-rbenv() {

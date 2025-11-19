@@ -46,4 +46,9 @@ fi
 __commonrc_step ZSHRCFZF
 [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
 
+__commonrc_step ZSHRCMCFLY
+if which mcfly >/dev/null 2>/dev/null; then
+  export MCFLY_RESULTS_SORT=LAST_RUN
+  eval "$(mcfly init zsh)"
+fi
 __commonrc_step ZSHRCFIN
