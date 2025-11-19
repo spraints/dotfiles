@@ -1,5 +1,18 @@
+if [ -d "${HOME}/.commonrcstarts" ]; then
+  __commonrc_log="${HOME}/.commonrcstarts/$(date +%s)-$$.log"
+  function __commonrc_step() {
+    (date -Ins; echo "$@")>>"$__commonrc_log"
+  }
+else
+  function __commonrc_step() {
+    :
+  }
+fi
+
+__commonrc_step ZSHRCINIT
 source ~/.commonrc
 
+__commonrc_step ZSHRCLOADFUNCS
 for fun in ~/.shell-functions/*; do
   # Look for a line like "# ok: zsh"
   if grep -Eq '^# ok:.* zsh($| )' $fun; then
@@ -15,12 +28,14 @@ PROMPT='%m %F{yellow}%*%f (%F{magenta}%j%f) >>> '
 # Use ^A for beginning of line, etc.
 bindkey -e
 
+__commonrc_step ZSHRCSTARSHIP
 # brew install starship
 if which starship >/dev/null 2>/dev/null; then
   export STARSHIP_THIS_PID=$$
   eval "$(starship init zsh 2>/dev/null)"
 fi
 
+__commonrc_step ZSHRCBREW
 # https://docs.brew.sh/Shell-Completion
 if type brew >&/dev/null; then
   FPATH=$(brew --prefix)/share/zsh/site-functions:$FPATH
@@ -28,4 +43,7 @@ if type brew >&/dev/null; then
   compinit
 fi
 
+__commonrc_step ZSHRCFZF
 [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
+
+__commonrc_step ZSHRCFIN

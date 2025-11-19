@@ -1,3 +1,10 @@
+if ! type __commonrc_step >&/dev/null; then
+  function __commonrc_step() {
+    :
+  }
+fi
+__commonrc_step COMMONRCINIT
+
 export PATH=$PATH:${HOME}/.local/bin
 export PATH=/usr/local/bin:$PATH
 export PATH=$PATH:/usr/local/sbin
@@ -7,31 +14,44 @@ export PATH=${HOME}/.bin:$PATH
 
 export T_DATA_FILE=${HOME}/.data/t.csv
 
-if which rbenv >/dev/null 2>/dev/null; then
-  eval "$(rbenv init -)"
-elif [ -x "${HOME}/.rbenv/bin/rbenv" ]; then
-  eval "$(${HOME}/.rbenv/bin/rbenv init -)"
-fi
+__commonrc_step COMMONRCRBENVSTART
+setup-rbenv() {
+  if which rbenv >/dev/null 2>/dev/null; then
+    eval "$(rbenv init -)"
+  elif [ -x "${HOME}/.rbenv/bin/rbenv" ]; then
+    eval "$(${HOME}/.rbenv/bin/rbenv init -)"
+  else
+    echo "can't find rbenv"
+  fi
+}
+__commonrc_step COMMONRCRBENVEND
 
 which nodenv >/dev/null 2>/dev/null &&
   eval "$(nodenv init -)"
+__commonrc_step COMMONRCNODEENVEND
 
 if [ -x /opt/homebrew/bin/brew ]; then
   eval "$(/opt/homebrew/bin/brew shellenv)"
 elif [ -x /usr/local/bin/brew ]; then
   eval "$(/usr/local/bin/brew shellenv)"
 fi
+__commonrc_step COMMONRCBREWEND
 
 [[ -s "$HOME/.cargo/env" ]] && source "$HOME/.cargo/env"
+__commonrc_step COMMONRCCARGOEND
 
 [[ -s "$HOME/.gcloud/env.sh" ]] && source "$HOME/.gcloud/env.sh"
+__commonrc_step COMMONRCGCLOUDEND
 
 [[ -s "$HOME/.nvm/nvm.sh" ]] && source "$HOME/.nvm/nvm.sh"
+__commonrc_step COMMONRCNVMEND
 
 [[ -s "$HOME/dev/na/na.sh" ]] && source "$HOME/dev/na/na.sh"
+__commonrc_step COMMONRCNAEND
 
 # Let me configure stuff on just one machine.
 [[ -s "$HOME/.localrc" ]] && source "$HOME/.localrc"
+__commonrc_step COMMONRCLOCALRCEND
 
 alias b='bundle exec'
 
@@ -45,6 +65,7 @@ done
 if [ -n "$EDITOR" ]; then
   export GIT_EDITOR="$EDITOR"
 fi
+__commonrc_step COMMONRCEDITOREND
 
 # For AWS:
 if [ -d "${HOMEBREW_CELLAR}/ec2-api-tools/1.5.0.1/jars" ]
@@ -77,4 +98,5 @@ else
   alias dominion="open https://dominion.games"
 fi
 
+__commonrc_step COMMONRCFIN
 # vim: ft=sh
