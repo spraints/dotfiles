@@ -10,8 +10,8 @@ MIC_VID = "0x0fd9"
 MIC_PID = "0x0070"
 
 def main(verbose: false)
-  data = JSON.parse(`system_profiler -json SPUSBDataType`)
-  items = data.fetch("SPUSBDataType")
+  data = JSON.parse(`system_profiler -json SPUSBHostDataType SPUSBDataType`)
+  items = data.values.flatten
   debug(items) if ARGV.include?("--debug")
   webcam = find_device items, vid: WEBCAM_VID, pid: WEBCAM_PID
   mic    = find_device items, vid: MIC_VID, pid: MIC_PID
@@ -33,8 +33,8 @@ end
 def find_device(items, vid:, pid:)
   return nil if items.nil?
   items.each do |i|
-    item_vid = i.fetch("vendor_id", "")
-    item_pid = i.fetch("product_id", "")
+    item_vid = vendor_id(i)
+    item_pid = product_id(i)
     if item_vid.split.first == vid && item_pid.split.first == pid
       return i
     end
@@ -46,6 +46,7 @@ def find_device(items, vid:, pid:)
 end
 
 def debug(items, prefix: "")
+  $stderr.puts "No items!!" if items.empty?
   items.each do |i|
     $stderr.puts describe(i, prefix: prefix)
     if children = i["_items"]
@@ -55,7 +56,33 @@ def debug(items, prefix: "")
 end
 
 def describe(item, prefix:)
-  "#{prefix}#{item["_name"]}: pid=#{item["product_id"]} vid=#{item["vendor_id"]} bcd=#{item["bcd_device"]}"
+  "#{prefix}#{item["_name"]}: pid=#{product_id(item)} vid=#{vendor_id(item)} bcd=#{bcd_device(item)}"
+end
+
+def product_id(item)
+  try_keys item,
+    "product_id",
+    "USBDeviceKeyProductID"
+end
+
+def vendor_id(item)
+  try_keys item,
+    "vendor_id",
+    "USBDeviceKeyVendorID"
+end
+
+def bcd_device(item)
+  try_keys item,
+    "bcd_device"
+end
+
+def try_keys(item, *ks)
+  ks.each do |k|
+    if item.key?(k)
+      return item[k]
+    end
+  end
+  return "(missing #{ks.first})"
 end
 
 main \
