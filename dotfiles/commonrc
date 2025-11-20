@@ -21,16 +21,10 @@ export PSKUBE_WATCH_ARGS="--color"
 
 export GONOSUMDB='github.com/planetscale/*'
 
-__commonrc_step COMMONRCRBENVSTART
-setup-rbenv() {
-  if which rbenv >/dev/null 2>/dev/null; then
-    eval "$(rbenv init -)"
-  elif [ -x "${HOME}/.rbenv/bin/rbenv" ]; then
-    eval "$(${HOME}/.rbenv/bin/rbenv init -)"
-  else
-    echo "can't find rbenv"
-  fi
-}
+__commonrc_step COMMONRCRVSTART
+if which rv >/dev/null 2>/dev/null; then
+  eval "$(rv shell init zsh)"
+fi
 __commonrc_step COMMONRCRBENVEND
 
 which nodenv >/dev/null 2>/dev/null &&
