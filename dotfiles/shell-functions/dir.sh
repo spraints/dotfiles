@@ -33,6 +33,8 @@ _choose_dir_dest() {
       echo ${HOME}/.dotfiles ;;
     .|..)
       return 1 ;;
+    */*)
+      echo "$1" ;;
     *)
       fd --type dir --max-depth 3 "$1" ${HOME}/src | sort -r | head -n 1 ;;
   esac
