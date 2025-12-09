@@ -40,34 +40,4 @@ _choose_dir_dest() {
   esac
 }
 
-if [ "zsh" = "`basename ${SHELL}`" ]; then
-  _dir() {
-    local -a completions
-
-    # Add .dotfiles as a special completion
-    completions+=(".dotfiles")
-
-    # Add directories in current directory (excluding . and ..)
-    for d in */ ; do
-      if [ "$d" != "./" ] && [ "$d" != "../" ]; then
-        completions+=("${d%/}")
-      fi
-    done
-
-    # Add directories found in ${HOME}/src
-    if [ -d "${HOME}/src" ]; then
-      while IFS= read -r line; do
-        # Extract just the directory name (last component of path)
-        local dirname="${line##*/}"
-        completions+=("$dirname")
-      done < <(fd --type dir --max-depth 3 . ${HOME}/src 2>/dev/null | sort -u)
-    fi
-
-    # Provide completions
-    _describe 'directories' completions
-  }
-
-  compdef _dir dir
-fi
-
 # ok: zsh
