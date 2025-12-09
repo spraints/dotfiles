@@ -1,0 +1,9 @@
+start-direnv() {
+  if ! type _direnv_hook >& /dev/null; then
+    eval "$(direnv hook zsh)"
+  else
+    echo "direnv already started"
+  fi
+}
+
+# ok: zsh
