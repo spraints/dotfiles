@@ -46,6 +46,14 @@ fi
 __commonrc_step ZSHRCFZF
 [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
 
+__commonrc_step PSCOMPLETIONS
+update-ps-completions() {
+  which kubectl        >&/dev/null && source <(kubectl completion zsh)
+  which pskube         >&/dev/null && source <(pskube --completion zsh)
+  which singularityctl >&/dev/null && source <(singularityctl completion zsh)
+}
+update-ps-completions
+
 __commonrc_step ZSHRCMCFLY
 if which mcfly >/dev/null 2>/dev/null; then
   export MCFLY_RESULTS_SORT=LAST_RUN
