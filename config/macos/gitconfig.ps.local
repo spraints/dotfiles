@@ -1,0 +1,21 @@
+[gpg]
+	format = ssh
+[commit]
+	gpgsign = true
+[gpg "ssh"]
+	allowedSignersFile = /Users/spraints/.git-ssh-signers
+[user]
+	# If I'm doing it manually:
+	#signingkey = /Users/spraints/.ssh/id_ed25519.pub
+
+	# If I'm using 1P:
+	# https://developer.1password.com/docs/ssh/git-commit-signing/
+	signingkey = /Users/spraints/.ssh/id_onepassword.pub
+	email = spraints@planetscale.com
+[gpg "ssh"]
+	program = "/Applications/1Password.app/Contents/MacOS/op-ssh-sign"
+
+[url "git@github.com:planetscale/"]
+	insteadOf = https://github.com/planetscale/
+[url "git@github.com:spraints/"]
+	insteadOf = https://github.com/spraints/

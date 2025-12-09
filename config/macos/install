@@ -5,16 +5,16 @@ ROOT="$(cd "$(dirname "$0")"; pwd -P)"
 install() {
   local file="$1"
   local path="$ROOT/$file"
-  local link="$HOME/.$file"
+  local link="$HOME/.gitconfig.local"
 
   if [ -f "$link" ]; then
     if [ -L "$link" ]; then
       local cur="$(readlink "$link")"
       if [ "$cur" != "$path" ]; then
-        echo "$file: error: linked to $cur but should be $path"
+        echo "$link: error: linked to $cur but should be $path"
         echo "  remove $link and rerun this script to fix it"
       else
-        echo "$file: already linked"
+        echo "$link: already linked"
       fi
     else
       echo "$file: error: $link already exists"
@@ -22,8 +22,16 @@ install() {
     fi
   else
     ln -s "$path" "$link"
-    echo "$file: created link"
+    echo "$link -> $file: created link"
   fi
 }
 
-install gitconfig.local
+is_ps() {
+  test -d "/Applications/Kandji Self Service.app"
+}
+
+if is_ps; then
+  install gitconfig.ps.local
+else
+  install gitconfig.local
+fi

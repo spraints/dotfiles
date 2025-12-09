@@ -6,7 +6,5 @@
 	signingkey = /Users/spraints/.ssh/id_ed25519.pub
 [commit]
 	gpgsign = true
-[url "git@github.com:planetscale/"]
-        insteadOf = https://github.com/planetscale/
 [url "git@github.com:spraints/"]
         insteadOf = https://github.com/spraints/
