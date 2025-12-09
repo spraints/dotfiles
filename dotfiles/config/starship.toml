@@ -1,4 +1,4 @@
-format='$time$shell$env_var$jobs$battery$git_branch$git_state$line_break$directory$character'
+format='$time$shell$env_var$jobs$battery$git_branch$git_state$nix_shell$line_break$directory$character'
 
 [[battery.display]]
 threshold = 50
