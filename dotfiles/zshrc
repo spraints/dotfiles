@@ -46,11 +46,32 @@ fi
 __commonrc_step ZSHRCFZF
 [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
 
-__commonrc_step PSCOMPLETIONS
+__commonrc_step PSCOMPLETIONS2
 update-ps-completions() {
-  which kubectl        >&/dev/null && source <(kubectl completion zsh)
-  which pskube         >&/dev/null && source <(pskube --completion zsh)
-  which singularityctl >&/dev/null && source <(singularityctl completion zsh)
+  local no_cache=false
+  if [ "x${1:-}" = "x--no-cache" ]; then
+    no_cache=true
+  fi
+  local cache_dir=$HOME/.cache/completions
+  mkdir -p $cache_dir
+  if which kubectl >&/dev/null; then
+    if $no_cache || [ ! -f $cache_dir/kubectl ]; then
+      kubectl completion zsh > $cache_dir/kubectl
+      source $cache_dir/kubectl
+    fi
+  fi
+  if which pskube >&/dev/null; then
+    if $no_cache || [ ! -f $cache_dir/pskube ]; then
+      pskube --completion zsh > $cache_dir/pskube
+      source $cache_dir/pskube
+    fi
+  fi
+  if which singularityctl >&/dev/null; then
+    if $no_cache || [ ! -f $cache_dir/singularityctl ]; then
+      singularityctl completion zsh > $cache_dir/singularityctl
+      source $cache_dir/singularityctl
+    fi
+  fi
 }
 update-ps-completions
 
