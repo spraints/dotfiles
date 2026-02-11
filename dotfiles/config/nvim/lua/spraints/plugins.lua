@@ -37,7 +37,8 @@ function M.setup()
         vim.lsp.enable("gopls")
         vim.lsp.enable("protols")
         vim.lsp.enable("rust_analyzer")
-        vim.lsp.enable("ts_ls")
+        -- vim.lsp.enable("ts_ls")
+        vim.lsp.enable("zls")
       end,
     }
   end
