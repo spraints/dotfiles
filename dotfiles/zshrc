@@ -12,6 +12,10 @@ fi
 __commonrc_step ZSHRCINIT
 source ~/.commonrc
 
+if which direnv >/dev/null 2>/dev/null; then
+  eval "$(direnv hook zsh)"
+fi
+
 __commonrc_step ZSHRCLOADFUNCS
 for fun in ~/.shell-functions/*; do
   # Look for a line like "# ok: zsh"
