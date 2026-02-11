@@ -6,12 +6,6 @@ test -f ~/.bashrc-defaults && . ~/.bashrc-defaults
 
 . ~/.commonrc
 
-# brew install starship
-if which starship >/dev/null 2>/dev/null; then
-  export STARSHIP_THIS_PID=$$
-  eval "$(starship init bash 2>/dev/null)"
-fi
-
 for fun in ~/.shell-functions/*; do
   . $fun
 done
@@ -78,3 +72,7 @@ if which starship >/dev/null 2>/dev/null; then
 fi
 
 [ -f ~/.fzf.bash ] && source ~/.fzf.bash
+
+if which direnv >/dev/null 2>/dev/null; then
+  eval "$(direnv hook bash)"
+fi
