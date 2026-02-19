@@ -1,0 +1,10 @@
+#!/bin/sh
+#/ Usage: script/install-nix-dev
+
+set -e
+set -o nounset
+
+cd `dirname "$0"`/..
+set -x
+script/install-dotfiles
+script/install-config config/neovim-packer
