@@ -9,17 +9,28 @@ WEBCAM_PID = "0x0919"
 MIC_VID = "0x0fd9"
 MIC_PID = "0x0070"
 
+ANKER_MAC = "6c:6e:07:0a:13:49"
+
 def main(verbose: false)
-  data = JSON.parse(`system_profiler -json SPUSBHostDataType SPUSBDataType`)
-  items = data.values.flatten
-  debug(items) if ARGV.include?("--debug")
-  webcam = find_device items, vid: WEBCAM_VID, pid: WEBCAM_PID
-  mic    = find_device items, vid: MIC_VID, pid: MIC_PID
+  data = JSON.parse(`system_profiler -json SPUSBHostDataType SPUSBDataType SPNetworkDataType`)
+  debug(data) if ARGV.include?("--debug")
+  usb_items = data.fetch("SPUSBHostDataType") + data.fetch("SPUSBDataType")
+  webcam = find_device usb_items, vid: WEBCAM_VID, pid: WEBCAM_PID
+  mic    = find_device usb_items, vid: MIC_VID, pid: MIC_PID
+  net_items = data.fetch("SPNetworkDataType")
+  wifi   = find_wifi net_items
+  wired  = find_net net_items, mac: ANKER_MAC
   if verbose
-    pp webcam: webcam
-    pp mic: mic
+    pp \
+     webcam: webcam,
+     mic: mic,
+     wifi: wifi,
+     wired: wired
   end
-  puts "🎥#{ok_emoji(webcam)}/🎙️#{ok_emoji(mic)}"
+  puts "🎥#{ok_emoji(webcam)} (webcam #{ok_text(webcam)})"
+  puts "🎙️#{ok_emoji(mic)} (mic #{ok_text(mic)}"
+  puts "🛜#{net_ok_emoji(wifi)} (wifi #{net_ok_text(wifi)})"
+  puts "🖥️#{net_ok_emoji(wired)} (ethernet #{net_ok_text(wired)})"
 end
 
 def ok_emoji(item)
@@ -27,6 +38,36 @@ def ok_emoji(item)
     "🚫"
   else
     "✅"
+  end
+end
+
+def ok_text(item)
+  if item.nil?
+    "not connected"
+  else
+    "connected"
+  end
+end
+
+def net_ok_emoji(net)
+  case
+  when net.nil?
+    "🚫"
+  when net.fetch("ip_address", []).size > 0
+    "✅"
+  else
+    "💤"
+  end
+end
+
+def net_ok_text(net)
+  case
+  when net.nil?
+    "not found"
+  when net.fetch("ip_address", []).size > 0
+    "connected"
+  else
+    "unplugged"
   end
 end
 
@@ -45,18 +86,43 @@ def find_device(items, vid:, pid:)
   nil
 end
 
-def debug(items, prefix: "")
-  $stderr.puts "No items!!" if items.empty?
+def find_wifi(items)
+  items.find { |i| i.fetch("hardware") == "AirPort" }
+end
+
+def find_net(items, mac:)
+  items.find { |i| i.dig("Ethernet", "MAC Address") == mac }
+end
+
+def debug(data)
+  data.each do |section, items|
+    $stderr.puts "#{section}:"
+    _debug(items, prefix: "  ", section: section)
+  end
+end
+
+def _debug(items, prefix:, section:)
+  if items.empty?
+    $stderr.puts "#{prefix}: no children"
+    return
+  end
   items.each do |i|
-    $stderr.puts describe(i, prefix: prefix)
+    $stderr.puts describe(i, prefix: prefix, section: section)
     if children = i["_items"]
-      debug(children, prefix: "#{prefix}#{i["_name"]}//")
+      _debug(children, prefix: "#{prefix}#{i["_name"]}//", section: section)
     end
   end
 end
 
-def describe(item, prefix:)
-  "#{prefix}#{item["_name"]}: pid=#{product_id(item)} vid=#{vendor_id(item)} bcd=#{bcd_device(item)}"
+def describe(item, prefix:, section:)
+  case section
+  when /Network/
+    "#{prefix}#{item.fetch("interface", "(nodev)")} (#{item.fetch("_name")}): type=#{item.fetch("type")} ip=#{item.fetch("ip_address", []).join(",")}"
+  when /USB/
+    "#{prefix}#{item["_name"]}: pid=#{product_id(item)} vid=#{vendor_id(item)} bcd=#{bcd_device(item)}"
+  else
+    "#{prefix} [#{section}] #{item.inspect}"
+  end
 end
 
 def product_id(item)
