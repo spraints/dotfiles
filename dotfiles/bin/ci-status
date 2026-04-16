@@ -2,7 +2,7 @@
 export RBENV_VERSION=system
 exec ruby "$0" "$@"
 #!ruby
-#/ Usage: ci-status [--sort=SORTBY] [--skip-green|--failed] [--urls] [--ids] [branch|PR-url]
+#/ Usage: ci-status [--sort=SORTBY] [--skip-green|--failed] [--urls] [--ids] [--build NAME_PART] [branch|PR-url]
 #/ Shows pretty ci status for the current repo and current branch (or the named branch).
 #/ Usage: ci-status --failures [branch|PR-url]
 #/ Summarizes failures based on annotations.
