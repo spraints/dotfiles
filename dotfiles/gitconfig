@@ -31,3 +31,5 @@
 	required = true
 [protocol]
 	version = 2
+[rerere]
+	enabled = true
