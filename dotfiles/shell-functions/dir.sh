@@ -60,11 +60,7 @@ score =
 puts "#{score} #\$_"
 SCRIPT
 )"
-  if [ -z "$__DEBUG_DIR" ]; then
-    INPUT="$1" ruby -ne "$script" | tee /dev/stderr
-  else
-    INPUT="$1" ruby -ne "$script" | tee /dev/stderr
-  fi
+  INPUT="$1" ruby -ne "$script" | tee /dev/stderr
 }
 
 # ok: zsh
