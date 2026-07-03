@@ -44,8 +44,8 @@ __commonrc_step COMMONRCCARGOEND
 [[ -s "$HOME/.gcloud/env.sh" ]] && source "$HOME/.gcloud/env.sh"
 __commonrc_step COMMONRCGCLOUDEND
 
-[[ -s "$HOME/.nvm/nvm.sh" ]] && source "$HOME/.nvm/nvm.sh"
-__commonrc_step COMMONRCNVMEND
+#[[ -s "$HOME/.nvm/nvm.sh" ]] && source "$HOME/.nvm/nvm.sh"
+#__commonrc_step COMMONRCNVMEND
 
 [[ -s "$HOME/dev/na/na.sh" ]] && source "$HOME/dev/na/na.sh"
 __commonrc_step COMMONRCNAEND
