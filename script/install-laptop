@@ -26,7 +26,6 @@ script/install-config config/strap-like # needs to go before brewfile, maybe als
 script/install-config config/ssh
 script/install-config config/brewfile
 script/install-config config/sudoers # needs to come after brewfile
-script/install-config config/neovim-packer
 script/install-config config/macos
 script/install-config config/rustup
 script/install-config config/fancy-prompt

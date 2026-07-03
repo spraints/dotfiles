@@ -10,5 +10,4 @@ sudo apt-get install -y \
 
 # Do this last. If it fails, I'd rather have the other parts done.
 config/nvim/install
-config/neovim-packer/install
 config/codespaces/install
