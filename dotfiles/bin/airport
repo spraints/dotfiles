@@ -25,6 +25,8 @@ def main
         ssid = "(home wifi)"
       when "1c:61:b4:a7:fb:b4"
         ssid = "Kolache Guest"
+      when "62:f:6b:f7:be:64"
+        ssid = "SpraintsBox"
       when NilClass
         ssid = "gw=#{ip}"
       else
