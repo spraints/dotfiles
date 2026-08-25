@@ -1,0 +1,1 @@
+echo todo: overwrite '~/Library/Application Support/com.mitchellh.ghostty/config' with a file that has a config-file directive pointing to config in this dir.

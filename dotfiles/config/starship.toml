@@ -15,6 +15,7 @@ vimcmd_replace_one_symbol = '[\$](bold purple)'
 variable = "STARSHIP_THIS_PID"
 format = '[$env_value]($style) '
 default = "unknown"
+style = "cyan"
 
 [time]
 disabled = false

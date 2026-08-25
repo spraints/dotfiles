@@ -1,0 +1,87 @@
+#!/usr/bin/env ruby
+
+require "socket"
+
+DEBUG = false
+
+if Process.uid != 0
+  puts "Must run as root."
+end
+
+# List all interfaces.
+ifaddrs = Socket.getifaddrs
+
+# Figure out which interfaces look like normal network connections.
+nets = []
+ifaddrs.each do |ifaddr|
+  next if ifaddr.flags & Socket::IFF_LOOPBACK > 0
+  next unless ifaddr.addr.ipv4?
+  nets << [ifaddr.addr, ifaddr.netmask]
+end
+
+# Figure out which other IP addresses are on each network.
+targets = []
+nets.each do |addr, netmask|
+  a, n = [addr, netmask].map { |ax| ax.ip_unpack[0].split(".").map { |b| b.to_i }.inject(0) { |res, b| res<<8 | b } }
+  network = a & n
+  dest = [3, 2, 1, 0].map { |off|
+    octet = (network & (0xff << (off * 8))) >> (off * 8)
+    if octet == 0
+      "*"
+    else
+      octet.to_s
+    end
+  }.join(".")
+  targets << dest
+end
+
+# $ sudo nmap -sP '192.168.164.*'
+# Starting Nmap 7.94 ( https://nmap.org ) at 2023-08-31 18:24 EDT
+# Nmap scan report for 192.168.164.1
+# Host is up (0.0052s latency).
+# MAC Address: FF:EE:DD:CC:BB:AA (Unknown)
+# Nmap scan report for 192.168.164.110
+# Host is up (0.0056s latency).
+# MAC Address: FF:FF:DD:DD:AA:AA (Raspberry Pi Foundation)
+# ...
+# Nmap done: 256 IP addresses (21 hosts up) scanned in 6.91 seconds
+
+hosts = []
+targets.each do |target|
+  puts "Scan #{target}..."
+  found = 0
+  IO.popen(["nmap", "-sP", target]) do |nmap|
+    nmap.each_line do |line|
+      if line =~ /Nmap scan report for (.*)/
+        hosts << $1
+        found += 1
+      end
+    end
+  end
+  puts "... found #{found} hosts."
+end
+
+if DEBUG
+  puts "Found", hosts
+end
+
+threads = []
+hosts.each do |host|
+  t = Thread.new(host) do |host|
+    detected = []
+    IO.popen(["nmap", "-O", "-sV", host], err: "/dev/null") do |nmap|
+      nmap.each_line do |line|
+        if line =~ /^Running: (.*)/
+          detected << $1
+        end
+      end
+    end
+    [host, detected]
+  end
+  threads << t
+end
+
+threads.each do |t|
+  host, info = t.value
+  puts "#{host}: #{info.join(" ")}"
+end
