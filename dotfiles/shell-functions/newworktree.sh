@@ -20,8 +20,9 @@ newworktree() {
     return
   fi
   local dst=/dev/null
+  git rev-parse --git-dir
   case "$(git rev-parse --git-dir)" in
-    */.git)
+    */.git|.git)
       dst="$(git rev-parse --show-toplevel)-$1"
       ;;
     */.git/worktrees/*)
@@ -33,9 +34,7 @@ newworktree() {
       ;;
   esac
   git worktree add "$dst"
-  cd "$dst"
-  sync-tmux-window-name
-  newbranch "$1"
+  tmux new-window -n "$(basename "$dst")" -c "$dst" 'source ~/.shell-functions/newbranch.sh; newbranch "'"$1"'"; exec $SHELL'
 }
 
 # ok: zsh
