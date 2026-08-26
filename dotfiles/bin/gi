@@ -1,0 +1,10 @@
+#!/bin/bash
+
+if [ "$1" = "tpush" ]; then
+  shift
+  set -x
+  exec git push "$@"
+else
+  echo wtf dude 1>&2
+  exit 1
+fi
