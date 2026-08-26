@@ -23,10 +23,12 @@ def main
       case m = mac_for_ip(ip)
       when "74:24:9f:b1:7c:b"
         ssid = "(home wifi)"
-      when "1c:61:b4:a7:fb:b4"
+      when "1c:61:b4:a7:fb:b4", "ac:a7:f1:82:48:c9"
         ssid = "Kolache Guest"
       when "62:f:6b:f7:be:64"
         ssid = "SpraintsBox"
+      when "d8:b3:70:91:3a:a7"
+        ssid = "ZworksOnMain"
       when NilClass
         ssid = "gw=#{ip}"
       else
