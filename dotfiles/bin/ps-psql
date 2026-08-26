@@ -1,0 +1,10 @@
+#!/bin/bash
+#/ Usage: ps-psql DBCONFIG
+#/ where DBCONFIG is a file with DATABASE_* values.
+
+set -e
+set -o nounset
+
+source "$1"; shift
+set -x
+psql "$DATABASE_NAME" --host "$DATABASE_HOST" --username "$DATABASE_USERNAME" "$@"
