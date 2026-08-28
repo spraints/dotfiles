@@ -19,7 +19,7 @@ ROW_FORMAT = "%-4s %3s %3s %4s %4s %5s"
 TABLE_GAP = "    "
 
 def usage
-  "Usage: mlb standings"
+  "Usage: mlb standings|st"
 end
 
 def terminal_width
@@ -132,7 +132,7 @@ def print_standings(records)
 end
 
 def main
-  unless ARGV == ["standings"]
+  unless ARGV.length == 1 && ["standings", "st"].include?(ARGV.first)
     warn usage
     exit 1
   end
