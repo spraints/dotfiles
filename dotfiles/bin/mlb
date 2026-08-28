@@ -1,0 +1,144 @@
+#!/usr/bin/env ruby
+
+require "io/console"
+require "json"
+require "net/http"
+require "timeout"
+require "uri"
+
+API_URL = "https://statsapi.mlb.com/api/v1/standings"
+LEAGUE_IDS = [103, 104].freeze
+DIVISION_ORDER = ["West", "Central", "East"].freeze
+TEAM_CODE_OVERRIDES = {
+  109 => "ARI",
+  118 => "KCR",
+  135 => "SDP",
+  137 => "SFG",
+  139 => "TBR",
+}.freeze
+ROW_FORMAT = "%-3s %3s %3s %4s %4s %5s"
+TABLE_GAP = "   "
+
+def usage
+  "Usage: mlb standings"
+end
+
+def terminal_width
+  columns = Integer(ENV.fetch("COLUMNS", ""), exception: false)
+  return columns if columns&.positive?
+
+  IO.console&.winsize&.last || 80
+rescue SystemCallError
+  80
+end
+
+def fetch_standings
+  uri = URI(API_URL)
+  uri.query = URI.encode_www_form(
+    leagueId: LEAGUE_IDS.join(","),
+    standingsTypes: "regularSeason",
+    hydrate: "team,division",
+  )
+
+  response = Net::HTTP.start(
+    uri.host,
+    uri.port,
+    use_ssl: true,
+    open_timeout: 10,
+    read_timeout: 20,
+  ) { |http| http.get(uri.request_uri) }
+
+  unless response.is_a?(Net::HTTPSuccess)
+    raise "MLB Stats API returned HTTP #{response.code}"
+  end
+
+  JSON.parse(response.body).fetch("records")
+end
+
+def team_code(team)
+  TEAM_CODE_OVERRIDES.fetch(team.fetch("id")) do
+    abbreviation = team.fetch("abbreviation").upcase
+    return abbreviation if abbreviation.length == 3
+
+    team.fetch("teamCode").upcase
+  end
+end
+
+def division_name(record)
+  record.fetch("division").fetch("name").split.last
+end
+
+def league_name(record)
+  record.fetch("division").fetch("name").split[0..-2].join(" ")
+end
+
+def last_ten(team_record)
+  split = team_record.dig("records", "splitRecords")&.find do |candidate|
+    candidate["type"] == "lastTen"
+  end
+  split ? "#{split.fetch("wins")}-#{split.fetch("losses")}" : "-"
+end
+
+def table_lines(record)
+  lines = [
+    division_name(record),
+    format(ROW_FORMAT, "TEAM", "W", "L", "PCT", "GB", "L10"),
+    format(ROW_FORMAT, "---", "---", "---", "----", "----", "-----"),
+  ]
+
+  record.fetch("teamRecords").each do |team_record|
+    lines << format(
+      ROW_FORMAT,
+      team_code(team_record.fetch("team")),
+      team_record.fetch("wins"),
+      team_record.fetch("losses"),
+      team_record.fetch("winningPercentage"),
+      team_record.fetch("divisionGamesBack", team_record.fetch("gamesBack")),
+      last_ten(team_record),
+    )
+  end
+  lines
+end
+
+def print_league(name, records)
+  divisions = DIVISION_ORDER.filter_map do |division|
+    record = records.find { |candidate| division_name(candidate) == division }
+    table_lines(record) if record
+  end
+
+  puts name
+  wide_width = divisions.sum { |table| table.map(&:length).max } +
+    TABLE_GAP.length * (divisions.length - 1)
+
+  if terminal_width >= wide_width
+    divisions.map(&:length).max.times do |line_number|
+      puts divisions.map { |table| table.fetch(line_number, "").ljust(27) }.join(TABLE_GAP).rstrip
+    end
+  else
+    divisions.each_with_index do |table, index|
+      puts if index.positive?
+      puts table
+    end
+  end
+end
+
+def print_standings(records)
+  records.group_by { |record| league_name(record) }.each_with_index do |(name, league_records), index|
+    puts if index.positive?
+    print_league(name, league_records)
+  end
+end
+
+def main
+  unless ARGV == ["standings"]
+    warn usage
+    exit 1
+  end
+
+  print_standings(fetch_standings)
+rescue StandardError => error
+  warn "mlb: #{error.message}"
+  exit 1
+end
+
+main if $PROGRAM_NAME == __FILE__
