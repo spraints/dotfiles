@@ -10,14 +10,13 @@ API_URL = "https://statsapi.mlb.com/api/v1/standings"
 LEAGUE_IDS = [103, 104].freeze
 DIVISION_ORDER = ["West", "Central", "East"].freeze
 TEAM_CODE_OVERRIDES = {
-  109 => "ARI",
-  118 => "KCR",
-  135 => "SDP",
-  137 => "SFG",
-  139 => "TBR",
+  118 => "KC",
+  135 => "SD",
+  137 => "SF",
+  139 => "TB",
 }.freeze
-ROW_FORMAT = "%-3s %3s %3s %4s %4s %5s"
-TABLE_GAP = "   "
+ROW_FORMAT = "%-4s %3s %3s %4s %4s %5s"
+TABLE_GAP = "    "
 
 def usage
   "Usage: mlb standings"
@@ -81,9 +80,9 @@ end
 
 def table_lines(record)
   lines = [
-    division_name(record),
+    "-- #{division_name(record)} --",
     format(ROW_FORMAT, "TEAM", "W", "L", "PCT", "GB", "L10"),
-    format(ROW_FORMAT, "---", "---", "---", "----", "----", "-----"),
+    format(ROW_FORMAT, "----", "---", "---", "----", "----", "-----"),
   ]
 
   record.fetch("teamRecords").each do |team_record|
@@ -106,13 +105,16 @@ def print_league(name, records)
     table_lines(record) if record
   end
 
-  puts name
-  wide_width = divisions.sum { |table| table.map(&:length).max } +
+  division_max_line_lengths = divisions.map { |table| table.map(&:length).max }
+
+  puts "~~~~~ #{name} ~~~~~"
+  wide_width = division_max_line_lengths.sum +
     TABLE_GAP.length * (divisions.length - 1)
 
   if terminal_width >= wide_width
     divisions.map(&:length).max.times do |line_number|
-      puts divisions.map { |table| table.fetch(line_number, "").ljust(27) }.join(TABLE_GAP).rstrip
+      puts divisions.zip(division_max_line_lengths)
+        .map { |table, len| table.fetch(line_number, "").ljust(len) }.join(TABLE_GAP).rstrip
     end
   else
     divisions.each_with_index do |table, index|
