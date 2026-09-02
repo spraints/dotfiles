@@ -27,6 +27,25 @@ def usage
   "Usage: mlb standings|st|wildcard|wc"
 end
 
+def main
+  unless ARGV.length == 1 && ["standings", "st", "wildcard", "wc"].include?(ARGV.first)
+    warn usage
+    exit 1
+  end
+
+  case ARGV.first
+  when "wc", "wildcard"
+    print_wildcard(fetch_standings("wildCardWithLeaders"))
+  when "st", "standings"
+    print_standings(fetch_standings)
+  else
+    raise "unreachable"
+  end
+rescue StandardError => error
+  warn "mlb: #{error.message}"
+  exit 1
+end
+
 def terminal_width
   columns = Integer(ENV.fetch("COLUMNS", ""), exception: false)
   return columns if columns&.positive?
@@ -184,25 +203,6 @@ def print_wildcard(records)
     puts "~~~~~ #{LEAGUE_NAMES.fetch(league_id)} ~~~~~"
     puts wildcard_table_lines(division_leaders + wildcard_teams)
   end
-end
-
-def main
-  unless ARGV.length == 1 && ["standings", "st", "wildcard", "wc"].include?(ARGV.first)
-    warn usage
-    exit 1
-  end
-
-  case ARGV.first
-  when "wc", "wildcard"
-    print_wildcard(fetch_standings("wildCardWithLeaders"))
-  when "st", "standings"
-    print_standings(fetch_standings)
-  else
-    raise "unreachable"
-  end
-rescue StandardError => error
-  warn "mlb: #{error.message}"
-  exit 1
 end
 
 main if $PROGRAM_NAME == __FILE__
