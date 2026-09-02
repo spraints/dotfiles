@@ -8,6 +8,10 @@ require "uri"
 
 API_URL = "https://statsapi.mlb.com/api/v1/standings"
 LEAGUE_IDS = [103, 104].freeze
+LEAGUE_NAMES = {
+  103 => "American League",
+  104 => "National League",
+}.freeze
 DIVISION_ORDER = ["West", "Central", "East"].freeze
 TEAM_CODE_OVERRIDES = {
   118 => "KC",
@@ -16,10 +20,11 @@ TEAM_CODE_OVERRIDES = {
   139 => "TB",
 }.freeze
 ROW_FORMAT = "%-4s %3s %3s %4s %4s %5s"
+WILDCARD_ROW_FORMAT = "%-2s %-4s %3s %3s %4s %4s %5s"
 TABLE_GAP = "    "
 
 def usage
-  "Usage: mlb standings|st"
+  "Usage: mlb standings|st|wildcard|wc"
 end
 
 def terminal_width
@@ -31,11 +36,11 @@ rescue SystemCallError
   80
 end
 
-def fetch_standings
+def fetch_standings(standings_type = "regularSeason")
   uri = URI(API_URL)
   uri.query = URI.encode_www_form(
     leagueId: LEAGUE_IDS.join(","),
-    standingsTypes: "regularSeason",
+    standingsTypes: standings_type,
     hydrate: "team,division",
   )
 
@@ -131,13 +136,70 @@ def print_standings(records)
   end
 end
 
+def wildcard_status(team_record)
+  status = if team_record["divisionLeader"]
+    "D"
+  elsif team_record["wildCardLeader"]
+    "W"
+  else
+    "-"
+  end
+  status + team_record["clinchIndicator"].to_s
+end
+
+def wildcard_table_lines(team_records)
+  lines = [
+    format(WILDCARD_ROW_FORMAT, "", "TEAM", "W", "L", "PCT", "GB", "L10"),
+    format(WILDCARD_ROW_FORMAT, "--", "----", "---", "---", "----", "----", "-----"),
+  ]
+
+  team_records.each do |team_record|
+    lines << format(
+      WILDCARD_ROW_FORMAT,
+      wildcard_status(team_record),
+      team_code(team_record.fetch("team")),
+      team_record.fetch("wins"),
+      team_record.fetch("losses"),
+      team_record.fetch("winningPercentage"),
+      team_record.fetch("wildCardGamesBack"),
+      last_ten(team_record),
+    )
+  end
+  lines
+end
+
+def print_wildcard(records)
+  LEAGUE_IDS.each_with_index do |league_id, index|
+    league_records = records.select { |record| record.dig("league", "id") == league_id }
+    division_leaders = league_records
+      .select { |record| record["standingsType"] == "divisionLeaders" }
+      .flat_map { |record| record.fetch("teamRecords") }
+      .sort_by { |team_record| team_record.fetch("leagueRank").to_i }
+    wildcard_teams = league_records
+      .find { |record| record["standingsType"] == "wildCard" }
+      &.fetch("teamRecords") || []
+    wildcard_teams.reject! { |team_record| team_record["wildCardEliminationNumber"] == "E" }
+
+    puts if index.positive?
+    puts "~~~~~ #{LEAGUE_NAMES.fetch(league_id)} ~~~~~"
+    puts wildcard_table_lines(division_leaders + wildcard_teams)
+  end
+end
+
 def main
-  unless ARGV.length == 1 && ["standings", "st"].include?(ARGV.first)
+  unless ARGV.length == 1 && ["standings", "st", "wildcard", "wc"].include?(ARGV.first)
     warn usage
     exit 1
   end
 
-  print_standings(fetch_standings)
+  case ARGV.first
+  when "wc", "wildcard"
+    print_wildcard(fetch_standings("wildCardWithLeaders"))
+  when "st", "standings"
+    print_standings(fetch_standings)
+  else
+    raise "unreachable"
+  end
 rescue StandardError => error
   warn "mlb: #{error.message}"
   exit 1
