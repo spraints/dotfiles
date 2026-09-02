@@ -59,7 +59,7 @@ alias b='bundle exec'
 for e in nvim vim vi; do
   re=$(which $e 2>/dev/null)
   if [ -e "$re" ]; then
-    export EDITOR="$re"
+    export EDITOR="$re" LEAF_EDITOR="$re"
     break
   fi
 done
