@@ -88,7 +88,7 @@ def table_lines(record)
   record.fetch("teamRecords").each do |team_record|
     lines << format(
       ROW_FORMAT,
-      team_code(team_record.fetch("team")),
+      team_record.fetch("clinchIndicator", "") + team_code(team_record.fetch("team")),
       team_record.fetch("wins"),
       team_record.fetch("losses"),
       team_record.fetch("winningPercentage"),
