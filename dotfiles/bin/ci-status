@@ -2,7 +2,7 @@
 export RBENV_VERSION=system
 exec ruby "$0" "$@"
 #!ruby
-#/ Usage: ci-status [--sort=SORTBY] [--skip-green|--failed] [--urls] [--ids] [--build NAME_PART] [branch|PR-url]
+#/ Usage: ci-status [--sort=SORTBY] [--skip-green|--failed] [--urls] [--ids] [--build NAME_PART] [branch|PR-url|--stack]
 #/ Shows pretty ci status for the current repo and current branch (or the named branch).
 #/ Usage: ci-status --failures [branch|PR-url]
 #/ Summarizes failures based on annotations.
@@ -508,6 +508,7 @@ opts = {
 }
 
 build_filter = nil
+stack = false
 while ARGV.first.to_s =~ /^-/
   case ARGV.shift
   when "--skip-green"
@@ -526,6 +527,8 @@ while ARGV.first.to_s =~ /^-/
     opts[:sort_keys] = $1.split(",")
   when "--sort"
     opts[:sort_keys] = ARGV.shift.split(",")
+  when "--stack"
+    stack = true
   when "--build"
     if build_filter.nil?
       build_filter = OnlyBuilds.new
@@ -537,7 +540,26 @@ while ARGV.first.to_s =~ /^-/
   end
 end
 
-usage if ARGV.size > 1
+usage if ARGV.size > 1 || (stack && ARGV.size > 0)
+
+if stack
+  ec = 0
+  stack_info = JSON.load(`gh stack view --json`)
+  stack_info.fetch("branches").each do |branch_info|
+    puts branch_info.fetch("name")
+    if pr_url = branch_info.dig("pr", "url")
+      puts "> ci-status #{pr_url}"
+      system "ci-status", pr_url
+      ec = [$?.exitstatus, ec].max
+    else
+      head = branch_info.fetch("head")
+      puts "> ci-status #{head}"
+      system "ci-status", head
+      ec = [$?.exitstatus, ec].max
+    end
+  end
+  exit ec
+end
 
 opts[:branch] = ARGV.first || `git branch --no-color 2> /dev/null | sed -e '/^[^*]/d' -e 's/^* //'`.strip
 case opts[:branch]
